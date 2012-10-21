@@ -3,7 +3,8 @@ package org.usergrid.vx.server;
 import org.apache.cassandra.service.AbstractCassandraDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.usergrid.vx.handler.UserMutationHandler;
+import org.usergrid.vx.handler.http.UserInsertHttpHandler;
+import org.usergrid.vx.handler.net.UserMutationHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.HttpServerRequest;
@@ -18,20 +19,17 @@ public class UsergridCassandraDaemon extends AbstractCassandraDaemon {
 
 	private static Vertx vertx;
 	private static NetServer server;
+	private static RouteMatcher rm;
 	
 	@Override
 	protected void startServer() {
 		vertx = Vertx.newVertx();
 		
-		//rm = new RouteMatcher();
-		//rm.put("/:appid/users", new UserMutationHandler());
-		//rm.post("/:appid/users", new UserMutationHandler());
+		rm = new RouteMatcher();
+		rm.put("/:appid/users", new UserInsertHttpHandler());
+		rm.post("/:appid/users", new UserInsertHttpHandler());
 		
-		vertx.createHttpServer().requestHandler(new Handler<HttpServerRequest>() {
-		    public void handle(HttpServerRequest req) {		        
-		        req.response.end("w00t");
-		    }
-		}).listen(8080);
+		vertx.createHttpServer().requestHandler(rm).listen(8080);
 		
 		server = vertx.createNetServer();
 		

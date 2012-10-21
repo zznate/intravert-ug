@@ -1,4 +1,4 @@
-package org.usergrid.vx.handler;
+package org.usergrid.vx.handler.net;
 
 import static java.util.Arrays.asList;
 import static me.prettyprint.hector.api.factory.HFactory.createColumn;

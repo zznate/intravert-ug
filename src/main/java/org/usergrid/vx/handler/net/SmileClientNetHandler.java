@@ -1,16 +1,19 @@
-package org.usergrid.vx.handler;
+package org.usergrid.vx.handler.net;
+
+import java.util.UUID;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.smile.SmileFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.usergrid.persistence.entities.User;
+import org.usergrid.vx.util.UserFactory;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.net.NetSocket;
 
-public class SmileClientHandler  implements Handler<NetSocket> {
-	private final Logger logger = LoggerFactory.getLogger(SmileClientHandler.class);
+public class SmileClientNetHandler  implements Handler<NetSocket> {
+	private final Logger logger = LoggerFactory.getLogger(SmileClientNetHandler.class);
 	
 	final int packetSize = 32 * 1024;
     
@@ -23,7 +26,7 @@ public class SmileClientHandler  implements Handler<NetSocket> {
 	@Override
 	public void handle(NetSocket socket) {			
 		
-		sendData(socket, buildUser(1));
+		sendData(socket, UserFactory.buildUser(UUID.randomUUID()));
 	}
 
 
@@ -40,12 +43,6 @@ public class SmileClientHandler  implements Handler<NetSocket> {
 		socket.write(data);
 	}
 
-	private static User buildUser(int x) {
-		User user = new User();
-		user.setUsername("zznate"+x);
-		user.setEmail("nate" + x + "@apigee.com");
-		user.setProperty("password", "password");
-		return user;
-	}
+
 
 }
