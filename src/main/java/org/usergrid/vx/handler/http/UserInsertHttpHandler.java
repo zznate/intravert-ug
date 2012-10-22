@@ -1,6 +1,7 @@
 package org.usergrid.vx.handler.http;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.usergrid.persistence.entities.User;
 import org.usergrid.utils.JsonUtils;
 import org.usergrid.vx.service.UserMutator;
+import org.usergrid.vx.util.UserHolder;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.SimpleHandler;
 import org.vertx.java.core.buffer.Buffer;
@@ -37,19 +39,21 @@ public class UserInsertHttpHandler implements Handler<HttpServerRequest> {
 		
 		request.bodyHandler(bodyHandler);
 		
-							
+		request.response.end("ok");
 			
 	}
 	
 	class BodyHandler implements Handler<Buffer> {
-		User user = null;
+		
 		
 		public void handle(Buffer event) {
-			logger.debug("received buffer: {}", event.toString());
+			//logger.debug("received buffer: ");//, event.toString());
 			
 			try {
-				user = mapper.readValue(event.toString(), User.class);
-				userMutator.insert(new UUID(0, 1), user);
+				UserHolder userHolder  = mapper.readValue(event.toString(), UserHolder.class);
+				for ( User user : userHolder ) {
+					userMutator.insert(new UUID(0, 1), user);
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			} 

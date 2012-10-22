@@ -47,28 +47,30 @@ public class App {
     	AtomicLong counter = new AtomicLong();
         
         long startTime = System.currentTimeMillis();
-        HttpClient client = null;
-        for (int x=0; x<1000; x++){
+        UserHttpClient userClient = null;
+        
+        //for (int x=0; x<1000; x++){
         try{ 
         	
-        	client = vertx.createHttpClient().setHost("localhost").setPort(8080);
+        	userClient = new UserHttpClient(vertx);
         	
-        	UserHttpClient userClient = new UserHttpClient();
-        	
-        	HttpClientRequest req = client.post("/appid/users", userClient);
-        
-        	userClient.writeUser(req, UserFactory.buildUser(UUID.randomUUID()));
+        	userClient.start();
+
+       
         	counter.incrementAndGet();
         	
         
         } catch (Exception ex) {
         	ex.printStackTrace();
         } finally {
-        	client.close();
+        	
         }
-        }
+        // }
+    
+    	while ( !userClient.limitHit() ) { 
+    		Thread.currentThread().sleep(20);
+    	}
     	long endTime = System.currentTimeMillis() - startTime;
-    	Thread.currentThread().sleep(2000);
     	
     	logger.info("completed {} reqs ({}ms)", counter.get(), endTime);
     	
