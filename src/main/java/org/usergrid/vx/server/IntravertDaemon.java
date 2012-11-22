@@ -4,6 +4,7 @@ import org.apache.cassandra.service.AbstractCassandraDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.usergrid.vx.handler.http.HelloHandler;
+import org.usergrid.vx.handler.http.NoMatchHandler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.RouteMatcher;
 
@@ -20,6 +21,7 @@ public class IntravertDaemon extends AbstractCassandraDaemon {
 		rm.put("/:appid/hello", new HelloHandler());
 		rm.get("/:appid/hello", new HelloHandler());
 		rm.post("/:appid/hello", new HelloHandler());
+		rm.noMatch(new NoMatchHandler() );
 		vertx.createHttpServer().requestHandler(rm).listen(8080);
 		logger.info("startServer...");
 	}
