@@ -1,7 +1,6 @@
 package org.usergrid.vx.server;
 
 import org.apache.cassandra.service.AbstractCassandraDaemon;
-import org.vertx.java.deploy.Verticle;
 
 public class IntravertServer {
 
