@@ -9,11 +9,11 @@ import org.vertx.java.core.http.HttpServerRequest;
 public class NoMatchHandler implements Handler<HttpServerRequest>{
 	
 	private final Logger logger = LoggerFactory.getLogger(IntravertDaemon.class);
-	
-	@Override
-	public void handle(HttpServerRequest request) {
-        logger.error("no matching endpoint for "+ request.uri);
-        request.response.end("No Matching Endpoint.");
-	}
+
+  @Override
+  public void handle(HttpServerRequest request) {
+    logger.error("no matching endpoint for "+ request.uri);
+    request.response.end("No Matching Endpoint.");
+  }
 
 }
