@@ -17,13 +17,13 @@ public class HelloClient implements Handler<HttpClientResponse> {
         private HttpClient httpClient;
 
         public static void main(String[] args) throws Exception {
-                HelloClient hc = new HelloClient();
-                hc.post();
+          HelloClient hc = new HelloClient();
+          hc.post();
         }
      
         public HelloClient(){
         	vertx = Vertx.newVertx();
-            this.httpClient = vertx.createHttpClient().setHost("localhost").setPort(8080).setMaxPoolSize(1).setKeepAlive(true);
+          this.httpClient = vertx.createHttpClient().setHost("localhost").setPort(8080).setMaxPoolSize(1).setKeepAlive(true);
         }
         
         public void post(){
@@ -46,17 +46,17 @@ public class HelloClient implements Handler<HttpClientResponse> {
 
         @Override
         public void handle(HttpClientResponse response) {
-                response.endHandler(new SimpleHandler() {
-                        public void handle() {
-                                System.out.println("This is the end. My only friend, the end.");
-                        }
-                });
-                response.dataHandler( new Handler<Buffer>(){
-                        public void handle(Buffer buf) {
-                                String s = new String( buf.getBytes() );
-                                System.out.println("Data recieved: "+s);
-                        }
-                });
+          response.endHandler(new SimpleHandler() {
+            public void handle() {
+              System.out.println("This is the end. My only friend, the end.");
+            }
+          });
+          response.dataHandler( new Handler<Buffer>(){
+            public void handle(Buffer buf) {
+              String s = new String( buf.getBytes() );
+              System.out.println("Data recieved: "+s);
+            }
+          });
         }
 
 }
