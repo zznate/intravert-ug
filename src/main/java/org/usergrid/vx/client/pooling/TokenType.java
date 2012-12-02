@@ -23,6 +23,9 @@ public enum TokenType {
 
   },
 
+  /**
+   * Not yet implemented
+   */
   CUSTOM {
 
     @Override
