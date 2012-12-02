@@ -36,6 +36,7 @@ public class HelloClient implements Handler<HttpClientResponse> {
                         System.out.println("Something went wrong in client "+arg0);
                 }
         	});
+        	
         	req.end();
         	try {
         		Thread.sleep(3000);
