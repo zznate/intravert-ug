@@ -10,6 +10,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.cassandra.config.CFMetaData;
@@ -35,23 +37,22 @@ import org.vertx.java.core.http.HttpServerRequest;
 public class IntraHandler implements Handler<HttpServerRequest>{
 
 	@Override
-	public void handle(HttpServerRequest request) {
+	public void handle(final HttpServerRequest request) {
 		final IntraRes res = new IntraRes();
 		request.bodyHandler( new Handler<Buffer>() {
 			public void handle(Buffer buffer) {
-				//String payload = buffer.toString();
 				ByteArrayInputStream i = new ByteArrayInputStream(buffer.getBytes());
 				java.beans.XMLDecoder d = new java.beans.XMLDecoder(i);
 				IntraReq req = (IntraReq) d.readObject();
 				handleIntraReq(req,res);
+				ByteArrayOutputStream bo = new ByteArrayOutputStream();
+				XMLEncoder e = new XMLEncoder(bo);
+		    	e.writeObject(res);
+		    	e.close();
+		    	String payload = new String(bo.toByteArray());
+		    	request.response.end(payload);
 			}
 		});
-		ByteArrayOutputStream bo = new ByteArrayOutputStream();
-		XMLEncoder e = new XMLEncoder(bo);
-    	e.writeObject(res);
-    	e.close();
-    	String payload = new String(bo.toByteArray());
-    	request.response.end(payload);
 	}
 	
 	public IntraRes handleIntraReq(IntraReq req,IntraRes res){
@@ -96,7 +97,6 @@ public class IntraHandler implements Handler<HttpServerRequest>{
 				}
 			} else if (op.getType().equals("createcolumnfamily")) {
 				String cf = (String) op.getOp().get("name");
-				//Collection<CFMetaData> cfDefs = new ArrayList<CFMetaData>(1);
 				CfDef def = new CfDef();
 				def.setName(cf);
 				def.setKeyspace(currentKeyspace);

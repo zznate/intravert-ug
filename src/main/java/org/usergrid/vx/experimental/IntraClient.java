@@ -1,6 +1,8 @@
 package org.usergrid.vx.experimental;
 
+import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,10 +13,12 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpClientRequest;
 import org.vertx.java.core.http.HttpClientResponse;
@@ -51,10 +55,18 @@ public class IntraClient implements Handler<HttpClientResponse> {
 	}
 	
 	@Override
-	public void handle(HttpClientResponse arg0) {
-		IntraRes ir = new IntraRes();
-		q.add(ir);
+	public void handle(HttpClientResponse resp) {
 
+		resp.dataHandler(new Handler<Buffer>(){
+			@Override
+			public void handle(Buffer arg0) {
+				IntraRes ir = null;
+				ByteArrayInputStream bi = new ByteArrayInputStream(arg0.getBytes());
+				XMLDecoder d = new XMLDecoder(bi);
+				ir = (IntraRes) d.readObject();
+				q.add(ir);
+			}
+		});
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -79,7 +91,7 @@ public class IntraClient implements Handler<HttpClientResponse> {
 		//);
 		
 		System.out.println( i.sendBlocking(req) );
-		
+		Thread.sleep(4000);
 		
 	}
 }
