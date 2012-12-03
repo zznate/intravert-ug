@@ -23,4 +23,5 @@ public class IntraReq implements Serializable{
 	public void setE(List<IntraOp> e) {
 		this.e = e;
 	}	
+	
 }

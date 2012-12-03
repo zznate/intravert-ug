@@ -38,20 +38,16 @@ public class IntraClient implements Handler<HttpClientResponse> {
 		XMLEncoder e = new XMLEncoder(bo);
     	e.writeObject(i);
     	e.close();
-    	System.out.println( new String(bo.toByteArray()));
-    	/*
-    	req.putHeader("content-length", value.length());
-    	req.write(value);
-    	
+    	String payload = new String(bo.toByteArray());
+    	req.putHeader("content-length", payload.length());
+    	req.write(payload );
     	req.exceptionHandler(new Handler<Exception>(){
             public void handle(Exception arg0){
-			
+            	System.out.println (arg0);
             }
     	});
     	req.end();
     	return q.poll(10, TimeUnit.SECONDS);
-    	*/
-    	return null;
 	}
 	
 	@Override
@@ -65,13 +61,25 @@ public class IntraClient implements Handler<HttpClientResponse> {
 		IntraClient i = new IntraClient();
 		IntraReq req = new IntraReq();
 		req.add( IntraOp.setKeyspaceOp("myks") );
+		req.add( IntraOp.createKsOp("myks", 1));
+		req.add( IntraOp.createCfOp("mycf"));
 		req.add( IntraOp.setColumnFamilyOp("mycf") );
 		req.add( IntraOp.setAutotimestampOp() );
-		req.add( IntraOp.setOp("bob",  new Object [] { 4, "stuff" }, 10) );
-		req.add( IntraOp.getOp("bob", new Object [] { 4, "stuff" }) );
-		req.add( IntraOp.setKeyspaceOp("otherks") );
-		req.add( IntraOp.setColumnFamilyOp("othercf") );
-		req.add( IntraOp.getOp( IntraOp.getResRefOp(-3, IntraOp.VALUE),  "wantedcolumn") );
-		i.sendBlocking(req);
+		req.add( IntraOp.setOp("5", "6", "7"));
+		//req.add( IntraOp.setOp("bob",  new Object [] { 4, "stuff" }, 10) );
+		//req.add( IntraOp.getOp("bob", new Object [] { 4, "stuff" }) );
+		//req.add( IntraOp.setKeyspaceOp("otherks") );
+		//req.add( IntraOp.setColumnFamilyOp("othercf") );
+		//req.add( IntraOp.getOp( IntraOp.getResRefOp(-3, IntraOp.VALUE),  "wantedcolumn") );
+		//req.add( IntraOp.sliceOp(10, "a", "g", 100) );
+		//req.add( IntraOp.setColumnFamilyOp("anothercf") );
+		//req.add( IntraOp.forEachOp(-2, 
+		//		IntraOp.sliceOp( IntraOp.getResRefOp(-2, "COLUMN"), "a", "z", 10)
+		//		)
+		//);
+		
+		System.out.println( i.sendBlocking(req) );
+		
+		
 	}
 }

@@ -87,6 +87,44 @@ public class IntraOp implements Serializable{
 		return i;
 	}
 	
+	public static IntraOp sliceOp( Object rowkey , Object start, Object end, int size){
+		IntraOp i = new IntraOp();
+		i.setType("slice");
+		i.set("start", start);
+		i.set("end", end);
+		i.set("size", size);
+		return i;
+	}
+	
+	public static IntraOp columnPredicateOp( Object rowkey, Object [] columnList){
+		IntraOp i = new IntraOp();
+		i.setType("columnPredicate");
+		i.set("wantedcols", columnList);
+		return i;
+	}
+	
+	public static IntraOp forEachOp( int opRef, IntraOp action){
+		IntraOp i = new IntraOp();
+		i.setType("foreach");
+		i.set("action", action);
+		return i;
+	}
+	
+	public static IntraOp createCfOp(String cfName){
+		IntraOp i = new IntraOp();
+		i.setType("createcolumnfamily");
+		i.set("name", cfName);
+		return i;
+	}
+	
+	public static IntraOp createKsOp(String ksname, int replication){
+		IntraOp i = new IntraOp();
+		i.setType("createkeyspace");
+		i.set("name", ksname);
+		i.set("replication", replication);
+		return i;
+	}
+	
 	public String getType() {
 		return type;
 	}
