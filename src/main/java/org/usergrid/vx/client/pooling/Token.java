@@ -1,7 +1,5 @@
 package org.usergrid.vx.client.pooling;
 
-import org.apache.cassandra.utils.FBUtilities;
-
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
@@ -9,21 +7,6 @@ import java.nio.ByteBuffer;
  * @author zznate
  */
 public abstract class Token implements Comparable {
-/*
-  public static Token.Factory getFactory(String partitionerName) {
-      if (partitionerName.endsWith("Murmur3Partitioner"))
-          //TODO return M3PToken.FACTORY;
-        return RPToken.FACTORY;
-      else if (partitionerName.endsWith("RandomPartitioner"))
-          return RPToken.FACTORY;
-      else if (partitionerName.endsWith("OrderedPartitioner"))
-          //TODO return OPPToken.FACTORY;
-        return RPToken.FACTORY;
-      else
-          return null;
-  }
-
-*/
 
 
   public static class RPToken extends Token {
@@ -58,6 +41,70 @@ public abstract class Token implements Comparable {
       return value.hashCode();
     }
 
+  }
+
+  public static class M3PToken extends Token {
+    private final long value;
+
+
+    M3PToken(long value) {
+      this.value = value;
+    }
+
+    @Override
+    public int compareTo(Object other) {
+      if ( other != null && other instanceof M3PToken ) {
+        long otherValue = ((M3PToken)other).value;
+        return value < otherValue ? -1 : (value == otherValue) ? 0 : 1;
+      }
+      throw new IllegalArgumentException("Attempt to compare wrong token type");
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (obj == null || this.getClass() != obj.getClass())
+        return false;
+
+      return value == ((M3PToken)obj).value;
+    }
+
+    @Override
+    public int hashCode() {
+      return (int)(value^(value>>>32));
+    }
+  }
+
+  public static class OPPToken extends Token {
+    private final ByteBuffer value;
+
+
+    OPPToken(ByteBuffer value) {
+      this.value = value;
+    }
+
+    @Override
+    public int compareTo(Object other) {
+      if ( other != null && other instanceof OPPToken )
+        return value.compareTo(((OPPToken)other).value);
+      throw new IllegalArgumentException("Attempt to compare on null or wrong token type");
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj)
+        return true;
+      if (obj == null || this.getClass() != obj.getClass())
+        return false;
+
+      return value.equals(((OPPToken)obj).value);
+    }
+
+    @Override
+    public int hashCode() {
+      return value.hashCode();
+    }
   }
 
 

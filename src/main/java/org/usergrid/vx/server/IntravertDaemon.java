@@ -1,6 +1,6 @@
 package org.usergrid.vx.server;
 
-import org.apache.cassandra.service.AbstractCassandraDaemon;
+import org.apache.cassandra.service.CassandraDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.usergrid.vx.handler.http.HelloHandler;
@@ -8,14 +8,15 @@ import org.usergrid.vx.handler.http.NoMatchHandler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.RouteMatcher;
 
-public class IntravertDaemon extends AbstractCassandraDaemon {
+public class IntravertDaemon extends CassandraDaemon {
 	
 	private final Logger logger = LoggerFactory.getLogger(IntravertDaemon.class);
 	private static Vertx vertx;
 	private static RouteMatcher rm;
 	
 	@Override
-	protected void startServer() {
+	public void start() {
+    // TODO may be more appropriate in setup() ?
 		vertx = Vertx.newVertx();
 		rm = new RouteMatcher();
 		rm.put("/:appid/hello", new HelloHandler());
@@ -27,7 +28,7 @@ public class IntravertDaemon extends AbstractCassandraDaemon {
 	}
 
 	@Override
-	protected void stopServer() {
+	public void stop() {
 		logger.info("stopServer...");		
 	}
 
