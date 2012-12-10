@@ -4,6 +4,7 @@ import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,6 +15,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
@@ -26,8 +30,9 @@ import org.vertx.java.core.http.HttpClientResponse;
 public class IntraClient implements Handler<HttpClientResponse> {
 	private static Logger logger = LoggerFactory.getLogger(IntraClient.class);
 	private static Vertx vertx;
+	private static String payload;
 	private HttpClient httpClient;
-	
+	static ObjectMapper mapper = new ObjectMapper();
 	ArrayBlockingQueue<IntraRes> q = new ArrayBlockingQueue<IntraRes>(1);
 
 	public IntraClient() {
@@ -37,14 +42,21 @@ public class IntraClient implements Handler<HttpClientResponse> {
 	}
 
 	public IntraRes sendBlocking(IntraReq i) throws Exception {
-		HttpClientRequest req = httpClient.request("POST", "/:appid/intrareq", this);
-		ByteArrayOutputStream bo = new ByteArrayOutputStream();
-		XMLEncoder e = new XMLEncoder(bo);
-    	e.writeObject(i);
-    	e.close();
-    	String payload = new String(bo.toByteArray());
-    	req.putHeader("content-length", payload.length());
-    	req.write(payload );
+		HttpClientRequest req = httpClient.request("POST", "/:appid/intrareq-"+payload, this);
+		if (payload.equalsIgnoreCase("xml")){
+			ByteArrayOutputStream bo = new ByteArrayOutputStream();
+			XMLEncoder e = new XMLEncoder(bo);
+			e.writeObject(i);
+			e.close();
+			String payload = new String(bo.toByteArray());
+			req.putHeader("content-length", payload.length());
+			req.write(payload);
+		} else if (payload.equalsIgnoreCase("json")){
+			String value = mapper.writeValueAsString(i);
+			System.out.println(value);
+			req.putHeader("content-length", value.length());
+			req.write(value);
+		}
     	req.exceptionHandler(new Handler<Exception>(){
             public void handle(Exception arg0){
             	System.out.println (arg0);
@@ -61,9 +73,21 @@ public class IntraClient implements Handler<HttpClientResponse> {
 			@Override
 			public void handle(Buffer arg0) {
 				IntraRes ir = null;
-				ByteArrayInputStream bi = new ByteArrayInputStream(arg0.getBytes());
-				XMLDecoder d = new XMLDecoder(bi);
-				ir = (IntraRes) d.readObject();
+				if (payload.equalsIgnoreCase("XML")){
+					ByteArrayInputStream bi = new ByteArrayInputStream(arg0.getBytes());
+					XMLDecoder d = new XMLDecoder(bi);
+					ir = (IntraRes) d.readObject();
+				} else if (payload.equalsIgnoreCase("JSON")){
+					try {
+						ir = mapper.readValue(arg0.getBytes(), IntraRes.class);
+					} catch (JsonParseException e) {
+						e.printStackTrace();
+					} catch (JsonMappingException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 				q.add(ir);
 			}
 		});
@@ -71,6 +95,7 @@ public class IntraClient implements Handler<HttpClientResponse> {
 
 	public static void main(String[] args) throws Exception {
 		IntraClient i = new IntraClient();
+		i.payload="json";
 		IntraReq req = new IntraReq();
 		req.add( IntraOp.setKeyspaceOp("myks") );
 		req.add( IntraOp.createKsOp("myks", 1));
