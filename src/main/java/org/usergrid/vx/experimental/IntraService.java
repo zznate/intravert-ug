@@ -1,27 +1,40 @@
 package org.usergrid.vx.experimental;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.cassandra.config.CFMetaData;
 import org.apache.cassandra.config.ConfigurationException;
 import org.apache.cassandra.config.KSMetaData;
+import org.apache.cassandra.db.ReadCommand;
 import org.apache.cassandra.db.RowMutation;
+import org.apache.cassandra.db.SliceByNamesReadCommand;
+import org.apache.cassandra.db.SliceFromReadCommand;
 import org.apache.cassandra.db.filter.QueryPath;
 import org.apache.cassandra.service.MigrationManager;
 import org.apache.cassandra.service.StorageProxy;
+import org.apache.cassandra.thrift.CassandraServer;
 import org.apache.cassandra.thrift.CfDef;
+import org.apache.cassandra.thrift.ColumnOrSuperColumn;
+import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.KsDef;
+import org.apache.cassandra.thrift.SlicePredicate;
+import org.apache.cassandra.thrift.SliceRange;
+import org.apache.cassandra.thrift.ThriftValidation;
+import org.apache.cassandra.thrift.TimedOutException;
 import org.apache.cassandra.thrift.UnavailableException;
 import org.apache.cassandra.utils.ByteBufferUtil;
 
 public class IntraService {
 
+	static CassandraServer thrift = new CassandraServer();
 	public IntraRes handleIntraReq(IntraReq req,IntraRes res){
 		if ( verifyReq(req,res) == false ){
 			return res;
@@ -106,6 +119,38 @@ public class IntraService {
 				} catch (TimeoutException e) {
 					res.getOpsRes().put(i, e.getMessage());
 				}
+			} else if (op.getType().equals("slice")){
+				ByteBuffer rowkey = byteBufferForObject(op.getOp().get("rowkey"));
+				ByteBuffer start = byteBufferForObject(op.getOp().get("start"));
+				ByteBuffer end = byteBufferForObject(op.getOp().get("end"));
+				Object size = op.getOp().get("size");
+				
+				try {
+					thrift.clientState.get().setKeyspace(currentKeyspace);
+				} catch (InvalidRequestException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				SlicePredicate sp = new SlicePredicate();
+				SliceRange sr = new SliceRange();
+				sr.setStart(start);
+				sr.setFinish(end);
+				sr.setCount(100);
+				sp.setSlice_range(sr);
+				List<ColumnOrSuperColumn> sliceResult = null;
+				try {
+					sliceResult = thrift.get_slice(rowkey, new ColumnParent(currentColumnFamily), sp, ConsistencyLevel.ONE);
+					System.out.println("Holy crappers we are slicing");
+				} catch (InvalidRequestException e) {
+					
+					e.printStackTrace();
+				} catch (UnavailableException e) {
+					
+					e.printStackTrace();
+				} catch (TimedOutException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
 		return true;
@@ -138,4 +183,6 @@ public class IntraService {
 		return true;
 		
 	}
+	
+   
 }

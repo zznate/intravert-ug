@@ -103,6 +103,7 @@ public class IntraClient implements Handler<HttpClientResponse> {
 		req.add( IntraOp.setColumnFamilyOp("mycf") );
 		req.add( IntraOp.setAutotimestampOp() );
 		req.add( IntraOp.setOp("5", "6", "7"));
+		req.add( IntraOp.sliceOp("5", "1", "9", 4));
 		//req.add( IntraOp.setOp("bob",  new Object [] { 4, "stuff" }, 10) );
 		//req.add( IntraOp.getOp("bob", new Object [] { 4, "stuff" }) );
 		//req.add( IntraOp.setKeyspaceOp("otherks") );

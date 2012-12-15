@@ -90,6 +90,7 @@ public class IntraOp implements Serializable{
 	public static IntraOp sliceOp( Object rowkey , Object start, Object end, int size){
 		IntraOp i = new IntraOp();
 		i.setType("slice");
+		i.set("rowkey", rowkey);
 		i.set("start", start);
 		i.set("end", end);
 		i.set("size", size);
