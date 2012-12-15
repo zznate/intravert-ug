@@ -9,6 +9,7 @@ public class IntravertServer {
     System.setProperty("log4j.defaultInitOverride","true");
     System.setProperty("log4j.configuration", "log4j.properties");
     CassandraDaemon.initLog4j();
+    
     IntravertServer is = new IntravertServer();
     is.startServer();
 	}
