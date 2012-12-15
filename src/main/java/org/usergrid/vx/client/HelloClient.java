@@ -12,7 +12,8 @@ import org.vertx.java.core.http.HttpClientRequest;
 import org.vertx.java.core.http.HttpClientResponse;
 
 public class HelloClient implements Handler<HttpClientResponse> {
-        private static Logger logger = LoggerFactory.getLogger(HelloClient.class);
+        
+	private static Logger logger = LoggerFactory.getLogger(HelloClient.class);
         private static Vertx vertx;
         private HttpClient httpClient;
 
