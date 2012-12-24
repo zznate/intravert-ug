@@ -1,13 +1,13 @@
 IntraVert Experimental client
 ==============
 
-Concepts
+Terminology
 ----
 
-IntraReq: A request object which consists of multiple IntraOp(s)
-IntraOp: An operation like a set, or a slice each has an id
-IntraRes: A response object which consists of multiple OpRes(s)
-OpRes: The result of an IntraOp
+* IntraReq: A request object which consists of multiple IntraOp(s)
+* IntraOp: An operation like a set, or a slice each has an id
+* IntraRes: A response object which consists of multiple OpRes(s)
+* OpRes: The result of an IntraOp
 
 Process Flow
 ----
@@ -37,10 +37,10 @@ Creating keyspaces and column families
 
 Using the JSON wire format we see how easy it is to create keyspaces and column families.
 
-{"e":[
-	{"id":1,"type":"createkeyspace","op":{"name":"myks","replication":1}},
-	{"id":2,"type":"createcolumnfamily","op":{"name":"mycf"}},
-]}
+	{"e":[
+	  {"id":1,"type":"createkeyspace","op":{"name":"myks","replication":1}},
+	  {"id":2,"type":"createcolumnfamily","op":{"name":"mycf"}},
+	]}
 
 Java Client
 ----
