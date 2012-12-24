@@ -220,7 +220,9 @@ public class IntraService {
 		IntraOp op = req.getE().get(i);
 		RowMutation rm = new RowMutation(state.currentKeyspace,byteBufferForObject(op.getOp().get("rowkey")));
 		QueryPath qp = new QueryPath(state.currentColumnFamily,null, byteBufferForObject(op.getOp().get("columnName")) );
-		rm.add(qp, byteBufferForObject(op.getOp().get("value")), (Long) (state.autoTimestamp ? state.nanotime : op.getOp().get("timestamp")));
+		rm.add(qp, byteBufferForObject(
+				resolveObject ( op.getOp().get("value"),req,res,state, i )
+				), (Long) (state.autoTimestamp ? state.nanotime : op.getOp().get("timestamp")));
 		Collection<RowMutation> col = new ArrayList<RowMutation>();
 		try {
 			StorageProxy.mutate(col, ConsistencyLevel.ONE);

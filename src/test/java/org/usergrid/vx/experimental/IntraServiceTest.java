@@ -43,6 +43,9 @@ public class IntraServiceTest  {
 		req.add( IntraOp.setOp("5", "6", "7"));
 		req.add( IntraOp.sliceOp("5", "1", "9", 4));
 		req.add( IntraOp.getOp("5", "6"));
+		//create a rowkey "9" with a column "10" and a value of the result
+		//of operation 7
+		//req.add( IntraOp.setOp("9", "10", IntraOp.getResRefOp(7, "value")));
 		IntraRes res = new IntraRes();
 		
 		is.handleIntraReq(req, res);
@@ -61,6 +64,7 @@ public class IntraServiceTest  {
 		sliceResults.add(sliceExpected);
 		Assert.assertEquals (  sliceResults , res.getOpsRes().get(6)  );
 		Assert.assertEquals ( sliceResults , res.getOpsRes().get(7) );
+		
 	}
 	
     
