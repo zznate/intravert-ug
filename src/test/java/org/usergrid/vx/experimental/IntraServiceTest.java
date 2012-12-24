@@ -41,6 +41,7 @@ public class IntraServiceTest  {
 		req.add( IntraOp.setAutotimestampOp() );
 		req.add( IntraOp.setOp("5", "6", "7"));
 		req.add( IntraOp.sliceOp("5", "1", "9", 4));
+		req.add( IntraOp.getOp("5", "6"));
 		IntraRes res = new IntraRes();
 		
 		is.handleIntraReq(req, res);
@@ -51,7 +52,9 @@ public class IntraServiceTest  {
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(3)  );
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(4)  );
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(5)  );
+		//ToDO this should return something
 		Assert.assertEquals (  new ArrayList<HashMap>() , res.getOpsRes().get(6)  );
+		Assert.assertEquals ( "OK" , res.getOpsRes().get(7) );
 	}
 	
     
