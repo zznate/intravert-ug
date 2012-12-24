@@ -106,7 +106,7 @@
 			<artifactId>jackson-smile</artifactId>
 			<version>${jackson-version}</version>
 		</dependency>
-	</dependencies>
+    </dependencies>
 	<build>
 		<plugins>
 			<plugin>

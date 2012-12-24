@@ -11,14 +11,18 @@ import org.usergrid.vx.handler.http.ThriftHandler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.RouteMatcher;
 
-public class IntravertDaemon extends CassandraDaemon {
+import java.util.concurrent.atomic.AtomicBoolean;
+
+public class IntravertCassandraServer implements CassandraDaemon.Server {
 	
-	private final Logger logger = LoggerFactory.getLogger(IntravertDaemon.class);
+	private final Logger logger = LoggerFactory.getLogger(IntravertCassandraServer.class);
 	private static Vertx vertx;
 	private static RouteMatcher rm;
+  private static final AtomicBoolean running = new AtomicBoolean(false);
 	
 	@Override
 	public void start() {
+    logger.debug("Starting IntravertCassandraServer...");
     // TODO may be more appropriate in setup() ?
 		vertx = Vertx.newVertx();
 		rm = new RouteMatcher();
@@ -30,12 +34,19 @@ public class IntravertDaemon extends CassandraDaemon {
 		rm.post("/:appid/intrareq-json", new IntraHandlerJson());
 		rm.noMatch(new NoMatchHandler() );
 		vertx.createHttpServer().requestHandler(rm).listen(8080);
-		logger.info("startServer...");
+		logger.info("IntravertCassandraServer started.");
+    running.set(true);
 	}
 
 	@Override
 	public void stop() {
-		logger.info("stopServer...");		
+    boolean stopped = running.compareAndSet(true,false);
+		logger.info("stopServer...{}", stopped);
+
 	}
 
+  @Override
+  public boolean isRunning() {
+    return running.get();
+  }
 }
