@@ -224,8 +224,9 @@ public class IntraService {
 				resolveObject ( op.getOp().get("value"),req,res,state, i )
 				), (Long) (state.autoTimestamp ? state.nanotime : op.getOp().get("timestamp")));
 		Collection<RowMutation> col = new ArrayList<RowMutation>();
+    col.add(rm);
 		try {
-			StorageProxy.mutate(col, ConsistencyLevel.ONE);
+			StorageProxy.instance.mutate(col, ConsistencyLevel.ONE);
 			res.getOpsRes().put(i, "OK");
 		} catch (WriteTimeoutException e) {
 			res.getOpsRes().put(i, e.getMessage());
@@ -259,8 +260,8 @@ public class IntraService {
 				while (it.hasNext()){
 					IColumn ic = it.next();
 					HashMap m = new HashMap();
-					m.put("name", ic.name().array());
-					m.put("value", ic.value().array());
+					m.put("name", ic.name());
+					m.put("value", ic.value());
 					finalResults.add(m);
 				}
 			}
