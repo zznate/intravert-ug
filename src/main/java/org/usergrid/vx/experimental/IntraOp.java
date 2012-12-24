@@ -10,7 +10,7 @@ public class IntraOp implements Serializable{
 
 	public static final String COLUMN= "COLUMN";
 	public static final String VALUE="VALUE";
-	private static final AtomicInteger opid= new AtomicInteger();
+	private static final AtomicInteger opid= new AtomicInteger(0);
 	private static final long serialVersionUID = 4700563595579293663L;
 	private int id;
 	private String type;
@@ -18,7 +18,7 @@ public class IntraOp implements Serializable{
 
 	public IntraOp(){
 		op = new TreeMap<String,Object>();
-		id = opid.addAndGet(1);
+		id = opid.getAndAdd(1);
 	}
 
 	public IntraOp set(String key, Object value){
@@ -75,7 +75,7 @@ public class IntraOp implements Serializable{
 		IntraOp i = new IntraOp();
 		i.setType("get");
 		i.set("rowkey", rowkey);
-		i.set("columnName", columnName );
+		i.set("column", columnName );
 		return i;
 	}
 	
