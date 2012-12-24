@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.cassandra.service.CassandraDaemon;
 import org.junit.Assert;
@@ -53,8 +54,13 @@ public class IntraServiceTest  {
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(4)  );
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(5)  );
 		//ToDO this should return something
-		Assert.assertEquals (  new ArrayList<HashMap>() , res.getOpsRes().get(6)  );
-		Assert.assertEquals ( "OK" , res.getOpsRes().get(7) );
+		ArrayList<HashMap> sliceResults = new ArrayList<HashMap>() ;
+		HashMap sliceExpected = new HashMap();
+		sliceExpected.put("column", "6");
+		sliceExpected.put("value", "7");
+		sliceResults.add(sliceExpected);
+		Assert.assertEquals (  sliceResults , res.getOpsRes().get(6)  );
+		Assert.assertEquals ( sliceResults , res.getOpsRes().get(7) );
 	}
 	
     

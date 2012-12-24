@@ -114,6 +114,20 @@ public class IntraService {
 		return true;
 	}
 	
+	private Object resolveObject(Object o, IntraReq req, IntraRes res,IntraState state, int i){
+		if (o instanceof String){
+			return o;
+		} else if (o instanceof ResRef){
+			ResRef rr = (ResRef) o;
+			//the step here should be a slice or get
+			List<Map> finalResults = (List<Map>) res.getOpsRes().get( rr.getResId() );
+			//watned should be column value or rowkey
+			Object wanted = finalResults.get(0).get(rr.getWanted());
+			return wanted;
+		} else {
+			return null;
+		}
+	}
 	private ByteBuffer byteBufferForObject(Object o){
 		if (o instanceof String){
 			return ByteBufferUtil.bytes((String) o);
@@ -196,6 +210,7 @@ public class IntraService {
 			MigrationManager.announceNewKeyspace(ksm);
 		} catch (ConfigurationException e) {
 			res.getOpsRes().put(i, e.getMessage());
+			
 			return;
 		}
 		res.getOpsRes().put(i, "OK");
