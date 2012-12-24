@@ -3,8 +3,12 @@ package org.usergrid.vx.experimental;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.cassandra.service.CassandraDaemon;
+import org.apache.cassandra.utils.ByteBufferUtil;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -16,18 +20,18 @@ public class IntraServiceTest  {
 
 	static IntraService is;
   static IntravertDeamon intravertDeamon = new IntravertDeamon();
-	
-	@BeforeClass
-	public static void before(){
-		//deleteRecursive(new File ("/tmp/intra_cache"));
-	    //deleteRecursive(new File ("/tmp/intra_data"));
-	    //deleteRecursive(new File ("/tmp/intra_log"));
-		System.setProperty("cassandra-foreground", "true");
-	    System.setProperty("log4j.defaultInitOverride","true");
-	    System.setProperty("log4j.configuration", "log4j.properties");
+
+  @BeforeClass
+  public static void before(){
+    deleteRecursive(new File ("/tmp/intra_cache"));
+    deleteRecursive(new File ("/tmp/intra_data"));
+    deleteRecursive(new File ("/tmp/intra_log"));
+    System.setProperty("cassandra-foreground", "true");
+    System.setProperty("log4j.defaultInitOverride","true");
+    System.setProperty("log4j.configuration", "log4j.properties");
     intravertDeamon.activate();
     is = new IntraService();
-	}
+  }
 	
 	@Test
 	public void atest(){
@@ -38,9 +42,9 @@ public class IntraServiceTest  {
 		req.add( IntraOp.createCfOp("mycf"));
 		req.add( IntraOp.setColumnFamilyOp("mycf") );
 		req.add( IntraOp.setAutotimestampOp() );
-		req.add( IntraOp.setOp("5", "6", "7"));
-		req.add( IntraOp.sliceOp("5", "1", "9", 4));
-		req.add( IntraOp.getOp("5", "6"));
+		req.add( IntraOp.setOp("key1", "col1", "val1"));
+		req.add( IntraOp.sliceOp("key1", Character.MIN_VALUE + "", Character.MAX_VALUE + "", 4));
+		req.add( IntraOp.getOp("mykey", "col1"));
 		IntraRes res = new IntraRes();
 		
 		is.handleIntraReq(req, res);
@@ -52,13 +56,9 @@ public class IntraServiceTest  {
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(4)  );
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(5)  );
 		//ToDO this should return something
-		ArrayList<HashMap> sliceResults = new ArrayList<HashMap>() ;
-		HashMap sliceExpected = new HashMap();
-		sliceExpected.put("column", "6");
-		sliceExpected.put("value", "7");
-		sliceResults.add(sliceExpected);
-		Assert.assertEquals (  sliceResults , res.getOpsRes().get(6)  );
-		Assert.assertEquals ( sliceResults , res.getOpsRes().get(7) );
+
+		Assert.assertEquals(ByteBufferUtil.bytes("val1"), ((Map)((List) res.getOpsRes().get(6)).get(0)).get("value"));
+		//Assert.assertEquals ( sliceResults , res.getOpsRes().get(7) );
 	}
 	
     

@@ -18,6 +18,7 @@ public class IntravertDeamon extends CassandraDaemon {
 		System.setProperty("log4j.defaultInitOverride", "true");
 		System.setProperty("log4j.configuration", "log4j.properties");
 		//CassandraDaemon.initLog4j();
+
     instance.activate();
 		//IntravertDeamon is = new IntravertDeamon();
 
