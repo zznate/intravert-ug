@@ -42,7 +42,7 @@ import org.apache.cassandra.utils.ByteBufferUtil;
 
 public class IntraService {
 
-	static CassandraServer thrift = new CassandraServer();
+
 	public IntraRes handleIntraReq(IntraReq req,IntraRes res){
 		IntraState state = new IntraState();
 		if ( verifyReq(req,res) == false ){

@@ -1,34 +1,32 @@
 package org.usergrid.vx.experimental;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.cassandra.service.CassandraDaemon;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.usergrid.vx.server.IntravertDaemon;
+import org.usergrid.vx.server.IntravertCassandraServer;
+import org.usergrid.vx.server.IntravertDeamon;
 
 
 public class IntraServiceTest  {
 
 	static IntraService is;
+  static IntravertDeamon intravertDeamon = new IntravertDeamon();
 	
 	@BeforeClass
 	public static void before(){
-		deleteRecursive(new File ("/tmp/intra_cache"));
-	    deleteRecursive(new File ("/tmp/intra_data"));
-	    deleteRecursive(new File ("/tmp/intra_log"));
+		//deleteRecursive(new File ("/tmp/intra_cache"));
+	    //deleteRecursive(new File ("/tmp/intra_data"));
+	    //deleteRecursive(new File ("/tmp/intra_log"));
 		System.setProperty("cassandra-foreground", "true");
 	    System.setProperty("log4j.defaultInitOverride","true");
 	    System.setProperty("log4j.configuration", "log4j.properties");
-	    CassandraDaemon.initLog4j();
-	    IntravertDaemon ucd = new IntravertDaemon();
-		ucd.activate();
-	    is = new IntraService();
+    intravertDeamon.activate();
+    is = new IntraService();
 	}
 	
 	@Test
