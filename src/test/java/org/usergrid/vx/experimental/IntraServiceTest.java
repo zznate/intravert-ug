@@ -1,10 +1,15 @@
 package org.usergrid.vx.experimental;
 
 import java.io.File;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.cassandra.service.CassandraDaemon;
+import org.apache.cassandra.utils.ByteBufferUtil;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -19,9 +24,9 @@ public class IntraServiceTest  {
 	
 	@BeforeClass
 	public static void before(){
-		//deleteRecursive(new File ("/tmp/intra_cache"));
-	    //deleteRecursive(new File ("/tmp/intra_data"));
-	    //deleteRecursive(new File ("/tmp/intra_log"));
+		deleteRecursive(new File ("/tmp/intra_cache"));
+	    deleteRecursive(new File ("/tmp/intra_data"));
+	    deleteRecursive(new File ("/tmp/intra_log"));
 		System.setProperty("cassandra-foreground", "true");
 	    System.setProperty("log4j.defaultInitOverride","true");
 	    System.setProperty("log4j.configuration", "log4j.properties");
@@ -30,7 +35,7 @@ public class IntraServiceTest  {
 	}
 	
 	@Test
-	public void atest(){
+	public void atest() throws CharacterCodingException{
 		 
 		IntraReq req = new IntraReq();
 		req.add( IntraOp.setKeyspaceOp("myks") );
@@ -55,13 +60,17 @@ public class IntraServiceTest  {
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(4)  );
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(5)  );
 		//ToDO this should return something
+		/* close but byte[] vs ByteBuffer crap 
 		ArrayList<HashMap> sliceResults = new ArrayList<HashMap>() ;
 		HashMap sliceExpected = new HashMap();
-		sliceExpected.put("column", "6");
-		sliceExpected.put("value", "7");
+		sliceExpected.put("name", ByteBufferUtil.bytes("6"));
+		sliceExpected.put("value", ByteBufferUtil.bytes("7"));
 		sliceResults.add(sliceExpected);
 		Assert.assertEquals (  sliceResults , res.getOpsRes().get(6)  );
 		Assert.assertEquals ( sliceResults , res.getOpsRes().get(7) );
+		*/
+		List<Map> x = (List<Map>) res.getOpsRes().get(6);
+		Assert.assertEquals( "6", ByteBufferUtil.string((ByteBuffer) x.get(0).get("name")) );
 		
 	}
 	
