@@ -93,8 +93,8 @@ public class IntraService {
 						while (it.hasNext()){
 							IColumn ic = it.next();
 							HashMap m = new HashMap();
-							m.put("name", ic.name().array());
-							m.put("value", ic.value().array());
+							m.put("name", ic.name());
+							m.put("value", ic.value());
 							finalResults.add(m);
 						}
 					}
@@ -117,21 +117,30 @@ public class IntraService {
 	private Object resolveObject(Object o, IntraReq req, IntraRes res,IntraState state, int i){
 		if (o instanceof String){
 			return o;
-		} else if (o instanceof ResRef){
-			ResRef rr = (ResRef) o;
-			//the step here should be a slice or get
-			List<Map> finalResults = (List<Map>) res.getOpsRes().get( rr.getResId() );
-			//watned should be column value or rowkey
-			Object wanted = finalResults.get(0).get(rr.getWanted());
-			return wanted;
+		} else if (o instanceof IntraOp){
+			IntraOp op = (IntraOp) o;
+			if (op.getType().equals("getref")){
+				Integer resultRef = (Integer) op.getOp().get("resultref");
+				String wanted = (String) op.getOp().get("wanted");
+				List aresult = (List) res.getOpsRes().get(resultRef);
+				Map result = (Map) aresult.get(0);
+				return result.get(wanted);
+			} else {
+				throw new RuntimeException(" do not know what to do with "+op.getType());
+			}
 		} else {
-			return null;
+			throw new RuntimeException(" do not know what to do with "+o.getClass());
 		}
 	}
 	private ByteBuffer byteBufferForObject(Object o){
 		if (o instanceof String){
 			return ByteBufferUtil.bytes((String) o);
-		} throw new RuntimeException( "can not serializer "+o);
+		} else if (o instanceof byte[] ) { 
+			return ByteBuffer.wrap((byte [])o);
+		} else if (o instanceof ByteBuffer){
+			return (ByteBuffer) o;
+		}
+		else throw new RuntimeException( "can not serializer "+o);
 	}
 	/*
 	 * This is a top level sanity check. Make sure request have manditory parts. 
@@ -220,8 +229,9 @@ public class IntraService {
 		IntraOp op = req.getE().get(i);
 		RowMutation rm = new RowMutation(state.currentKeyspace,byteBufferForObject(op.getOp().get("rowkey")));
 		QueryPath qp = new QueryPath(state.currentColumnFamily,null, byteBufferForObject(op.getOp().get("columnName")) );
+		Object val = op.getOp().get("value");
 		rm.add(qp, byteBufferForObject(
-				resolveObject ( op.getOp().get("value"),req,res,state, i )
+				resolveObject (val ,req,res,state, i )
 				), (Long) (state.autoTimestamp ? state.nanotime : op.getOp().get("timestamp")));
 		Collection<RowMutation> col = new ArrayList<RowMutation>();
     col.add(rm);
