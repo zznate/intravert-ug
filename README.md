@@ -12,3 +12,7 @@ This API had it's worts for sure, but it was felt among us that the direction of
 Therefore, Intravert is a new approach designed to leverage what we've learned down in the trenches writing (largely Java-based) applications which use Cassandra. Intravert is not intended as a fork, thumb in the eye, or any other detremental action to the Cassandra community or commercial vendors around such. It is simply a purpose built tool to facilitate GetingShitDone™ with real world applications.
 
 Spend some time looking through the documentation, test cases, and examples to see if this approach makes sense for your architecture. 
+
+## Getting Started
+You can find a brief overview located here:
+<https://github.com/zznate/intravert-ug/tree/master/src/main/java/org/usergrid/vx/experimental/README.md>
