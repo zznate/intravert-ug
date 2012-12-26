@@ -50,6 +50,8 @@ public class IntraServiceTest  {
 		req.add( IntraOp.setOp("9", "10", IntraOp.getResRefOp(7, "value"))); //8
 		//Read this row back 
 		req.add( IntraOp.getOp("9", "10"));//9
+		
+		req.add( IntraOp.consistencyOp("ALL"));
 		IntraRes res = new IntraRes();
 		
 		is.handleIntraReq(req, res);
@@ -71,6 +73,8 @@ public class IntraServiceTest  {
 		
 		x = (List<Map>) res.getOpsRes().get(9);
 		Assert.assertEquals( "7", ByteBufferUtil.string((ByteBuffer) x.get(0).get("value"))  );
+		
+		Assert.assertEquals( "OK" , res.getOpsRes().get(10)  );
 	}
 	
     
