@@ -18,6 +18,7 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
 	private final Logger logger = LoggerFactory.getLogger(IntravertCassandraServer.class);
 	private static Vertx vertx;
 	private static RouteMatcher rm;
+  private static IntravertClusterNotifier intravertClusterNotifier;
   private static final AtomicBoolean running = new AtomicBoolean(false);
 	
 	@Override
@@ -36,6 +37,7 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
 		vertx.createHttpServer().requestHandler(rm).listen(8080);
 		logger.info("IntravertCassandraServer started.");
     running.set(true);
+    intravertClusterNotifier = IntravertClusterNotifier.forServer(vertx);
 	}
 
 	@Override
