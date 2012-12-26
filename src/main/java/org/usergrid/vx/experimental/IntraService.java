@@ -229,8 +229,12 @@ public class IntraService {
 	
 	public void set(IntraReq req, IntraRes res, IntraState state,int i) {
 		IntraOp op = req.getE().get(i);
-		RowMutation rm = new RowMutation(state.currentKeyspace,byteBufferForObject(op.getOp().get("rowkey")));
-		QueryPath qp = new QueryPath(state.currentColumnFamily,null, byteBufferForObject(op.getOp().get("columnName")) );
+		RowMutation rm = new RowMutation(state.currentKeyspace,byteBufferForObject(
+				resolveObject ( op.getOp().get("rowkey"),req,res,state, i )
+				));
+		QueryPath qp = new QueryPath(state.currentColumnFamily,null, byteBufferForObject(
+				resolveObject ( op.getOp().get("columnName"),req,res,state, i )
+				) );
 		Object val = op.getOp().get("value");
 		rm.add(qp, byteBufferForObject(
 				resolveObject (val ,req,res,state, i )
