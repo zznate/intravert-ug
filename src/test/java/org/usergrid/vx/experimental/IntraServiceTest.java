@@ -24,12 +24,12 @@ public class IntraServiceTest  {
 	
 	@BeforeClass
 	public static void before(){
-		deleteRecursive(new File ("/tmp/intra_cache"));
-	    deleteRecursive(new File ("/tmp/intra_data"));
-	    deleteRecursive(new File ("/tmp/intra_log"));
-		System.setProperty("cassandra-foreground", "true");
-	    System.setProperty("log4j.defaultInitOverride","true");
-	    System.setProperty("log4j.configuration", "log4j.properties");
+    deleteRecursive(new File ("/tmp/intra_cache"));
+    deleteRecursive(new File ("/tmp/intra_data"));
+    deleteRecursive(new File ("/tmp/intra_log"));
+    System.setProperty("cassandra-foreground", "true");
+    System.setProperty("log4j.defaultInitOverride","true");
+    System.setProperty("log4j.configuration", "log4j.properties");
     intravertDeamon.activate();
     is = new IntraService();
 	}
