@@ -85,7 +85,7 @@ public class IntraService {
 				List<Row> rows = null;
 		        
 	        	try {
-					rows = StorageProxy.read(Arrays.asList(command), ConsistencyLevel.ONE);
+					rows = StorageProxy.read(Arrays.asList(command), state.consistency);
 					ColumnFamily cf = rows.get(0).cf;
 					if (cf == null){ //cf= null is no data
 					} else {
@@ -109,6 +109,8 @@ public class IntraService {
 					res.getOpsRes().put(i, e.getMessage());
 				}
 		        
+			} else if (op.getType().equals("consistency")){
+				consistency(req,res,state,i);
 			}
 		}
 		return true;
@@ -236,7 +238,7 @@ public class IntraService {
 		Collection<RowMutation> col = new ArrayList<RowMutation>();
     col.add(rm);
 		try {
-			StorageProxy.instance.mutate(col, ConsistencyLevel.ONE);
+			StorageProxy.instance.mutate(col, state.consistency);
 			res.getOpsRes().put(i, "OK");
 		} catch (WriteTimeoutException e) {
 			res.getOpsRes().put(i, e.getMessage());
@@ -262,7 +264,7 @@ public class IntraService {
 		
 		List<Row> results = null;
 		try {
-			results = StorageProxy.read(commands, ConsistencyLevel.ONE);
+			results = StorageProxy.read(commands, state.consistency);
 			ColumnFamily cf = results.get(0).cf;
 			if (cf == null){ //cf= null is no data
 			} else {
@@ -290,5 +292,12 @@ public class IntraService {
 			return;
 		}
 		res.getOpsRes().put(i, finalResults);
+	}
+	
+	private void consistency(IntraReq req, IntraRes res, IntraState state,int i){
+		IntraOp op = req.getE().get(i);
+		ConsistencyLevel level = ConsistencyLevel.valueOf((String) op.getOp().get("level"));
+		res.getOpsRes().put(i, "OK");
+		state.consistency = level;
 	}
 }

@@ -126,6 +126,13 @@ public class IntraOp implements Serializable{
 		return i;
 	}
 	
+	public static IntraOp consistencyOp(String name){
+		IntraOp i = new IntraOp();
+		i.setType("consistency");
+		i.set("level", name);
+		return i;
+	}
+	
 	public String getType() {
 		return type;
 	}
