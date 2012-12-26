@@ -38,17 +38,18 @@ public class IntraServiceTest  {
 	public void atest() throws CharacterCodingException{
 		 
 		IntraReq req = new IntraReq();
-		req.add( IntraOp.setKeyspaceOp("myks") );
-		req.add( IntraOp.createKsOp("myks", 1));
-		req.add( IntraOp.createCfOp("mycf"));
-		req.add( IntraOp.setColumnFamilyOp("mycf") );
-		req.add( IntraOp.setAutotimestampOp() );
-		req.add( IntraOp.setOp("5", "6", "7"));
-		req.add( IntraOp.sliceOp("5", "1", "9", 4));
-		req.add( IntraOp.getOp("5", "6"));
-		//create a rowkey "9" with a column "10" and a value of the result
-		//of operation 7
-		//req.add( IntraOp.setOp("9", "10", IntraOp.getResRefOp(7, "value")));
+		req.add( IntraOp.setKeyspaceOp("myks") ); //0
+		req.add( IntraOp.createKsOp("myks", 1)); //1
+		req.add( IntraOp.createCfOp("mycf")); //2
+		req.add( IntraOp.setColumnFamilyOp("mycf") ); //3
+		req.add( IntraOp.setAutotimestampOp() ); //4
+		req.add( IntraOp.setOp("5", "6", "7")); //5
+		req.add( IntraOp.sliceOp("5", "1", "9", 4)); //6
+		req.add( IntraOp.getOp("5", "6")); //7
+		//create a rowkey "9" with a column "10" and a value of the result of operation 7
+		req.add( IntraOp.setOp("9", "10", IntraOp.getResRefOp(7, "value"))); //8
+		//Read this row back 
+		req.add( IntraOp.getOp("9", "10"));//9
 		IntraRes res = new IntraRes();
 		
 		is.handleIntraReq(req, res);
@@ -59,19 +60,17 @@ public class IntraServiceTest  {
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(3)  );
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(4)  );
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(5)  );
-		//ToDO this should return something
-		/* close but byte[] vs ByteBuffer crap 
-		ArrayList<HashMap> sliceResults = new ArrayList<HashMap>() ;
-		HashMap sliceExpected = new HashMap();
-		sliceExpected.put("name", ByteBufferUtil.bytes("6"));
-		sliceExpected.put("value", ByteBufferUtil.bytes("7"));
-		sliceResults.add(sliceExpected);
-		Assert.assertEquals (  sliceResults , res.getOpsRes().get(6)  );
-		Assert.assertEquals ( sliceResults , res.getOpsRes().get(7) );
-		*/
 		List<Map> x = (List<Map>) res.getOpsRes().get(6);
 		Assert.assertEquals( "6", ByteBufferUtil.string((ByteBuffer) x.get(0).get("name")) );
+		Assert.assertEquals( "7", ByteBufferUtil.string((ByteBuffer) x.get(0).get("value")) );
 		
+		x = (List<Map>) res.getOpsRes().get(7);
+		Assert.assertEquals( "7", ByteBufferUtil.string((ByteBuffer) x.get(0).get("value"))  );
+		
+		Assert.assertEquals( "OK" , res.getOpsRes().get(8)  );
+		
+		x = (List<Map>) res.getOpsRes().get(9);
+		Assert.assertEquals( "7", ByteBufferUtil.string((ByteBuffer) x.get(0).get("value"))  );
 	}
 	
     
