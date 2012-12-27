@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public abstract class BaseIntravertIntegrationTest {
 
-  static IntraServiceRouter is;
+  static IntraService is;
   static IntravertDeamon intravertDeamon = new IntravertDeamon();
   static final AtomicBoolean inited = new AtomicBoolean(false);
 
@@ -25,7 +25,7 @@ public abstract class BaseIntravertIntegrationTest {
        System.setProperty("log4j.defaultInitOverride","true");
        System.setProperty("log4j.configuration", "log4j.properties");
        intravertDeamon.activate();
-       is = new IntraServiceRouter();
+       is = new IntraService();
        inited.set(true);
      }
  	}

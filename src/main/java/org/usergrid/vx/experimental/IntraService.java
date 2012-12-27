@@ -59,24 +59,24 @@ public class IntraService {
 	protected boolean executeReq(IntraReq req, IntraRes res, IntraState state) {
 		for (int i =0;i<req.getE().size();i++){
 			IntraOp op = req.getE().get(i);
-			if (op.getType().equals("setkeyspace")) {
+			if (op.getType().equals(IntraOp.Type.SETKEYSPACE)) {
 				state.currentKeyspace = (String) op.getOp().get("keyspace");
 				res.getOpsRes().put(i, "OK");
-			} else if (op.getType().equals("createkeyspace")) {
-				createKeyspace(req,res,state, i);
-			} else if (op.getType().equals("createcolumnfamily")) {
-				createColumnFamily(req,res,state, i);
-			} else if (op.getType().equals("setcolumnfamily")){
+			} else if (op.getType().equals(IntraOp.Type.CREATEKEYSPACE)) {
+				createKeyspace(req, res, state, i);
+			} else if (op.getType().equals(IntraOp.Type.CREATECOLUMNFAMILY)) {
+				createColumnFamily(req, res, state, i);
+			} else if (op.getType().equals(IntraOp.Type.SETCOLUMNFAMILY)){
 				state.currentColumnFamily = (String) op.getOp().get("columnfamily");
 				res.getOpsRes().put(i, "OK");
-			} else if (op.getType().equals("autotimestamp")){
+			} else if (op.getType().equals(IntraOp.Type.AUTOTIMESTAMP)){
 				state.autoTimestamp = true;
 				res.getOpsRes().put(i, "OK");
-			} else if (op.getType().equals("set")){
-				set(req,res,state,i);
-			} else if (op.getType().equals("slice")){
-				slice(req,res,state,i);
-			} else if (op.getType().equals("get")){
+			} else if (op.getType().equals(IntraOp.Type.SET)){
+				set(req, res, state, i);
+			} else if (op.getType().equals(IntraOp.Type.SLICE)){
+				slice(req, res, state, i);
+			} else if (op.getType().equals(IntraOp.Type.GET)){
 				List<Map> finalResults = new ArrayList<Map>();
 				ByteBuffer rowkey = byteBufferForObject(resolveObject(op.getOp().get("rowkey"),req,res,state,i));
 				ByteBuffer column = byteBufferForObject(resolveObject(op.getOp().get("column"),req,res,state,i));
@@ -110,12 +110,12 @@ public class IntraService {
 					res.getOpsRes().put(i, e.getMessage());
 				}
 		        
-			} else if (op.getType().equals("consistency")){
-				consistency(req,res,state,i);
-			} else if (op.getType().equals("listkeyspaces")){
-			  listKeyspaces(req,res,state,i);
-			} else if (op.getType().equals("listcolumnfamily")){
-			  listColumnFamily(req,res,state,i);
+			} else if (op.getType().equals(IntraOp.Type.CONSISTENCY)){
+				consistency(req, res, state, i);
+			} else if (op.getType().equals(IntraOp.Type.LISTKEYSPACES)){
+			  listKeyspaces(req, res, state, i);
+			} else if (op.getType().equals(IntraOp.Type.LISTCOLUMNFAMILY)){
+			  listColumnFamily(req, res, state, i);
 			}
 		}
 		return true;
@@ -126,7 +126,7 @@ public class IntraService {
 			return o;
 		} else if (o instanceof IntraOp){
 			IntraOp op = (IntraOp) o;
-			if (op.getType().equals("getref")){
+			if (op.getType().equals(IntraOp.Type.GETREF)){
 				Integer resultRef = (Integer) op.getOp().get("resultref");
 				String wanted = (String) op.getOp().get("wanted");
 				List aresult = (List) res.getOpsRes().get(resultRef);
