@@ -1,5 +1,8 @@
 package org.usergrid.vx.experimental;
 
+import com.google.common.base.Preconditions;
+import org.apache.cassandra.db.ConsistencyLevel;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
@@ -9,16 +12,15 @@ public class IntraOp implements Serializable{
 
 	public static final String COLUMN= "COLUMN";
 	public static final String VALUE="VALUE";
+  // TODO add back access to ID
 	private final AtomicInteger opid= new AtomicInteger(0);
 	private static final long serialVersionUID = 4700563595579293663L;
-	private int id;
 	private final Type type;
 	private Map<String,Object> op;
 
 	IntraOp(Type type){
     this.type = type;
 		op = new TreeMap<String,Object>();
-		id = opid.getAndAdd(1);
 	}
 
 	public IntraOp set(String key, Object value){
@@ -26,29 +28,21 @@ public class IntraOp implements Serializable{
 		return this;
 	}
 
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
 
 	public Map<String, Object> getOp() {
 		return op;
 	}
 
-	public void setOp(Map<String, Object> op) {
-		this.op = op;
-	}
 	
 	public static IntraOp setKeyspaceOp(String keyspace){
+    checkForBlankStr(keyspace, "keyspace", Type.SETKEYSPACE);
 		IntraOp i = new IntraOp(Type.SETKEYSPACE);
 		i.set("keyspace", keyspace);
 		return i;
 	}
-	
+
 	public static IntraOp setColumnFamilyOp(String columnFamily){
+    checkForBlankStr(columnFamily, "columnFamily",Type.SETCOLUMNFAMILY);
 		IntraOp i = new IntraOp(Type.SETCOLUMNFAMILY);
 		i.set("columnfamily", columnFamily);
 		return i;
@@ -60,6 +54,9 @@ public class IntraOp implements Serializable{
 	}
 	
 	public static IntraOp setOp(Object rowkey, Object columnName, Object columnValue){
+    Preconditions.checkArgument(rowkey != null, "The rowkey cannot be null for " + Type.SET);
+    Preconditions.checkArgument(columnName != null, "The columnName cannot be null for " + Type.SET);
+    Preconditions.checkArgument(columnValue != null, "Cannot set a column to null for " + Type.SET);
 		IntraOp i = new IntraOp(Type.SET);
 		i.set("rowkey", rowkey);
 		i.set("columnName", columnName);
@@ -68,6 +65,8 @@ public class IntraOp implements Serializable{
 	}
 	
 	public static IntraOp getOp(Object rowkey, Object columnName){
+    Preconditions.checkArgument(rowkey != null, "The rowkey cannot be null for " + Type.GET);
+    Preconditions.checkArgument(columnName != null, "The columnName cannot be null for " + Type.GET);
 		IntraOp i = new IntraOp(Type.GET);
 		i.set("rowkey", rowkey);
 		i.set("column", columnName);
@@ -75,6 +74,8 @@ public class IntraOp implements Serializable{
 	}
 	
 	public static IntraOp getResRefOp(int reference, String wanted){
+    Preconditions.checkArgument(reference >= 0);
+    checkForBlankStr(wanted, "wanted", Type.GETREF);
 		IntraOp i = new IntraOp(Type.GETREF);
 		i.set("resultref", reference);
 		i.set("wanted", wanted);
@@ -82,6 +83,8 @@ public class IntraOp implements Serializable{
 	}
 	
 	public static IntraOp sliceOp( Object rowkey , Object start, Object end, int size){
+    Preconditions.checkArgument(rowkey != null,"A row key is required for " + Type.SLICE);
+    Preconditions.checkArgument(size > 0, "A slice size must be positive integer for " + Type.SLICE);
 		IntraOp i = new IntraOp(Type.SLICE);
 		i.set("rowkey", rowkey);
 		i.set("start", start);
@@ -91,24 +94,30 @@ public class IntraOp implements Serializable{
 	}
 	
 	public static IntraOp columnPredicateOp( Object rowkey, Object [] columnList){
+    Preconditions.checkArgument(columnList != null, "You much provide a columnList array");
 		IntraOp i = new IntraOp(Type.COLUMNPREDICATE);
 		i.set("wantedcols", columnList);
 		return i;
 	}
 	
 	public static IntraOp forEachOp( int opRef, IntraOp action){
+    Preconditions.checkArgument(action != null, "The IntraOp action cannot be null");
 		IntraOp i = new IntraOp(Type.FOREACH);
 		i.set("action", action);
 		return i;
 	}
 	
 	public static IntraOp createCfOp(String cfName){
+    checkForBlankStr(cfName, "columnFamily name", Type.CREATECOLUMNFAMILY);
 		IntraOp i = new IntraOp(Type.CREATECOLUMNFAMILY);
 		i.set("name", cfName);
 		return i;
 	}
 	
 	public static IntraOp createKsOp(String ksname, int replication){
+    checkForBlankStr(ksname, "keyspace name", Type.CREATEKEYSPACE);
+    Preconditions.checkArgument(replication > 0,
+            "A value for positive value for 'replication' is required for " + Type.CREATEKEYSPACE);
 		IntraOp i = new IntraOp(Type.CREATEKEYSPACE);
 		i.set("name", ksname);
 		i.set("replication", replication);
@@ -116,6 +125,8 @@ public class IntraOp implements Serializable{
 	}
 	
 	public static IntraOp consistencyOp(String name){
+    // Force an IllegalArgumentException
+    ConsistencyLevel.valueOf(name);
 		IntraOp i = new IntraOp(Type.CONSISTENCY);
 		i.set("level", name);
 		return i;
@@ -127,7 +138,8 @@ public class IntraOp implements Serializable{
 	}
 	
 	public static IntraOp listColumnFamilyOp(String keyspace){
-	  IntraOp i = new IntraOp(Type.LISTCOLUMNFAMILY);
+    checkForBlankStr(keyspace, "Keyspace name", Type.LISTCOLUMNFAMILY);
+    IntraOp i = new IntraOp(Type.LISTCOLUMNFAMILY);
     i.set("keyspace", keyspace);
     return i;
 	}
@@ -135,6 +147,11 @@ public class IntraOp implements Serializable{
 	public Type getType() {
 		return type;
 	}
+
+  private static void checkForBlankStr(String arg, String msg, Type type) {
+    Preconditions.checkArgument(arg != null && arg.length() > 0,
+                "A non-blank '" + msg + "' is required for " + Type.SETCOLUMNFAMILY);
+  }
 
   public enum Type {
     LISTCOLUMNFAMILY,
@@ -150,7 +167,8 @@ public class IntraOp implements Serializable{
     SET,
     AUTOTIMESTAMP,
     SETKEYSPACE,
-    SETCOLUMNFAMILY
+    SETCOLUMNFAMILY;
+
   }
 	
 }
