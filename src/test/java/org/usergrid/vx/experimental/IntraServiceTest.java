@@ -21,22 +21,8 @@ import org.usergrid.vx.server.IntravertCassandraServer;
 import org.usergrid.vx.server.IntravertDeamon;
 
 
-public class IntraServiceTest  {
+public class IntraServiceTest extends BaseIntravertIntegrationTest {
 
-	static IntraService is;
-  static IntravertDeamon intravertDeamon = new IntravertDeamon();
-	
-	@BeforeClass
-	public static void before(){
-    deleteRecursive(new File ("/tmp/intra_cache"));
-    deleteRecursive(new File ("/tmp/intra_data"));
-    deleteRecursive(new File ("/tmp/intra_log"));
-    System.setProperty("cassandra-foreground", "true");
-    System.setProperty("log4j.defaultInitOverride","true");
-    System.setProperty("log4j.configuration", "log4j.properties");
-    intravertDeamon.activate();
-    is = new IntraService();
-	}
 	
 	@Test
 	public void atest() throws CharacterCodingException{
@@ -88,21 +74,5 @@ public class IntraServiceTest  {
 		
 	}
 	
-    
-    public static boolean deleteRecursive(File path) {
-        if (!path.exists()) 
-        	return false;
-        boolean ret = true;
-        if (path.isDirectory()){
-            for (File f : path.listFiles()){
-                ret = ret && deleteRecursive(f);
-            }
-        }
-        return ret && path.delete();
-    }
-    /*
-    /tmp/intra_cache
-    /tmp/intra_data
-    /tmp/intra_log
-    */
+
 }
