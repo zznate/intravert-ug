@@ -54,9 +54,9 @@ public class IntraOp implements Serializable{
 	}
 	
 	public static IntraOp setOp(Object rowkey, Object columnName, Object columnValue){
-    Preconditions.checkArgument(rowkey != null, "The rowkey cannot be null for " + Type.SET);
-    Preconditions.checkArgument(columnName != null, "The columnName cannot be null for " + Type.SET);
-    Preconditions.checkArgument(columnValue != null, "Cannot set a column to null for " + Type.SET);
+    Preconditions.checkArgument(rowkey != null, "The rowkey cannot be null for {}", Type.SET);
+    Preconditions.checkArgument(columnName != null, "The columnName cannot be null for {}", Type.SET);
+    Preconditions.checkArgument(columnValue != null, "Cannot set a column to null for {}", Type.SET);
 		IntraOp i = new IntraOp(Type.SET);
 		i.set("rowkey", rowkey);
 		i.set("columnName", columnName);
@@ -65,8 +65,8 @@ public class IntraOp implements Serializable{
 	}
 	
 	public static IntraOp getOp(Object rowkey, Object columnName){
-    Preconditions.checkArgument(rowkey != null, "The rowkey cannot be null for " + Type.GET);
-    Preconditions.checkArgument(columnName != null, "The columnName cannot be null for " + Type.GET);
+    Preconditions.checkArgument(rowkey != null, "The rowkey cannot be null for {}", Type.GET);
+    Preconditions.checkArgument(columnName != null, "The columnName cannot be null for {}", Type.GET);
 		IntraOp i = new IntraOp(Type.GET);
 		i.set("rowkey", rowkey);
 		i.set("column", columnName);
@@ -83,8 +83,8 @@ public class IntraOp implements Serializable{
 	}
 	
 	public static IntraOp sliceOp( Object rowkey , Object start, Object end, int size){
-    Preconditions.checkArgument(rowkey != null,"A row key is required for " + Type.SLICE);
-    Preconditions.checkArgument(size > 0, "A slice size must be positive integer for " + Type.SLICE);
+    Preconditions.checkArgument(rowkey != null,"A row key is required for {}", Type.SLICE);
+    Preconditions.checkArgument(size > 0, "A slice size must be positive integer for {}", Type.SLICE);
 		IntraOp i = new IntraOp(Type.SLICE);
 		i.set("rowkey", rowkey);
 		i.set("start", start);
@@ -117,7 +117,7 @@ public class IntraOp implements Serializable{
 	public static IntraOp createKsOp(String ksname, int replication){
     checkForBlankStr(ksname, "keyspace name", Type.CREATEKEYSPACE);
     Preconditions.checkArgument(replication > 0,
-            "A value for positive value for 'replication' is required for " + Type.CREATEKEYSPACE);
+            "A value for positive value for 'replication' is required for {}", Type.CREATEKEYSPACE);
 		IntraOp i = new IntraOp(Type.CREATEKEYSPACE);
 		i.set("name", ksname);
 		i.set("replication", replication);
@@ -150,7 +150,7 @@ public class IntraOp implements Serializable{
 
   private static void checkForBlankStr(String arg, String msg, Type type) {
     Preconditions.checkArgument(arg != null && arg.length() > 0,
-                "A non-blank '" + msg + "' is required for " + type);
+                "A non-blank '{}' is required for {}", new Object[]{msg,type});
   }
 
   public enum Type {
