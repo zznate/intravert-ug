@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.smile.SmileFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Handler;
@@ -56,6 +57,11 @@ public class IntraClient implements Handler<HttpClientResponse> {
 			System.out.println(value);
 			req.putHeader("content-length", value.length());
 			req.write(value);
+		} else if (payload.equalsIgnoreCase("jsonsmile")){
+		  mapper = new ObjectMapper(new SmileFactory());
+		  byte [] payload =mapper.writeValueAsBytes(i);
+		  req.putHeader("content-length", payload.length);
+		  req.write( new Buffer(payload));
 		}
     	req.exceptionHandler(new Handler<Exception>(){
             public void handle(Exception arg0){
@@ -87,6 +93,16 @@ public class IntraClient implements Handler<HttpClientResponse> {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
+				} else if (payload.equalsIgnoreCase("JSONSMILE")){
+				  try {
+            ir = mapper.readValue(arg0.getBytes(), IntraRes.class);
+          } catch (JsonParseException e) {
+            e.printStackTrace();
+          } catch (JsonMappingException e) {
+            e.printStackTrace();
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
 				}
 				q.add(ir);
 			}
@@ -95,7 +111,7 @@ public class IntraClient implements Handler<HttpClientResponse> {
 
 	public static void main(String[] args) throws Exception {
 		IntraClient i = new IntraClient();
-		i.payload="json";
+		i.payload="jsonsmile";
 		IntraReq req = new IntraReq();
 		req.add( IntraOp.setKeyspaceOp("myks") );
 		req.add( IntraOp.createKsOp("myks", 1));
