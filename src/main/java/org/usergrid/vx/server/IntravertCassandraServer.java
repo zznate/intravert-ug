@@ -3,6 +3,7 @@ package org.usergrid.vx.server;
 import org.apache.cassandra.service.CassandraDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.usergrid.vx.experimental.IntraHandlerJsonSmile;
 import org.usergrid.vx.experimental.IntraHandlerXml;
 import org.usergrid.vx.experimental.IntraHandlerJson;
 import org.usergrid.vx.handler.http.HelloHandler;
@@ -33,6 +34,7 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
 		rm.post("/:appid/thriftjson", new ThriftHandler());
 		rm.post("/:appid/intrareq-xml", new IntraHandlerXml());
 		rm.post("/:appid/intrareq-json", new IntraHandlerJson());
+		rm.post("/:appid/intrareq-jsonsmile", new IntraHandlerJsonSmile());
 		rm.noMatch(new NoMatchHandler() );
 		vertx.createHttpServer().requestHandler(rm).listen(8080);
 		logger.info("IntravertCassandraServer started.");
