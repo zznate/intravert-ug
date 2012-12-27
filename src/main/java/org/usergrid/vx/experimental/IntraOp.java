@@ -9,7 +9,7 @@ public class IntraOp implements Serializable{
 
 	public static final String COLUMN= "COLUMN";
 	public static final String VALUE="VALUE";
-	private static final AtomicInteger opid= new AtomicInteger(0);
+	private final AtomicInteger opid= new AtomicInteger(0);
 	private static final long serialVersionUID = 4700563595579293663L;
 	private int id;
 	private final Type type;
