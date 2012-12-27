@@ -77,8 +77,8 @@ public class IntraService {
 				slice(req,res,state,i);
 			} else if (op.getType().equals("get")){
 				List<Map> finalResults = new ArrayList<Map>();
-				ByteBuffer rowkey = byteBufferForObject(op.getOp().get("rowkey"));
-				ByteBuffer column = byteBufferForObject(op.getOp().get("column"));
+				ByteBuffer rowkey = byteBufferForObject(resolveObject(op.getOp().get("rowkey"),req,res,state,i));
+				ByteBuffer column = byteBufferForObject(resolveObject(op.getOp().get("column"),req,res,state,i));
 				QueryPath path = new QueryPath(state.currentColumnFamily, null);
 				List<ByteBuffer> nameAsList = Arrays.asList(column);
 				ReadCommand command = new SliceByNamesReadCommand(state.currentKeyspace, rowkey, path, nameAsList);
@@ -256,9 +256,9 @@ public class IntraService {
 	private void slice(IntraReq req, IntraRes res, IntraState state,int i){
 		IntraOp op = req.getE().get(i);
 		List<Map> finalResults = new ArrayList<Map>();
-		ByteBuffer rowkey = byteBufferForObject(op.getOp().get("rowkey"));
-		ByteBuffer start = byteBufferForObject(op.getOp().get("start"));
-		ByteBuffer end = byteBufferForObject(op.getOp().get("end"));
+		ByteBuffer rowkey = byteBufferForObject(resolveObject(op.getOp().get("rowkey"),req,res,state,i));
+		ByteBuffer start = byteBufferForObject(resolveObject(op.getOp().get("start"),req,res,state,i));
+		ByteBuffer end = byteBufferForObject(resolveObject(op.getOp().get("end"),req,res,state,i));
 		List<ReadCommand> commands = new ArrayList<ReadCommand>(1);
 		ColumnPath cp = new ColumnPath();
 		cp.setColumn_family(state.currentColumnFamily);
