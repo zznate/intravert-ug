@@ -133,6 +133,19 @@ public class IntraOp implements Serializable{
 		return i;
 	}
 	
+	public static IntraOp listKeyspacesOp(){
+	  IntraOp i = new IntraOp();
+    i.setType("listkeyspaces");
+    return i;
+	}
+	
+	public static IntraOp listColumnFamilyOp(String keyspace){
+	  IntraOp i = new IntraOp();
+    i.setType("listcolumnfamily");
+    i.set("keyspace", keyspace);
+    return i;
+	}
+	
 	public String getType() {
 		return type;
 	}

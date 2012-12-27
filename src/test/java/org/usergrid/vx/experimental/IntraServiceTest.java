@@ -4,9 +4,13 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.cassandra.service.CassandraDaemon;
 import org.apache.cassandra.utils.ByteBufferUtil;
@@ -43,15 +47,17 @@ public class IntraServiceTest  {
 		req.add( IntraOp.createCfOp("mycf")); //2
 		req.add( IntraOp.setColumnFamilyOp("mycf") ); //3
 		req.add( IntraOp.setAutotimestampOp() ); //4
-		req.add( IntraOp.setOp("5", "6", "7")); //5
-		req.add( IntraOp.sliceOp("5", "1", "9", 4)); //6
-		req.add( IntraOp.getOp("5", "6")); //7
-		//create a rowkey "9" with a column "10" and a value of the result of operation 7
-		req.add( IntraOp.setOp("9", "10", IntraOp.getResRefOp(7, "value"))); //8
+		req.add( IntraOp.setOp("rowa", "col1", "7")); //5
+		req.add( IntraOp.sliceOp("rowa", "col1", "z", 4)); //6
+		req.add( IntraOp.getOp("rowa", "col1")); //7
+		//create a rowkey "rowb" with a column "col2" and a value of the result of operation 7
+		req.add( IntraOp.setOp("rowb", "col2", IntraOp.getResRefOp(7, "value"))); //8
 		//Read this row back 
-		req.add( IntraOp.getOp("9", "10"));//9
+		req.add( IntraOp.getOp("rowb", "col2"));//9
 		
-		req.add( IntraOp.consistencyOp("ALL"));
+		req.add( IntraOp.consistencyOp("ALL")); //10
+		req.add( IntraOp.listKeyspacesOp()); //11
+		req.add(IntraOp.listColumnFamilyOp("myks"));//12
 		IntraRes res = new IntraRes();
 		
 		is.handleIntraReq(req, res);
@@ -63,7 +69,7 @@ public class IntraServiceTest  {
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(4)  );
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(5)  );
 		List<Map> x = (List<Map>) res.getOpsRes().get(6);
-		Assert.assertEquals( "6", ByteBufferUtil.string((ByteBuffer) x.get(0).get("name")) );
+		Assert.assertEquals( "col1", ByteBufferUtil.string((ByteBuffer) x.get(0).get("name")) );
 		Assert.assertEquals( "7", ByteBufferUtil.string((ByteBuffer) x.get(0).get("value")) );
 		
 		x = (List<Map>) res.getOpsRes().get(7);
@@ -75,6 +81,11 @@ public class IntraServiceTest  {
 		Assert.assertEquals( "7", ByteBufferUtil.string((ByteBuffer) x.get(0).get("value"))  );
 		
 		Assert.assertEquals( "OK" , res.getOpsRes().get(10)  );
+		Assert.assertEquals( Arrays.asList("myks") , res.getOpsRes().get(11)  );
+		Set s = new HashSet();
+		s.add("mycf");
+		Assert.assertEquals( s , res.getOpsRes().get(12)  );
+		
 	}
 	
     

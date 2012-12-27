@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import org.apache.cassandra.config.CFMetaData;
 import org.apache.cassandra.config.KSMetaData;
+import org.apache.cassandra.config.Schema;
 import org.apache.cassandra.db.ColumnFamily;
 import org.apache.cassandra.db.ConsistencyLevel;
 import org.apache.cassandra.db.DecoratedKey;
@@ -111,6 +112,10 @@ public class IntraService {
 		        
 			} else if (op.getType().equals("consistency")){
 				consistency(req,res,state,i);
+			} else if (op.getType().equals("listkeyspaces")){
+			  listKeyspaces(req,res,state,i);
+			} else if (op.getType().equals("listcolumnfamily")){
+			  listColumnFamily(req,res,state,i);
 			}
 		}
 		return true;
@@ -300,4 +305,15 @@ public class IntraService {
 		res.getOpsRes().put(i, "OK");
 		state.consistency = level;
 	}
+
+  private void listKeyspaces(IntraReq req, IntraRes res, IntraState state, int i) {
+    IntraOp op = req.getE().get(i);
+    res.getOpsRes().put(i, Schema.instance.getNonSystemTables());
+  }
+  private void listColumnFamily(IntraReq req, IntraRes res, IntraState state, int i) {
+    IntraOp op = req.getE().get(i);
+    String keyspace = (String) op.getOp().get("keyspace");
+    KSMetaData ks = Schema.instance.getKSMetaData(keyspace);
+    res.getOpsRes().put(i, ks.cfMetaData().keySet());
+  }
 }
