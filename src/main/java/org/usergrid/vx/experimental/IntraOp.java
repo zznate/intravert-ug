@@ -150,7 +150,7 @@ public class IntraOp implements Serializable{
 
   private static void checkForBlankStr(String arg, String msg, Type type) {
     Preconditions.checkArgument(arg != null && arg.length() > 0,
-                "A non-blank '" + msg + "' is required for " + Type.SETCOLUMNFAMILY);
+                "A non-blank '" + msg + "' is required for " + type);
   }
 
   public enum Type {
