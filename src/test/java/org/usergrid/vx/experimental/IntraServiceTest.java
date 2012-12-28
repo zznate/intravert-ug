@@ -82,7 +82,6 @@ public class IntraServiceTest extends BaseIntravertIntegrationTest {
     req.add( IntraOp.createKsOp("makeksagain", 1)); //2
     IntraRes res = new IntraRes();
     is.handleIntraReq(req, res);
-    
     Assert.assertEquals (  "OK" , res.getOpsRes().get(0)  );
     Assert.assertEquals( 1, res.getOpsRes().size() );
     Assert.assertNotNull( res.getException() );
