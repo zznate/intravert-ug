@@ -9,7 +9,9 @@ public class IntraRes implements Serializable{
 	
 	private static final long serialVersionUID = 6994236506758407046L;
 	private Object exception;
+	private Integer exceptionId;
 	private SortedMap<Integer,Object> opsRes;
+	
 	public IntraRes(){
 		opsRes = new TreeMap<Integer,Object>();
 	}
@@ -31,6 +33,16 @@ public class IntraRes implements Serializable{
 			sb.append(exception+"\t");
 		sb.append(opsRes.toString());
 		return sb.toString();
-		
 	}
+  public Integer getExceptionId() {
+    return exceptionId;
+  }
+  public void setExceptionId(Integer exceptionId) {
+    this.exceptionId = exceptionId;
+  }
+	
+  public void setExceptionAndId(Object exception, int id){
+    this.setException(exception);
+    this.setExceptionId(id);
+  }
 }

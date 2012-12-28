@@ -57,65 +57,37 @@ public class IntraService {
 	 * and set the res object appropriately. Try not to do much heavy lifting here
 	 * delegate complex processing to methods.*/
 	protected boolean executeReq(IntraReq req, IntraRes res, IntraState state) {
-		for (int i =0;i<req.getE().size();i++){
+		for (int i=0;i<req.getE().size() && res.getException() == null ;i++){
 			IntraOp op = req.getE().get(i);
-			if (op.getType().equals(IntraOp.Type.SETKEYSPACE)) {
-				state.currentKeyspace = (String) op.getOp().get("keyspace");
-				res.getOpsRes().put(i, "OK");
-			} else if (op.getType().equals(IntraOp.Type.CREATEKEYSPACE)) {
-				createKeyspace(req, res, state, i);
-			} else if (op.getType().equals(IntraOp.Type.CREATECOLUMNFAMILY)) {
-				createColumnFamily(req, res, state, i);
-			} else if (op.getType().equals(IntraOp.Type.SETCOLUMNFAMILY)){
-				state.currentColumnFamily = (String) op.getOp().get("columnfamily");
-				res.getOpsRes().put(i, "OK");
-			} else if (op.getType().equals(IntraOp.Type.AUTOTIMESTAMP)){
-				state.autoTimestamp = true;
-				res.getOpsRes().put(i, "OK");
-			} else if (op.getType().equals(IntraOp.Type.SET)){
-				set(req, res, state, i);
-			} else if (op.getType().equals(IntraOp.Type.SLICE)){
-				slice(req, res, state, i);
-			} else if (op.getType().equals(IntraOp.Type.GET)){
-				List<Map> finalResults = new ArrayList<Map>();
-				ByteBuffer rowkey = byteBufferForObject(resolveObject(op.getOp().get("rowkey"),req,res,state,i));
-				ByteBuffer column = byteBufferForObject(resolveObject(op.getOp().get("column"),req,res,state,i));
-				QueryPath path = new QueryPath(state.currentColumnFamily, null);
-				List<ByteBuffer> nameAsList = Arrays.asList(column);
-				ReadCommand command = new SliceByNamesReadCommand(state.currentKeyspace, rowkey, path, nameAsList);
-				List<Row> rows = null;
-		        
-	        	try {
-					rows = StorageProxy.read(Arrays.asList(command), state.consistency);
-					ColumnFamily cf = rows.get(0).cf;
-					if (cf == null){ //cf= null is no data
-					} else {
-						Iterator <IColumn> it = cf.iterator();
-						while (it.hasNext()){
-							IColumn ic = it.next();
-							HashMap m = new HashMap();
-							m.put("name", ic.name());
-							m.put("value", ic.value());
-							finalResults.add(m);
-						}
-					}
-					res.getOpsRes().put(i, finalResults);
-				} catch (ReadTimeoutException e) {
-					res.getOpsRes().put(i, e.getMessage());
-				} catch (UnavailableException e) {
-					res.getOpsRes().put(i, e.getMessage());
-				} catch (IsBootstrappingException e) {
-					res.getOpsRes().put(i, e.getMessage());
-				} catch (IOException e) {
-					res.getOpsRes().put(i, e.getMessage());
-				}
-		        
-			} else if (op.getType().equals(IntraOp.Type.CONSISTENCY)){
-				consistency(req, res, state, i);
-			} else if (op.getType().equals(IntraOp.Type.LISTKEYSPACES)){
-			  listKeyspaces(req, res, state, i);
-			} else if (op.getType().equals(IntraOp.Type.LISTCOLUMNFAMILY)){
-			  listColumnFamily(req, res, state, i);
+			try {
+  			if (op.getType().equals(IntraOp.Type.SETKEYSPACE)) {
+  				state.currentKeyspace = (String) op.getOp().get("keyspace");
+  				res.getOpsRes().put(i, "OK");
+  			} else if (op.getType().equals(IntraOp.Type.CREATEKEYSPACE)) {
+  				createKeyspace(req, res, state, i);
+  			} else if (op.getType().equals(IntraOp.Type.CREATECOLUMNFAMILY)) {
+  				createColumnFamily(req, res, state, i);
+  			} else if (op.getType().equals(IntraOp.Type.SETCOLUMNFAMILY)){
+  				state.currentColumnFamily = (String) op.getOp().get("columnfamily");
+  				res.getOpsRes().put(i, "OK");
+  			} else if (op.getType().equals(IntraOp.Type.AUTOTIMESTAMP)){
+  				state.autoTimestamp = true;
+  				res.getOpsRes().put(i, "OK");
+  			} else if (op.getType().equals(IntraOp.Type.SET)){
+  				set(req, res, state, i);
+  			} else if (op.getType().equals(IntraOp.Type.SLICE)){
+  				slice(req, res, state, i);
+  			} else if (op.getType().equals(IntraOp.Type.GET)){
+  			  get(req,res,state,i);
+  			} else if (op.getType().equals(IntraOp.Type.CONSISTENCY)){
+  				consistency(req, res, state, i);
+  			} else if (op.getType().equals(IntraOp.Type.LISTKEYSPACES)){
+  			  listKeyspaces(req, res, state, i);
+  			} else if (op.getType().equals(IntraOp.Type.LISTCOLUMNFAMILY)){
+  			  listColumnFamily(req, res, state, i);
+  			}
+			} catch (Exception ex){ 
+			  res.setExceptionAndId(ex,i);
 			}
 		}
 		return true;
@@ -188,16 +160,16 @@ public class IntraService {
 			cfm = CFMetaData.fromThrift(def);
 			cfm.addDefaultIndexNames();
 		} catch (org.apache.cassandra.exceptions.InvalidRequestException e) {
-			res.getOpsRes().put(i, e.getMessage());
+			res.setExceptionAndId(e.getMessage(), i);
 			return;
 		} catch (ConfigurationException e) {
-			res.getOpsRes().put(i, e.getMessage());
-			return;
+		  res.setExceptionAndId(e.getMessage(), i);
+		  return;
 		}
 		try {
 			MigrationManager.announceNewColumnFamily(cfm);
 		} catch (ConfigurationException e) {
-			res.getOpsRes().put(i, e.getMessage());
+		  res.setExceptionAndId(e.getMessage(), i);
 			return;
 		}
 		res.getOpsRes().put(i, "OK");
@@ -218,15 +190,14 @@ public class IntraService {
 		try {
 			ksm = KSMetaData.fromThrift(def,
 					cfDefs.toArray(new CFMetaData[cfDefs.size()]));
-		} catch (ConfigurationException e1) {
-			res.getOpsRes().put(i, e1.getMessage());
+		} catch (ConfigurationException e) {
+		  res.setExceptionAndId(e.getMessage(), i);
 			return;
 		}
 		try {
 			MigrationManager.announceNewKeyspace(ksm);
 		} catch (ConfigurationException e) {
-			res.getOpsRes().put(i, e.getMessage());
-			
+		  res.setExceptionAndId(e.getMessage(), i);
 			return;
 		}
 		res.getOpsRes().put(i, "OK");
@@ -250,11 +221,14 @@ public class IntraService {
 			StorageProxy.instance.mutate(col, state.consistency);
 			res.getOpsRes().put(i, "OK");
 		} catch (WriteTimeoutException e) {
-			res.getOpsRes().put(i, e.getMessage());
+		  res.setExceptionAndId(e.getMessage(), i);
+		  return;
 		} catch (org.apache.cassandra.exceptions.UnavailableException e) {
-			res.getOpsRes().put(i, e.getMessage());
+		  res.setExceptionAndId(e.getMessage(), i);
+		  return;
 		} catch (OverloadedException e) {
-			res.getOpsRes().put(i, e.getMessage());
+		  res.setExceptionAndId(e.getMessage(), i);
+		  return;
 		}
 	}
 	
@@ -288,16 +262,16 @@ public class IntraService {
 			}
 			res.getOpsRes().put(i,finalResults);
 		} catch (ReadTimeoutException e) {
-			res.getOpsRes().put(i, e.getMessage());
+		  res.setExceptionAndId(e.getMessage(), i);
 			return;
 		} catch (org.apache.cassandra.exceptions.UnavailableException e) {
-			res.getOpsRes().put(i, e.getMessage());
+		  res.setExceptionAndId(e.getMessage(), i);
 			return;
 		} catch (IsBootstrappingException e) {
-			res.getOpsRes().put(i, e.getMessage());
+		  res.setExceptionAndId(e.getMessage(), i);
 			return;
 		} catch (IOException e) {
-			res.getOpsRes().put(i, e.getMessage());
+		  res.setExceptionAndId(e.getMessage(), i);
 			return;
 		}
 		res.getOpsRes().put(i, finalResults);
@@ -319,5 +293,49 @@ public class IntraService {
     String keyspace = (String) op.getOp().get("keyspace");
     KSMetaData ks = Schema.instance.getKSMetaData(keyspace);
     res.getOpsRes().put(i, ks.cfMetaData().keySet());
+  }
+  
+  private void get(IntraReq req, IntraRes res, IntraState state, int i) {
+    IntraOp op = req.getE().get(i);
+    List<Map> finalResults = new ArrayList<Map>();
+    ByteBuffer rowkey = byteBufferForObject(resolveObject(
+        op.getOp().get("rowkey"), req, res, state, i));
+    ByteBuffer column = byteBufferForObject(resolveObject(
+        op.getOp().get("column"), req, res, state, i));
+    QueryPath path = new QueryPath(state.currentColumnFamily, null);
+    List<ByteBuffer> nameAsList = Arrays.asList(column);
+    ReadCommand command = new SliceByNamesReadCommand(state.currentKeyspace,
+        rowkey, path, nameAsList);
+    List<Row> rows = null;
+
+    try {
+      rows = StorageProxy.read(Arrays.asList(command), state.consistency);
+      ColumnFamily cf = rows.get(0).cf;
+      if (cf == null) { // cf= null is no data
+      } else {
+        Iterator<IColumn> it = cf.iterator();
+        while (it.hasNext()) {
+          IColumn ic = it.next();
+          HashMap m = new HashMap();
+          m.put("name", ic.name());
+          m.put("value", ic.value());
+          finalResults.add(m);
+        }
+      }
+      res.getOpsRes().put(i, finalResults);
+    } catch (ReadTimeoutException e) {
+      res.getOpsRes().put(i, e.getMessage());
+      return;
+    } catch (UnavailableException e) {
+      res.getOpsRes().put(i, e.getMessage());
+      return;
+    } catch (IsBootstrappingException e) {
+      res.getOpsRes().put(i, e.getMessage());
+      return;
+    } catch (IOException e) {
+      res.getOpsRes().put(i, e.getMessage());
+      return;
+    }
+
   }
 }
