@@ -86,5 +86,23 @@ public class IntraServiceTest extends BaseIntravertIntegrationTest {
     Assert.assertEquals( 1, res.getOpsRes().size() );
     Assert.assertNotNull( res.getException() );
     Assert.assertEquals( new Integer(1) , res.getExceptionId() );
-  }	
+  }
+	
+	 @Test
+	  public void assumeTest() throws CharacterCodingException{
+	    IntraReq req = new IntraReq();
+	    req.add( IntraOp.setKeyspaceOp("assks") ); //0
+	    req.add( IntraOp.createKsOp("assks", 1)); //1
+	    req.add( IntraOp.createCfOp("asscf")); //2
+	    req.add( IntraOp.setColumnFamilyOp("asscf") ); //3
+	    req.add( IntraOp.setAutotimestampOp() ); //4
+	    req.add( IntraOp.assumeOp("assks", "asscf", "value", "UTF-8"));//5
+	    req.add( IntraOp.setOp("rowa", "col1", "wow")); //6
+	    req.add( IntraOp.getOp("rowa", "col1")); //7
+	    IntraRes res = new IntraRes();
+	    is.handleIntraReq(req, res);
+	    List<Map> x = (List<Map>) res.getOpsRes().get(7);
+	    Assert.assertEquals( "wow",  x.get(0).get("value") );
+	  }
+	
 }

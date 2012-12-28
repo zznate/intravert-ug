@@ -144,6 +144,15 @@ public class IntraOp implements Serializable{
     return i;
 	}
 	
+	public static IntraOp assumeOp(String keyspace,String columnfamily,String type, String clazz){
+	  IntraOp i = new IntraOp(Type.ASSUME);
+	  i.set("keyspace", keyspace);
+	  i.set("columnfamily", columnfamily);
+	  i.set("type", type); //should be column rowkey value
+	  i.set("clazz", clazz );
+	  return i;
+	}
+	
 	public Type getType() {
 		return type;
 	}
@@ -167,8 +176,8 @@ public class IntraOp implements Serializable{
     SET,
     AUTOTIMESTAMP,
     SETKEYSPACE,
-    SETCOLUMNFAMILY;
-
+    SETCOLUMNFAMILY,
+    ASSUME
   }
 	
 }
