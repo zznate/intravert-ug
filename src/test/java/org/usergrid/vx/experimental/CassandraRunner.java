@@ -8,6 +8,7 @@ import org.apache.cassandra.db.marshal.BytesType;
 import org.apache.cassandra.db.marshal.TypeParser;
 import org.apache.cassandra.exceptions.AlreadyExistsException;
 import org.apache.cassandra.service.MigrationManager;
+import org.apache.cassandra.service.StorageProxy;
 import org.apache.cassandra.service.StorageService;
 import org.junit.Ignore;
 import org.junit.runner.Description;
@@ -96,7 +97,9 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
 
   /**
    * Create the keyspace and column family in one shot if they are defined together.
-   * The RequiresColumnFamily can be null.
+   * The RequiresColumnFamily can be null. If the RequiresColumnFamily is not null and
+   * the keyspace exists, the column family defined by such will be truncated if so
+   * configured.
    */
   private void maybeCreateKeyspace(RequiresKeyspace rk, RequiresColumnFamily rcf) {
     logger.info("RequiresKeyspace annotation has ksName: {}", rk.ksName());
@@ -107,6 +110,9 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
                       rk.strategy(), KSMetaData.optsWithRF(rk.replication()), false, cfs));
     } catch (AlreadyExistsException aee) {
       logger.info("Will use existing Keyspace for " + rk.ksName());
+      if ( cfs.size() > 0 ) {
+        maybeTruncateSafely(rcf);
+      }
     } catch (Exception ex) {
       throw new RuntimeException("Failed to create keyspace for " + rk.ksName(),ex);
     }
@@ -133,8 +139,19 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
               ColumnFamilyType.Standard, TypeParser.parse(rcf.comparator()), null));
     } catch(AlreadyExistsException aee) {
       logger.info("ColumnFamily already exists for " + rcf.cfName());
+      maybeTruncateSafely(rcf);
     } catch (Exception ex) {
       throw new RuntimeException("Could not create column family for: " + rcf.cfName(), ex);
+    }
+  }
+
+  private void maybeTruncateSafely(RequiresColumnFamily rcf) {
+    if ( rcf != null && rcf.truncateExisting() ) {
+      try {
+        StorageProxy.truncateBlocking(rcf.ksName(), rcf.cfName());
+      } catch (Exception ex) {
+        throw new RuntimeException("Could not truncate column family: " + rcf.cfName(),ex);
+      }
     }
   }
 

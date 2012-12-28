@@ -21,4 +21,10 @@ public @interface RequiresColumnFamily {
   String comparator() default "UTF8Type";
   String defaultValidator() default "UTF8Type";
 
+  /**
+   * Mark as true to truncate the column family before any tests are
+   * executed.
+   * @return
+   */
+  boolean truncateExisting() default false;
 }
