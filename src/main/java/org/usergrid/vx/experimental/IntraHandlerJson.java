@@ -23,7 +23,7 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
 		final IntraRes res = new IntraRes();
 		request.bodyHandler( new Handler<Buffer>() {
 			public void handle(Buffer buffer) {
-
+			  
 				IntraReq req = null;
 				try {
 					req = mapper.readValue(buffer.getBytes(), IntraReq.class);

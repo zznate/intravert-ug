@@ -85,6 +85,8 @@ public class IntraService {
   			  listKeyspaces(req, res, state, i);
   			} else if (op.getType().equals(IntraOp.Type.LISTCOLUMNFAMILY)){
   			  listColumnFamily(req, res, state, i);
+  			} else if (op.getType().equals(IntraOp.Type.ASSUME)){
+  			  assume(req,res,state,i);
   			}
 			} catch (Exception ex){ 
 			  res.setExceptionAndId(ex,i);
@@ -317,8 +319,8 @@ public class IntraService {
         while (it.hasNext()) {
           IColumn ic = it.next();
           HashMap m = new HashMap();
-          m.put("name", ic.name());
-          m.put("value", ic.value());
+          m.put("name", TypeHelper.getTypedIfPossible(state, "column", ic.name()));
+          m.put("value", TypeHelper.getTypedIfPossible(state, "value", ic.value()));
           finalResults.add(m);
         }
       }
@@ -337,5 +339,15 @@ public class IntraService {
       return;
     }
 
+  }
+  
+  private void assume(IntraReq req, IntraRes res, IntraState state, int i) {
+    IntraOp op = req.getE().get(i);
+    IntraMetaData imd = new IntraMetaData();
+    imd.keyspace = (String) op.getOp().get("keyspace");
+    imd.columnfamily = (String) op.getOp().get("columnfamily");
+    imd.type = (String) op.getOp().get("type");
+    state.meta.put( imd , (String) op.getOp().get("clazz") );
+    res.getOpsRes().put(i, "OK");
   }
 }
