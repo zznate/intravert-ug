@@ -17,14 +17,19 @@ import org.apache.cassandra.utils.ByteBufferUtil;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.usergrid.vx.server.IntravertCassandraServer;
 import org.usergrid.vx.server.IntravertDeamon;
 
-
+@RunWith(CassandraRunner.class)
+@RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+@RequiresKeyspace(ksName = "myks")
 public class IntraServiceTest extends BaseIntravertIntegrationTest {
 
-	
-	@Test
+
+
+  @DataLoader(dataset = "mydata.txt")
+  @Test
 	public void atest() throws CharacterCodingException{
 		 
 		IntraReq req = new IntraReq();

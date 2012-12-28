@@ -3,6 +3,7 @@ package org.usergrid.vx.experimental;
 import org.apache.cassandra.service.StorageService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
 import org.usergrid.vx.server.IntravertDeamon;
 
 import java.io.File;
@@ -13,26 +14,14 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author zznate
  */
+
 public abstract class BaseIntravertIntegrationTest {
 
   static IntraService is = new IntraService();
   static IntravertDeamon intravertDeamon;
-
-
   static ExecutorService executor = Executors.newSingleThreadExecutor();
 
 
-  public static boolean deleteRecursive(File path) {
-      if (!path.exists())
-      	return false;
-      boolean ret = true;
-      if (path.isDirectory()){
-          for (File f : path.listFiles()){
-              ret = ret && deleteRecursive(f);
-          }
-      }
-      return ret && path.delete();
-  }
 
   @BeforeClass
   public static void startCassandra() {
@@ -58,8 +47,6 @@ public abstract class BaseIntravertIntegrationTest {
     catch (InterruptedException e) {
       throw new AssertionError(e);
     }
-
-
   }
 
 
@@ -71,6 +58,18 @@ public abstract class BaseIntravertIntegrationTest {
     }
     executor.shutdown();
     executor.shutdownNow();
+  }
+
+  private static boolean deleteRecursive(File path) {
+    if (!path.exists())
+      return false;
+    boolean ret = true;
+    if (path.isDirectory()){
+      for (File f : path.listFiles()){
+        ret = ret && deleteRecursive(f);
+      }
+    }
+    return ret && path.delete();
   }
 
 
