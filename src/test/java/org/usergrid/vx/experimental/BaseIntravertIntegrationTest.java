@@ -1,34 +1,26 @@
 package org.usergrid.vx.experimental;
 
+import org.apache.cassandra.service.StorageService;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.usergrid.vx.server.IntravertDeamon;
 
 import java.io.File;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author zznate
  */
 public abstract class BaseIntravertIntegrationTest {
 
-  static IntraService is;
-  static IntravertDeamon intravertDeamon = new IntravertDeamon();
-  static final AtomicBoolean inited = new AtomicBoolean(false);
+  static IntraService is = new IntraService();
+  static IntravertDeamon intravertDeamon;
 
- 	@BeforeClass
- 	public static void before(){
-     if ( !inited.get() ) {
-       deleteRecursive(new File("/tmp/intra_cache"));
-       deleteRecursive(new File ("/tmp/intra_data"));
-       deleteRecursive(new File ("/tmp/intra_log"));
-       System.setProperty("cassandra-foreground", "true");
-       System.setProperty("log4j.defaultInitOverride","true");
-       System.setProperty("log4j.configuration", "log4j.properties");
-       intravertDeamon.activate();
-       is = new IntraService();
-       inited.set(true);
-     }
- 	}
+
+  static ExecutorService executor = Executors.newSingleThreadExecutor();
+
 
   public static boolean deleteRecursive(File path) {
       if (!path.exists())
@@ -40,6 +32,45 @@ public abstract class BaseIntravertIntegrationTest {
           }
       }
       return ret && path.delete();
+  }
+
+  @BeforeClass
+  public static void startCassandra() {
+    if ( intravertDeamon != null ) {
+      return;
+    }
+    deleteRecursive(new File("/tmp/intra_cache"));
+    deleteRecursive(new File ("/tmp/intra_data"));
+    deleteRecursive(new File ("/tmp/intra_log"));
+    System.setProperty("cassandra-foreground", "true");
+    System.setProperty("log4j.defaultInitOverride","true");
+    System.setProperty("log4j.configuration", "log4j.properties");
+
+    executor.execute(new Runnable() {
+      public void run() {
+        intravertDeamon = new IntravertDeamon();
+        intravertDeamon.activate();
+      }
+    });
+    try {
+      TimeUnit.SECONDS.sleep(3);
+    }
+    catch (InterruptedException e) {
+      throw new AssertionError(e);
+    }
+
+
+  }
+
+
+  @AfterClass
+  public static void stopCassandra() throws Exception {
+    if (intravertDeamon != null) {
+      intravertDeamon.deactivate();
+      StorageService.instance.stopClient();
+    }
+    executor.shutdown();
+    executor.shutdownNow();
   }
 
 
