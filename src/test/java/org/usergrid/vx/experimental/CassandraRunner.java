@@ -20,6 +20,7 @@ import org.usergrid.vx.server.IntravertDeamon;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -94,15 +95,17 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
 
   private List<CFMetaData> extractColumnFamily(RequiresColumnFamily rcf) {
     logger.info("RequiresColumnFamily annotation has name: {} for ks: {}", rcf.cfName(), rcf.ksName());
-    CFMetaData cfm;
-    try {
-      cfm = new CFMetaData(rcf.ksName(), rcf.cfName(),
-            ColumnFamilyType.Standard, TypeParser.parse(rcf.comparator()), null);
+    List<CFMetaData> cfms = new ArrayList();
+    if ( rcf != null ) {
+      try {
+        cfms.add(new CFMetaData(rcf.ksName(), rcf.cfName(),
+                ColumnFamilyType.Standard, TypeParser.parse(rcf.comparator()), null));
 
-    } catch (Exception ex) {
-      throw new RuntimeException("Could not create column family for: " + rcf.cfName(), ex);
+      } catch (Exception ex) {
+        throw new RuntimeException("Could not create column family for: " + rcf.cfName(), ex);
+      }
     }
-    return Arrays.asList(cfm);
+    return cfms;
   }
 
   private void startCassandra() {
