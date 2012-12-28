@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
 public @interface RequiresColumnFamily {
   String ksName();
   String cfName();
-  Class<? extends AbstractType> comparator() default UTF8Type.class;
-  Class<? extends AbstractType> defaultValidator() default UTF8Type.class;
+  String comparator() default "UTF8Type";
+  String defaultValidator() default "UTF8Type";
 
 }
