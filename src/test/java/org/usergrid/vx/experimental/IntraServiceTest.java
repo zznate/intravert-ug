@@ -74,5 +74,17 @@ public class IntraServiceTest extends BaseIntravertIntegrationTest {
 		
 	}
 	
-
+	@Test
+  public void exceptionHandleTest() throws CharacterCodingException{
+    IntraReq req = new IntraReq();
+    req.add( IntraOp.createKsOp("makeksagain", 1)); //0
+    req.add( IntraOp.createKsOp("makeksagain", 1)); //1
+    req.add( IntraOp.createKsOp("makeksagain", 1)); //2
+    IntraRes res = new IntraRes();
+    is.handleIntraReq(req, res);
+    Assert.assertEquals (  "OK" , res.getOpsRes().get(0)  );
+    Assert.assertEquals( 1, res.getOpsRes().size() );
+    Assert.assertNotNull( res.getException() );
+    Assert.assertEquals( new Integer(1) , res.getExceptionId() );
+  }	
 }
