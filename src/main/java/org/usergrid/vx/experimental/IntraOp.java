@@ -15,8 +15,10 @@ public class IntraOp implements Serializable{
   // TODO add back access to ID
 	private final AtomicInteger opid= new AtomicInteger(0);
 	private static final long serialVersionUID = 4700563595579293663L;
-	private final Type type;
+	private Type type;
 	private Map<String,Object> op;
+
+  protected IntraOp() {}
 
 	IntraOp(Type type){
     this.type = type;
