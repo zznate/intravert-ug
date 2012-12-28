@@ -46,12 +46,12 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
 
   public CassandraRunner(Class<?> klass) throws InitializationError {
     super(klass);
-    logger.info("CassandraRunner constructed with class {}", klass.getName());
+    logger.debug("CassandraRunner constructed with class {}", klass.getName());
   }
 
   @Override
   protected void runChild(FrameworkMethod method, RunNotifier notifier) {
-    logger.info("runChild invoked on method: " + method.getName());
+    logger.debug("runChild invoked on method: " + method.getName());
     RequiresKeyspace rk = method.getAnnotation(RequiresKeyspace.class);
     RequiresColumnFamily rcf = method.getAnnotation(RequiresColumnFamily.class);
     if ( rk != null ) {
@@ -102,7 +102,7 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
    * configured.
    */
   private void maybeCreateKeyspace(RequiresKeyspace rk, RequiresColumnFamily rcf) {
-    logger.info("RequiresKeyspace annotation has ksName: {}", rk.ksName());
+    logger.debug("RequiresKeyspace annotation has ksName: {}", rk.ksName());
     List<CFMetaData> cfs = extractColumnFamily(rcf);
     try {
       MigrationManager
@@ -119,7 +119,7 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
   }
 
   private List<CFMetaData> extractColumnFamily(RequiresColumnFamily rcf) {
-    logger.info("RequiresColumnFamily annotation has name: {} for ks: {}", rcf.cfName(), rcf.ksName());
+    logger.debug("RequiresColumnFamily annotation has name: {} for ks: {}", rcf.cfName(), rcf.ksName());
     List<CFMetaData> cfms = new ArrayList();
     if ( rcf != null ) {
       try {
@@ -178,6 +178,17 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
     catch (InterruptedException e) {
       throw new AssertionError(e);
     }
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        try {
+          logger.error("In shutdownHook");
+          stopCassandra();
+        } catch (Exception ex) {
+          ex.printStackTrace();
+        }
+      }
+    });
   }
 
   private void stopCassandra() throws Exception {
