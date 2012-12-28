@@ -8,6 +8,7 @@ import org.apache.cassandra.db.marshal.BytesType;
 import org.apache.cassandra.db.marshal.TypeParser;
 import org.apache.cassandra.exceptions.AlreadyExistsException;
 import org.apache.cassandra.service.MigrationManager;
+import org.apache.cassandra.service.StorageService;
 import org.junit.Ignore;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
@@ -29,6 +30,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * A custom JUnit runner which uses the Intravert testing annotations
+ * for managing schema state.
+ *
  * @author zznate
  */
 public class CassandraRunner extends BlockJUnit4ClassRunner {
@@ -51,6 +55,8 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
     RequiresColumnFamily rcf = method.getAnnotation(RequiresColumnFamily.class);
     if ( rk != null ) {
       maybeCreateKeyspace(rk, rcf);
+    } else if ( rcf != null ) {
+      maybeCreateColumnFamily(rcf);
     }
 
     if (method.getAnnotation(DataLoader.class) != null) {
@@ -60,6 +66,13 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
     super.runChild(method, notifier);
   }
 
+  /**
+   * The order of events are as follows:
+   * - start IntravertDeamon if not started already
+   * - create any keyspaces defined as class level annotations
+   * - create any column families defined as class level annotations
+   * @param notifier
+   */
   @Override
   public void run(RunNotifier notifier) {
     startCassandra();
@@ -74,11 +87,17 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
     }
     if ( rk != null ) {
       maybeCreateKeyspace(rk, rcf);
+    } else if ( rcf != null ) {
+      maybeCreateColumnFamily(rcf);
     }
 
     super.run(notifier);
   }
 
+  /**
+   * Create the keyspace and column family in one shot if they are defined together.
+   * The RequiresColumnFamily can be null.
+   */
   private void maybeCreateKeyspace(RequiresKeyspace rk, RequiresColumnFamily rcf) {
     logger.info("RequiresKeyspace annotation has ksName: {}", rk.ksName());
     List<CFMetaData> cfs = extractColumnFamily(rcf);
@@ -87,7 +106,7 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
               .announceNewKeyspace(KSMetaData.newKeyspace(rk.ksName(),
                       rk.strategy(), KSMetaData.optsWithRF(rk.replication()), false, cfs));
     } catch (AlreadyExistsException aee) {
-      logger.error("Will use existing Keyspace for " + rk.ksName());
+      logger.info("Will use existing Keyspace for " + rk.ksName());
     } catch (Exception ex) {
       throw new RuntimeException("Failed to create keyspace for " + rk.ksName(),ex);
     }
@@ -106,6 +125,17 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
       }
     }
     return cfms;
+  }
+
+  private void maybeCreateColumnFamily(RequiresColumnFamily rcf) {
+    try {
+      MigrationManager.announceNewColumnFamily(new CFMetaData(rcf.ksName(), rcf.cfName(),
+              ColumnFamilyType.Standard, TypeParser.parse(rcf.comparator()), null));
+    } catch(AlreadyExistsException aee) {
+      logger.info("ColumnFamily already exists for " + rcf.cfName());
+    } catch (Exception ex) {
+      throw new RuntimeException("Could not create column family for: " + rcf.cfName(), ex);
+    }
   }
 
   private void startCassandra() {
@@ -131,6 +161,15 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
     catch (InterruptedException e) {
       throw new AssertionError(e);
     }
+  }
+
+  private void stopCassandra() throws Exception {
+    if (intravertDeamon != null) {
+      intravertDeamon.deactivate();
+      StorageService.instance.stopClient();
+    }
+    executor.shutdown();
+    executor.shutdownNow();
   }
 
   private static boolean deleteRecursive(File path) {
