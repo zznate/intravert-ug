@@ -4,6 +4,11 @@ An experimental client and transport for [Apache Cassandra](http://cassandra.apa
 ## Overview
 Intravert is built on top of Cassandra. It **is not** a fork. Rather, it is a plugin which augments (or replaces - up to you) the default CQL and Thrift transports. 
 
+## Game Changer Features
+Intravert is more then an RPC library, query language, or transport for Cassandra. IntraVert gives access to new powerful ways of working with Cassandra.
+
+* The [Processing](src/main/java/org/usergrid/vx/experimental/README.md) system allows users to perform arbitary programatic transformations on the server side before the results are return to the client.
+
 ## Motivations
 Intravert was conceived of and designed by long time users of Cassandra who have written numerous real-world applications built on the existing Thrift API. 
 
