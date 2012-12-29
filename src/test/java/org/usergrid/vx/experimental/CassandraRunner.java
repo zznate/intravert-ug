@@ -3,10 +3,12 @@ package org.usergrid.vx.experimental;
 import org.apache.cassandra.config.CFMetaData;
 import org.apache.cassandra.config.KSMetaData;
 import org.apache.cassandra.db.ColumnFamilyType;
+import org.apache.cassandra.db.commitlog.CommitLog;
 import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.db.marshal.BytesType;
 import org.apache.cassandra.db.marshal.TypeParser;
 import org.apache.cassandra.exceptions.AlreadyExistsException;
+import org.apache.cassandra.gms.Gossiper;
 import org.apache.cassandra.service.MigrationManager;
 import org.apache.cassandra.service.StorageProxy;
 import org.apache.cassandra.service.StorageService;
@@ -33,6 +35,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * A custom JUnit runner which uses the Intravert testing annotations
  * for managing schema state.
+ * Cassandra is started in the foreground. Both the CQL and Thrift transports
+ * are disabled.
  *
  * @author zznate
  */
@@ -165,6 +169,9 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
     System.setProperty("cassandra-foreground", "true");
     System.setProperty("log4j.defaultInitOverride","true");
     System.setProperty("log4j.configuration", "log4j.properties");
+    System.setProperty("cassandra.ring_delay_ms","1000");
+    System.setProperty("cassandra.start_rpc","false");
+    System.setProperty("cassandra.start_native_transport","false");
 
     executor.execute(new Runnable() {
       public void run() {
@@ -195,6 +202,7 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
     if (intravertDeamon != null) {
       intravertDeamon.deactivate();
       StorageService.instance.stopClient();
+
     }
     executor.shutdown();
     executor.shutdownNow();
