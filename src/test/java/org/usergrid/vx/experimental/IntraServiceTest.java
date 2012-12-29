@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.usergrid.vx.server.IntravertCassandraServer;
 import org.usergrid.vx.server.IntravertDeamon;
+import org.vertx.java.core.Vertx;
 
 @RunWith(CassandraRunner.class)
 @RequiresKeyspace(ksName = "myks")
@@ -27,6 +28,7 @@ import org.usergrid.vx.server.IntravertDeamon;
 public class IntraServiceTest {
 
   IntraService is = new IntraService();
+  Vertx x = Vertx.newVertx();
 
   @DataLoader(dataset = "mydata.txt")
   @Test
@@ -48,7 +50,7 @@ public class IntraServiceTest {
 		req.add(IntraOp.listColumnFamilyOp("myks"));//10
 		IntraRes res = new IntraRes();
 		
-		is.handleIntraReq(req, res);
+		is.handleIntraReq(req, res, x);
 		
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(0)  );
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(1)  );
@@ -67,7 +69,7 @@ public class IntraServiceTest {
 		Assert.assertEquals( "7", ByteBufferUtil.string((ByteBuffer) x.get(0).get("value"))  );
 		
 		Assert.assertEquals( "OK" , res.getOpsRes().get(8)  );
-		Assert.assertEquals( Arrays.asList("myks") , res.getOpsRes().get(9)  );
+		Assert.assertEquals( true , ((List<String>) res.getOpsRes().get(9)).contains("myks")  );
 		Set s = new HashSet();
 		s.add("mycf");
 		Assert.assertEquals( s , res.getOpsRes().get(10)  );
@@ -81,7 +83,7 @@ public class IntraServiceTest {
     req.add( IntraOp.createKsOp("makeksagain", 1)); //1
     req.add( IntraOp.createKsOp("makeksagain", 1)); //2
     IntraRes res = new IntraRes();
-    is.handleIntraReq(req, res);
+    is.handleIntraReq(req, res, x);
     Assert.assertEquals (  "OK" , res.getOpsRes().get(0)  );
     Assert.assertEquals( 1, res.getOpsRes().size() );
     Assert.assertNotNull( res.getException() );
@@ -100,9 +102,45 @@ public class IntraServiceTest {
 	    req.add( IntraOp.setOp("rowa", "col1", "wow")); //6
 	    req.add( IntraOp.getOp("rowa", "col1")); //7
 	    IntraRes res = new IntraRes();
-	    is.handleIntraReq(req, res);
+	    is.handleIntraReq(req, res, x);
 	    List<Map> x = (List<Map>) res.getOpsRes().get(7);
 	    Assert.assertEquals( "wow",  x.get(0).get("value") );
 	  }
 	
+	 
+	 @Test
+   public void processorTest() throws CharacterCodingException{
+     IntraReq req = new IntraReq();
+     req.add( IntraOp.setKeyspaceOp("procks") ); //0
+     req.add( IntraOp.createKsOp("procks", 1)); //1
+     req.add( IntraOp.createCfOp("proccf")); //2
+     req.add( IntraOp.setColumnFamilyOp("proccf") ); //3
+     req.add( IntraOp.setAutotimestampOp() ); //4
+     req.add( IntraOp.assumeOp("procks", "proccf", "value", "UTF-8"));//5
+     req.add( IntraOp.setOp("rowa", "col1", "wow")); //6
+     req.add( IntraOp.getOp("rowa", "col1")); //7
+     req.add( IntraOp.createProcessorOp("capitalize", "groovy", 
+         "public class Capitalize implements org.usergrid.vx.experimental.Processor { \n"+
+         "  public List<Map> process(List<Map> input){" +
+         "    List<Map> results = new ArrayList<HashMap>();"+
+         "    for (Map row: input){" +
+         "      Map newRow = new HashMap(); "+
+         "      newRow.put(\"value\",row.get(\"value\").toString().toUpperCase());" +
+         "      results.add(newRow); "+
+         "    } \n" +
+         "    return results;"+
+         "  }"+
+         "}\n"
+     ));//8
+     //TAKE THE RESULT OF STEP 7 AND APPLY THE PROCESSOR TO IT
+     req.add( IntraOp.processOp("capitalize", new HashMap(), 7));//9
+     IntraRes res = new IntraRes();
+     is.handleIntraReq(req, res, x);
+     List<Map> x = (List<Map>) res.getOpsRes().get(7);
+     Assert.assertEquals( "wow",  x.get(0).get("value") );
+     System.out.println(res.getException() );
+     Assert.assertNull( res.getException() );
+     x = (List<Map>) res.getOpsRes().get(9);
+     Assert.assertEquals( "WOW",  x.get(0).get("value") );
+   }
 }

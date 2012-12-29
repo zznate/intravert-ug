@@ -8,6 +8,7 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.smile.SmileFactory;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 /**
@@ -19,6 +20,11 @@ public class IntraHandlerJsonSmile implements Handler<HttpServerRequest>{
 	static IntraService is = new IntraService();
 	static SmileFactory sf = new SmileFactory();
 	static ObjectMapper mapper = new ObjectMapper(sf);
+  private Vertx vertx;
+  
+  public IntraHandlerJsonSmile(Vertx vertx){
+    this.vertx=vertx;
+  }
 
 	@Override
 	public void handle(final HttpServerRequest request) {
@@ -37,7 +43,7 @@ public class IntraHandlerJsonSmile implements Handler<HttpServerRequest>{
 					e.printStackTrace();
 				}
 				
-				is.handleIntraReq(req,res);
+				is.handleIntraReq(req,res,vertx);
 				
 				byte [] value=null;
 				try {

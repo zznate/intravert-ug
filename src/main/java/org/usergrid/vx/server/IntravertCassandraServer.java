@@ -27,14 +27,15 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     logger.debug("Starting IntravertCassandraServer...");
     // TODO may be more appropriate in setup() ?
 		vertx = Vertx.newVertx();
+		
 		rm = new RouteMatcher();
 		rm.put("/:appid/hello", new HelloHandler());
 		rm.get("/:appid/hello", new HelloHandler());
 		rm.post("/:appid/hello", new HelloHandler());
 		rm.post("/:appid/thriftjson", new ThriftHandler());
-		rm.post("/:appid/intrareq-xml", new IntraHandlerXml());
-		rm.post("/:appid/intrareq-json", new IntraHandlerJson());
-		rm.post("/:appid/intrareq-jsonsmile", new IntraHandlerJsonSmile());
+		rm.post("/:appid/intrareq-xml", new IntraHandlerXml(vertx));
+		rm.post("/:appid/intrareq-json", new IntraHandlerJson(vertx));
+		rm.post("/:appid/intrareq-jsonsmile", new IntraHandlerJsonSmile(vertx));
 		rm.noMatch(new NoMatchHandler() );
 		vertx.createHttpServer().requestHandler(rm).listen(8080);
 		logger.info("IntravertCassandraServer started.");

@@ -14,6 +14,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<slf4j.version>1.7.2</slf4j.version>
 		<jackson-version>1.9.9</jackson-version>
+		<groovy-version>2.0.4</groovy-version>
 	</properties>
 
 	<dependencies>
@@ -105,6 +106,11 @@
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-smile</artifactId>
 			<version>${jackson-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>${groovy-version}</version>
 		</dependency>
     </dependencies>
 	<build>

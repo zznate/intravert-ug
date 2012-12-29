@@ -111,7 +111,7 @@ public class IntraClient implements Handler<HttpClientResponse> {
 
 	public static void main(String[] args) throws Exception {
 		IntraClient i = new IntraClient();
-		i.payload="jsonsmile";
+		i.payload="json";
 		IntraReq req = new IntraReq();
 		req.add( IntraOp.setKeyspaceOp("myks") );
 		req.add( IntraOp.createKsOp("myks", 1));
