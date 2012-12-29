@@ -7,11 +7,11 @@ Intravert is built on top of Cassandra. It **is not** a fork. Rather, it is a pl
 ## Game Changer Features
 Intravert is more then an RPC library, query language, or transport for Cassandra. IntraVert gives access to new powerful ways of working with Cassandra.
 
-* The [Processing](src/main/java/org/usergrid/vx/experimental/PROCESSING.md) system allows users to perform arbitary programatic transformations on the server side before the results are return to the client.
+* The [Processing](https://github.com/zznate/intravert-ug/blob/master/src/main/java/org/usergrid/vx/experimental/PROCESSING.md) system allows users to perform arbitary programatic transformations on the server side before the results are return to the client.
 
-* [GETREF](src/main/java/org/usergrid/vx/experimental/GETREF.md) feature can be used to execute procedure and join like logic in a single RPC request.
+* [GETREF](https://github.com/zznate/intravert-ug/blob/master/src/main/java/org/usergrid/vx/experimental/GETREF.md) feature can be used to execute procedure and join like logic in a single RPC request.
 
-* A simple sync/async [API and Transport](src/main/java/org/usergrid/vx/experimental/JSON.md) that runs over HTTP allows clients to chose from JSON, JSON compressed by smile, and even big fat sexy XML.
+* A simple sync/async [API and Transport](https://github.com/zznate/intravert-ug/blob/master/src/main/java/org/usergrid/vx/experimental/JSON.md) that runs over HTTP allows clients to chose from JSON, JSON compressed by smile, and even big fat sexy XML.
 
 ## Motivations
 Intravert was conceived of and designed by long time users of Cassandra who have written numerous real-world applications built on the existing Thrift API. 
