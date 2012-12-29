@@ -7,7 +7,7 @@ Intravert is built on top of Cassandra. It **is not** a fork. Rather, it is a pl
 ## Game Changer Features
 Intravert is more then an RPC library, query language, or transport for Cassandra. IntraVert gives access to new powerful ways of working with Cassandra.
 
-* The [Processing](src/main/java/org/usergrid/vx/experimental/README.md) system allows users to perform arbitary programatic transformations on the server side before the results are return to the client.
+* The [Processing](src/main/java/org/usergrid/vx/experimental/PROCESSING.md) system allows users to perform arbitary programatic transformations on the server side before the results are return to the client.
 
 ## Motivations
 Intravert was conceived of and designed by long time users of Cassandra who have written numerous real-world applications built on the existing Thrift API. 
