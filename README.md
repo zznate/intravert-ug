@@ -11,6 +11,8 @@ Intravert is more then an RPC library, query language, or transport for Cassandr
 
 * [GETREF](src/main/java/org/usergrid/vx/experimental/GETREF.md) feature can be used to execute procedure and join like logic in a single RPC request.
 
+* A simple sync/async [API and Transport](src/main/java/org/usergrid/vx/experimental/JSON.md) that runs over HTTP allows clients to chose from JSON, JSON compressed by smile, and even big fat sexy XML.
+
 ## Motivations
 Intravert was conceived of and designed by long time users of Cassandra who have written numerous real-world applications built on the existing Thrift API. 
 
