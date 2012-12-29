@@ -1,5 +1,5 @@
 package org.usergrid.vx.experimental;
-
+ 
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -10,6 +10,7 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
@@ -17,6 +18,13 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
 
 	static IntraService is = new IntraService();
 	static ObjectMapper mapper = new ObjectMapper();
+	
+  private Vertx vertx;
+  
+  public IntraHandlerJson(Vertx vertx){
+    super();
+    this.vertx=vertx;
+  }
 	
 	@Override
 	public void handle(final HttpServerRequest request) {
@@ -35,7 +43,7 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
 					e.printStackTrace();
 				}
 				
-				is.handleIntraReq(req,res);
+				is.handleIntraReq(req,res,vertx);
 				
 				String value=null;
 				try {

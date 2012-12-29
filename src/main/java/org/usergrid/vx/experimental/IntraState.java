@@ -18,4 +18,6 @@ public class IntraState {
 	ConsistencyLevel consistency= ConsistencyLevel.ONE;
 	//TODO this is cookie cutter
 	Map<IntraMetaData,String> meta = new HashMap<IntraMetaData,String>();
+	//TODO separate per/request state from application/session state
+	static Map<String,Processor> processors = new HashMap<String,Processor>();
 }

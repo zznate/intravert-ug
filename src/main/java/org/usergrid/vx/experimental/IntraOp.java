@@ -155,6 +155,28 @@ public class IntraOp implements Serializable{
 	  return i;
 	}
 	
+	public static IntraOp createProcessorOp(String name, String spec, String value){
+	  IntraOp i = new IntraOp(Type.CREATEPROCESSOR);
+	  i.set("name",name);
+	  i.set("spec", spec);
+	  i.set("value", value);
+	  return i;
+	}
+	
+	public static IntraOp processOp(String processorName, Map params, int inputId){
+	  IntraOp i = new IntraOp(Type.PROCESS);
+	  i.set("processorname", processorName);
+	  i.set("params", params);
+	  i.set("input", inputId);
+	  return i;
+	}
+	
+	public static IntraOp dropKeyspaceOp(String ksname){
+	  IntraOp i = new IntraOp(Type.DROPKEYSPACE);
+	  i.set("keyspace", ksname);
+	  return i;
+	}
+	
 	public Type getType() {
 		return type;
 	}
@@ -179,7 +201,10 @@ public class IntraOp implements Serializable{
     AUTOTIMESTAMP,
     SETKEYSPACE,
     SETCOLUMNFAMILY,
-    ASSUME
+    ASSUME,
+    CREATEPROCESSOR,
+    PROCESS,
+    DROPKEYSPACE
   }
 	
 }

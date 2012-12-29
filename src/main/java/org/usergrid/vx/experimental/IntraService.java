@@ -1,5 +1,7 @@
 package org.usergrid.vx.experimental;
 
+import groovy.lang.GroovyClassLoader;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -40,23 +42,31 @@ import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.KsDef;
 import org.apache.cassandra.utils.ByteBufferUtil;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.Vertx;
+import org.vertx.java.core.buffer.Buffer;
+import org.vertx.java.core.eventbus.impl.MessageFactory;
+import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonObject;
+
+import com.hazelcast.core.Message;
 
 public class IntraService {
 
 
-	public IntraRes handleIntraReq(IntraReq req,IntraRes res){
+	public IntraRes handleIntraReq(IntraReq req, IntraRes res, Vertx vertx){
 		IntraState state = new IntraState();
 		if ( verifyReq(req,res) == false ){
 			return res;
 		} else {
-			executeReq(req, res, state);
+			executeReq(req, res, state, vertx);
 		}		
 		return res;
 	}
 	/* Process a request, return a response.  Trap errors
 	 * and set the res object appropriately. Try not to do much heavy lifting here
 	 * delegate complex processing to methods.*/
-	protected boolean executeReq(IntraReq req, IntraRes res, IntraState state) {
+	protected boolean executeReq(IntraReq req, IntraRes res, IntraState state, Vertx vertx) {
 		for (int i=0;i<req.getE().size() && res.getException() == null ;i++){
 			IntraOp op = req.getE().get(i);
 			try {
@@ -87,9 +97,14 @@ public class IntraService {
   			  listColumnFamily(req, res, state, i);
   			} else if (op.getType().equals(IntraOp.Type.ASSUME)){
   			  assume(req,res,state,i);
+  			} else if (op.getType().equals(IntraOp.Type.CREATEPROCESSOR)){
+  			  createProcessor(req,res,state,i,vertx);
+  			} else if (op.getType().equals(IntraOp.Type.PROCESS)){
+  			  process(req,res,state,i,vertx);
   			}
 			} catch (Exception ex){ 
 			  res.setExceptionAndId(ex,i);
+			  ex.printStackTrace();
 			}
 		}
 		return true;
@@ -196,6 +211,7 @@ public class IntraService {
 		  res.setExceptionAndId(e.getMessage(), i);
 			return;
 		}
+		
 		try {
 			MigrationManager.announceNewKeyspace(ksm);
 		} catch (ConfigurationException e) {
@@ -340,7 +356,7 @@ public class IntraService {
     }
 
   }
-  
+   
   private void assume(IntraReq req, IntraRes res, IntraState state, int i) {
     IntraOp op = req.getE().get(i);
     IntraMetaData imd = new IntraMetaData();
@@ -349,5 +365,34 @@ public class IntraService {
     imd.type = (String) op.getOp().get("type");
     state.meta.put( imd , (String) op.getOp().get("clazz") );
     res.getOpsRes().put(i, "OK");
+  }
+  
+  private void createProcessor(IntraReq req, IntraRes res, IntraState state, int i,Vertx vertx) {
+    IntraOp op = req.getE().get(i);
+    String name  = (String) op.getOp().get("name");
+    GroovyClassLoader gc = new GroovyClassLoader();
+    Class c = gc.parseClass((String) op.getOp().get("value") );
+    Processor p = null;
+    try {
+      p = (Processor) c.newInstance();
+    } catch (InstantiationException e) {
+      res.setExceptionAndId(e, i);
+      return;
+    } catch (IllegalAccessException e) {
+      res.setExceptionAndId(e, i);
+      return;
+    }
+    IntraState.processors.put(name,p);
+  }
+  
+  private void process(IntraReq req, IntraRes res, IntraState state, int i,Vertx vertx) {
+    IntraOp op = req.getE().get(i);
+    String processorName = (String) op.getOp().get("processorname");
+    Map params  = (Map) op.getOp().get("params");
+    Processor p = state.processors.get(processorName);
+    Integer inputId = (Integer) op.getOp().get("input");
+    List<Map> toProcess = (List<Map>)res.getOpsRes().get(inputId);
+    List<Map> results = p.process(toProcess);
+    res.getOpsRes().put(i, results);
   }
 }
