@@ -176,7 +176,22 @@ public class IntraOp implements Serializable{
 	  i.set("keyspace", ksname);
 	  return i;
 	}
-	
+
+  public static IntraOp createFilterOp(String name, String spec, String value) {
+    IntraOp i = new IntraOp(Type.CREATEFILTER);
+    i.set("name", name);
+    i.set("spec", spec);
+    i.set("value", value);
+    return i;
+  }
+
+  public static IntraOp filterModeOp(String name, boolean on) {
+    IntraOp i = new IntraOp(Type.FILTERMODE);
+    i.set("name", name);
+    i.set("on", on);
+    return i;
+  }
+
 	public Type getType() {
 		return type;
 	}
@@ -204,7 +219,10 @@ public class IntraOp implements Serializable{
     ASSUME,
     CREATEPROCESSOR,
     PROCESS,
-    DROPKEYSPACE
+    DROPKEYSPACE,
+    CREATEFILTER,
+    FILTERMODE;
+    
   }
 	
 }
