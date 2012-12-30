@@ -173,4 +173,26 @@ public class IntraServiceTest {
      x = (List<Map>) res.getOpsRes().get(9);
      Assert.assertEquals( "WOW",  x.get(0).get("value") );
    }
+	 
+	 
+	 @Test
+   public void intTest() throws CharacterCodingException{
+     IntraReq req = new IntraReq();
+     req.add( IntraOp.setKeyspaceOp("intks") ); //0
+     req.add( IntraOp.createKsOp("intks", 1)); //1
+     req.add( IntraOp.createCfOp("intcf")); //2
+     req.add( IntraOp.setColumnFamilyOp("intcf") ); //3
+     req.add( IntraOp.setAutotimestampOp() ); //4
+     req.add( IntraOp.assumeOp("intks", "intcf", "value", "UTF-8"));//5
+     req.add( IntraOp.assumeOp("intks", "intcf", "column", "int32"));//6
+     req.add( IntraOp.setOp("rowa", 1, "wow")); //7
+     req.add( IntraOp.getOp("rowa", 1)); //8
+     
+     IntraRes res = new IntraRes();
+     is.handleIntraReq(req, res, x);
+     List<Map> x = (List<Map>) res.getOpsRes().get(8);
+     Assert.assertEquals( "wow",  x.get(0).get("value") );
+     Assert.assertEquals( 1,  x.get(0).get("name") );
+   
+   }
 }

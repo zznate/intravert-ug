@@ -115,7 +115,9 @@ public class IntraService {
 	}
 	
 	private Object resolveObject(Object o, IntraReq req, IntraRes res,IntraState state, int i){
-		if (o instanceof String){
+		if (o instanceof Integer){
+		  return o;
+		} else if (o instanceof String){
 			return o;
 		} else if (o instanceof IntraOp){
 			IntraOp op = (IntraOp) o;
@@ -133,7 +135,9 @@ public class IntraService {
 		}
 	}
 	private ByteBuffer byteBufferForObject(Object o){
-		if (o instanceof String){
+	  if (o instanceof Integer){
+	    return ByteBufferUtil.bytes( ((Integer) o).intValue());
+	  } else if (o instanceof String){
 			return ByteBufferUtil.bytes((String) o);
 		} else if (o instanceof byte[] ) { 
 			return ByteBuffer.wrap((byte [])o);
@@ -240,7 +244,7 @@ public class IntraService {
 		Collection<RowMutation> col = new ArrayList<RowMutation>();
     col.add(rm);
 		try {
-			StorageProxy.instance.mutate(col, state.consistency);
+			StorageProxy.mutate(col, state.consistency);
 			res.getOpsRes().put(i, "OK");
 		} catch (WriteTimeoutException e) {
 		  res.setExceptionAndId(e.getMessage(), i);

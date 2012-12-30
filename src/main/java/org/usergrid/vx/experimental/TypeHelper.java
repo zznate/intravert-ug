@@ -16,8 +16,10 @@ public class TypeHelper {
       try {
         return ByteBufferUtil.string(bb);
       } catch (Exception ex){ throw new RuntimeException(ex); }
+    } else if (s.equals("int32")) {
+      return ByteBufferUtil.toInt(bb);
     } else {
-      throw new RuntimeException("Do not know what to do");
+      throw new RuntimeException("Do not know what to do with "+s);
     }
   }
 }
