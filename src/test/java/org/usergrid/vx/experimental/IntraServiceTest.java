@@ -107,6 +107,36 @@ public class IntraServiceTest {
 	    Assert.assertEquals( "wow",  x.get(0).get("value") );
 	  }
 	
+	 @Test
+	 public void filterTest() throws CharacterCodingException{
+	   IntraReq req = new IntraReq();
+     req.add( IntraOp.setKeyspaceOp("filterks") ); //0
+     req.add( IntraOp.createKsOp("filterks", 1)); //1
+     req.add( IntraOp.createCfOp("filtercf")); //2
+     req.add( IntraOp.setColumnFamilyOp("filtercf") ); //3
+     req.add( IntraOp.setAutotimestampOp() ); //4
+     req.add( IntraOp.assumeOp("filterks", "filtercf", "value", "UTF-8"));//5
+     req.add( IntraOp.setOp("rowa", "col1", "20")); //6
+     req.add( IntraOp.setOp("rowa", "col2", "22")); //7
+     req.add( IntraOp.createFilterOp("over21", "groovy", 
+     		"public class Over21 implements org.usergrid.vx.experimental.Filter { \n"+
+        " public Map filter(Map row){ \n" +
+        "   if (Integer.parseInt( row.get(\"value\") ) >21){ \n"+
+        "     return row; \n" +
+        "   } else { return null; } \n" +
+        " } \n" +
+        "} \n"
+     )); //8
+     req.add( IntraOp.filterModeOp("over21", true)); //9
+     req.add( IntraOp.sliceOp("rowa", "col1", "col3", 10)); //10
+     IntraRes res = new IntraRes();
+     is.handleIntraReq(req, res, x);
+     System.out.println ( res.getException() );
+     List<Map> results = (List<Map>) res.getOpsRes().get(10);
+     Assert.assertEquals( "22", results.get(0).get("value") );
+     Assert.assertEquals(1, results.size());
+     
+	 }
 	 
 	 @Test
    public void processorTest() throws CharacterCodingException{

@@ -101,6 +101,10 @@ public class IntraService {
   			  createProcessor(req,res,state,i,vertx);
   			} else if (op.getType().equals(IntraOp.Type.PROCESS)){
   			  process(req,res,state,i,vertx);
+  			} else if (op.getType().equals(IntraOp.Type.CREATEFILTER)){
+  			  createFilter(req,res,state,i,vertx);
+  			} else if (op.getType().equals(IntraOp.Type.FILTERMODE)){
+  			  filterMode(req,res,state,i,vertx);
   			}
 			} catch (Exception ex){ 
 			  res.setExceptionAndId(ex,i);
@@ -269,14 +273,7 @@ public class IntraService {
 			ColumnFamily cf = results.get(0).cf;
 			if (cf == null){ //cf= null is no data
 			} else {
-				Iterator <IColumn> it = cf.iterator();
-				while (it.hasNext()){
-					IColumn ic = it.next();
-					HashMap m = new HashMap();
-					m.put("name", ic.name());
-					m.put("value", ic.value());
-					finalResults.add(m);
-				}
+			  readCf(cf, finalResults,state);
 			}
 			res.getOpsRes().put(i,finalResults);
 		} catch (ReadTimeoutException e) {
@@ -331,14 +328,7 @@ public class IntraService {
       ColumnFamily cf = rows.get(0).cf;
       if (cf == null) { // cf= null is no data
       } else {
-        Iterator<IColumn> it = cf.iterator();
-        while (it.hasNext()) {
-          IColumn ic = it.next();
-          HashMap m = new HashMap();
-          m.put("name", TypeHelper.getTypedIfPossible(state, "column", ic.name()));
-          m.put("value", TypeHelper.getTypedIfPossible(state, "value", ic.value()));
-          finalResults.add(m);
-        }
+        readCf(cf, finalResults,state);
       }
       res.getOpsRes().put(i, finalResults);
     } catch (ReadTimeoutException e) {
@@ -357,6 +347,24 @@ public class IntraService {
 
   }
    
+  private void readCf(ColumnFamily cf , List<Map> finalResults, IntraState state){
+    Iterator<IColumn> it = cf.iterator();
+    while (it.hasNext()) {
+      IColumn ic = it.next();
+      HashMap m = new HashMap();
+      m.put("name", TypeHelper.getTypedIfPossible(state, "column", ic.name()));
+      m.put("value", TypeHelper.getTypedIfPossible(state, "value", ic.value()));
+      if (state.currentFilter != null){
+        Map newMap = state.currentFilter.filter(m);
+        if (newMap != null){
+          finalResults.add(newMap);
+        }
+      } else {
+        finalResults.add(m);
+      }
+    }
+  }
+  
   private void assume(IntraReq req, IntraRes res, IntraState state, int i) {
     IntraOp op = req.getE().get(i);
     IntraMetaData imd = new IntraMetaData();
@@ -383,6 +391,41 @@ public class IntraService {
       return;
     }
     IntraState.processors.put(name,p);
+  }
+  
+  private void createFilter(IntraReq req, IntraRes res, IntraState state, int i,Vertx vertx) {
+    IntraOp op = req.getE().get(i);
+    String name  = (String) op.getOp().get("name");
+    GroovyClassLoader gc = new GroovyClassLoader();
+    Class c = gc.parseClass((String) op.getOp().get("value") );
+    Filter f = null;
+    try {
+      f = (Filter) c.newInstance();
+    } catch (InstantiationException e) {
+      res.setExceptionAndId(e, i);
+      return;
+    } catch (IllegalAccessException e) {
+      res.setExceptionAndId(e, i);
+      return;
+    }
+    IntraState.filters.put(name, f);
+  }
+  
+  private void filterMode(IntraReq req, IntraRes res, IntraState state, int i,Vertx vertx) {
+    IntraOp op = req.getE().get(i);
+    String name  = (String) op.getOp().get("name");
+    Boolean on  = (Boolean) op.getOp().get("on");
+    if (on){
+      Filter f = state.filters.get(name);
+      if (f == null){
+        res.setExceptionAndId("filter "+name +" not found", i);
+        return;
+      } else {
+        state.currentFilter=f;
+      }
+    } else {
+      state.currentFilter = null;
+    }
   }
   
   private void process(IntraReq req, IntraRes res, IntraState state, int i,Vertx vertx) {
