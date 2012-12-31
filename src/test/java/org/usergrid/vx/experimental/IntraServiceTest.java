@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.cassandra.db.marshal.IntegerType;
 import org.apache.cassandra.service.CassandraDaemon;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.junit.Assert;
@@ -191,6 +192,7 @@ public class IntraServiceTest {
      IntraRes res = new IntraRes();
      is.handleIntraReq(req, res, x);
      List<Map> x = (List<Map>) res.getOpsRes().get(8);
+     
      Assert.assertEquals( "wow",  x.get(0).get("value") );
      Assert.assertEquals( 1,  x.get(0).get("name") );
    }
@@ -216,5 +218,29 @@ public class IntraServiceTest {
      Assert.assertEquals( 2,  ((Object [])x.get(0).get("value"))[1] );
    }
 	    
+	 
+	 @Test
+   public void CqlTest() throws CharacterCodingException{ 
+     IntraReq req = new IntraReq();
+     req.add( IntraOp.setKeyspaceOp("cqlks") ); //0
+     req.add( IntraOp.createKsOp("cqlks", 1)); //1
+     req.add( IntraOp.createCfOp("cqlcf")); //2
+     req.add( IntraOp.setColumnFamilyOp("cqlcf") ); //3
+     req.add( IntraOp.setAutotimestampOp() ); //4
+     req.add( IntraOp.assumeOp("cqlks", "cqlcf", "value", "int32"));//5
+     req.add( IntraOp.assumeOp("cqlks", "cqlcf", "column", "int32"));//6
+     req.add( IntraOp.setOp("rowa", 1, 2)); //7
+     req.add( IntraOp.getOp("rowa", 1)); //8
+     req.add( IntraOp.cqlQuery("select * from cqlcf", "3.0.0"));//9
+      
+     IntraRes res = new IntraRes();
+     is.handleIntraReq(req, res, x);
+     List<Map> x = (List<Map>) res.getOpsRes().get(8);
+     Assert.assertEquals( 1,  x.get(0).get("name") );
+     Assert.assertEquals( 2,  x.get(0).get("value") );
+     x = (List<Map>) res.getOpsRes().get(9);
+     Assert.assertEquals( 2, IntegerType.instance.compose((ByteBuffer)x.get(0).get("value")) );
+     
+   }
 
 }

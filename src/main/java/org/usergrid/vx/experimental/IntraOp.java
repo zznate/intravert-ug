@@ -191,6 +191,13 @@ public class IntraOp implements Serializable{
     i.set("on", on);
     return i;
   }
+  
+  public static IntraOp cqlQuery(String query, String version){
+    IntraOp i = new IntraOp(Type.CQLQUERY);
+    i.set("query", query);
+    i.set("version", version );
+    return i;
+  }
 
 	public Type getType() {
 		return type;
@@ -221,7 +228,8 @@ public class IntraOp implements Serializable{
     PROCESS,
     DROPKEYSPACE,
     CREATEFILTER,
-    FILTERMODE;
+    FILTERMODE,
+    CQLQUERY
     
   }
 	
