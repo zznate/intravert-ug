@@ -33,4 +33,10 @@ public class IntraOpUnitTest {
 
   }
 
+  @Test
+  public void compositeBBTest(){
+    IntraService is = new IntraService();
+    is.byteBufferForObject(new Object[] {"yo",0, 2,0});
+    
+  }
 }

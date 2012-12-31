@@ -193,6 +193,28 @@ public class IntraServiceTest {
      List<Map> x = (List<Map>) res.getOpsRes().get(8);
      Assert.assertEquals( "wow",  x.get(0).get("value") );
      Assert.assertEquals( 1,  x.get(0).get("name") );
-   
    }
+	 
+	 @Test
+   public void compositeTest() throws CharacterCodingException{ 
+     IntraReq req = new IntraReq();
+     req.add( IntraOp.setKeyspaceOp("compks") ); //0
+     req.add( IntraOp.createKsOp("compks", 1)); //1
+     req.add( IntraOp.createCfOp("compcf")); //2
+     req.add( IntraOp.setColumnFamilyOp("compcf") ); //3
+     req.add( IntraOp.setAutotimestampOp() ); //4
+     req.add( IntraOp.assumeOp("compks", "compcf", "value", "CompositeType(UTF-8,int32)"));//5
+     req.add( IntraOp.assumeOp("compks", "compcf", "column", "int32"));//6
+     req.add( IntraOp.setOp("rowa", 1, new Object[] {"yo",0, 2,0})); //7
+     req.add( IntraOp.getOp("rowa", 1)); //8
+      
+     IntraRes res = new IntraRes();
+     is.handleIntraReq(req, res, x);
+     List<Map> x = (List<Map>) res.getOpsRes().get(8);
+     Assert.assertEquals( 1,  x.get(0).get("name") );
+     Assert.assertEquals( "yo",  ((Object [])x.get(0).get("value"))[0] );
+     Assert.assertEquals( 2,  ((Object [])x.get(0).get("value"))[1] );
+   }
+	    
+
 }
