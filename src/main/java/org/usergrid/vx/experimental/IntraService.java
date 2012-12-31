@@ -2,6 +2,7 @@ package org.usergrid.vx.experimental;
 
 import groovy.lang.GroovyClassLoader;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -115,7 +116,9 @@ public class IntraService {
 	}
 	
 	private Object resolveObject(Object o, IntraReq req, IntraRes res,IntraState state, int i){
-		if (o instanceof Integer){
+		if (o instanceof Object[]){
+		  return o;
+		} else if (o instanceof Integer){
 		  return o;
 		} else if (o instanceof String){
 			return o;
@@ -134,8 +137,23 @@ public class IntraService {
 			throw new RuntimeException(" do not know what to do with "+o.getClass());
 		}
 	}
-	private ByteBuffer byteBufferForObject(Object o){
-	  if (o instanceof Integer){
+	 ByteBuffer byteBufferForObject(Object o){
+	  if (o instanceof Object[]){
+	    Object [] comp = (Object[]) o;
+	    List<byte[]> b = new ArrayList<byte[]>();
+	    int [] sep = new int [comp.length/2];
+	    for (int i=0;i<comp.length;i=i+2){
+	      //get the element
+	      ByteBuffer element = byteBufferForObject(comp[i]);
+	      byte[] by = new byte[element.remaining()];
+	      element.get(by);
+	      b.add(by);
+	      //this part must be an unsigned int
+	      sep[i/2]= (Integer) comp[i+1];
+	    }
+	    byte [] entireComp = CompositeTool.makeComposite(b, sep);
+	    return ByteBuffer.wrap(entireComp);
+	  } else if (o instanceof Integer){
 	    return ByteBufferUtil.bytes( ((Integer) o).intValue());
 	  } else if (o instanceof String){
 			return ByteBufferUtil.bytes((String) o);
