@@ -120,6 +120,8 @@ public class IntraService {
   			  filterMode(req,res,state,i,vertx);
   			} else if (op.getType().equals(IntraOp.Type.CQLQUERY)){
   			  cqlQuery(req,res,state,i,vertx);
+  			} else if (op.getType().equals(IntraOp.Type.CLEAR)){
+  			  clear(req,res,state,i,vertx);
   			}
 			} catch (Exception ex){ 
 			  res.setExceptionAndId(ex,i);
@@ -512,5 +514,12 @@ public class IntraService {
       }
     }
     res.getOpsRes().put(i,returnRows);
+  }
+  
+  private void clear(IntraReq req, IntraRes res, IntraState state, int i,Vertx vertx) {
+    IntraOp op = req.getE().get(i);
+    int id = (Integer) op.getOp().get("id");
+    res.getOpsRes().put(id, new ArrayList<HashMap>());
+    
   }
 }

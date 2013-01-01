@@ -199,6 +199,12 @@ public class IntraOp implements Serializable{
     return i;
   }
 
+  public static IntraOp clear(int resultId){
+    IntraOp i = new IntraOp(Type.CLEAR);
+    i.set("id", resultId);
+    return i;
+  }
+  
 	public Type getType() {
 		return type;
 	}
@@ -207,6 +213,8 @@ public class IntraOp implements Serializable{
     Preconditions.checkArgument(arg != null && arg.length() > 0,
                 "A non-blank '{}' is required for {}", new Object[]{msg,type});
   }
+  
+  
 
   public enum Type {
     LISTCOLUMNFAMILY,
@@ -229,7 +237,8 @@ public class IntraOp implements Serializable{
     DROPKEYSPACE,
     CREATEFILTER,
     FILTERMODE,
-    CQLQUERY
+    CQLQUERY,
+    CLEAR
     
   }
 	

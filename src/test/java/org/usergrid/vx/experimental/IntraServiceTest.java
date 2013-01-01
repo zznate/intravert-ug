@@ -17,6 +17,7 @@ import org.apache.cassandra.service.CassandraDaemon;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.usergrid.vx.server.IntravertCassandraServer;
@@ -219,7 +220,7 @@ public class IntraServiceTest {
    }
 	    
 	 
-	 @Test
+	 @Ignore
    public void CqlTest() throws CharacterCodingException{ 
      IntraReq req = new IntraReq();
      req.add( IntraOp.setKeyspaceOp("cqlks") ); //0
@@ -243,4 +244,29 @@ public class IntraServiceTest {
      
    }
 
+	 
+	 @Test
+   public void clearTest() throws CharacterCodingException{
+     IntraReq req = new IntraReq();
+     req.add( IntraOp.setKeyspaceOp("clearks") ); //0
+     req.add( IntraOp.createKsOp("clearks", 1)); //1
+     req.add( IntraOp.createCfOp("clearcf")); //2
+     req.add( IntraOp.setColumnFamilyOp("clearcf") ); //3
+     req.add( IntraOp.setAutotimestampOp() ); //4
+     req.add( IntraOp.assumeOp("clearks", "clearcf", "value", "UTF-8")); //5
+     req.add( IntraOp.setOp("rowa", 1, "wow")); //6
+     req.add( IntraOp.getOp("rowa", 1)); //7
+     req.add( IntraOp.getOp("rowa", 1)); //8
+     req.add( IntraOp.clear(8)); //9
+     
+     IntraRes res = new IntraRes();
+     is.handleIntraReq(req, res, x);
+     
+     List<Map> x = (List<Map>) res.getOpsRes().get(7);
+     Assert.assertEquals( "wow",  x.get(0).get("value") );
+     
+     x = (List<Map>) res.getOpsRes().get(8);
+     Assert.assertEquals(0, x.size());
+   }
+	 
 }
