@@ -191,7 +191,20 @@ public class IntraOp implements Serializable{
     i.set("on", on);
     return i;
   }
+  
+  public static IntraOp cqlQuery(String query, String version){
+    IntraOp i = new IntraOp(Type.CQLQUERY);
+    i.set("query", query);
+    i.set("version", version );
+    return i;
+  }
 
+  public static IntraOp clear(int resultId){
+    IntraOp i = new IntraOp(Type.CLEAR);
+    i.set("id", resultId);
+    return i;
+  }
+  
 	public Type getType() {
 		return type;
 	}
@@ -200,6 +213,8 @@ public class IntraOp implements Serializable{
     Preconditions.checkArgument(arg != null && arg.length() > 0,
                 "A non-blank '{}' is required for {}", new Object[]{msg,type});
   }
+  
+  
 
   public enum Type {
     LISTCOLUMNFAMILY,
@@ -221,7 +236,9 @@ public class IntraOp implements Serializable{
     PROCESS,
     DROPKEYSPACE,
     CREATEFILTER,
-    FILTERMODE;
+    FILTERMODE,
+    CQLQUERY,
+    CLEAR
     
   }
 	

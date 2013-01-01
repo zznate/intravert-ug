@@ -15,6 +15,7 @@ import java.util.Map;
 import org.apache.cassandra.config.CFMetaData;
 import org.apache.cassandra.config.KSMetaData;
 import org.apache.cassandra.config.Schema;
+import org.apache.cassandra.cql3.QueryProcessor;
 import org.apache.cassandra.db.ColumnFamily;
 import org.apache.cassandra.db.ConsistencyLevel;
 import org.apache.cassandra.db.DecoratedKey;
@@ -27,21 +28,32 @@ import org.apache.cassandra.db.SliceByNamesReadCommand;
 import org.apache.cassandra.db.SliceFromReadCommand;
 import org.apache.cassandra.db.filter.ColumnSlice;
 import org.apache.cassandra.db.filter.QueryPath;
+import org.apache.cassandra.db.marshal.Int32Type;
+import org.apache.cassandra.db.marshal.IntegerType;
 import org.apache.cassandra.dht.IPartitioner;
 import org.apache.cassandra.exceptions.ConfigurationException;
+import org.apache.cassandra.exceptions.InvalidRequestException;
 import org.apache.cassandra.exceptions.IsBootstrappingException;
 import org.apache.cassandra.exceptions.OverloadedException;
 import org.apache.cassandra.exceptions.ReadTimeoutException;
+import org.apache.cassandra.exceptions.RequestExecutionException;
+import org.apache.cassandra.exceptions.RequestValidationException;
 import org.apache.cassandra.exceptions.UnavailableException;
 import org.apache.cassandra.exceptions.WriteTimeoutException;
+import org.apache.cassandra.service.ClientState;
 import org.apache.cassandra.service.MigrationManager;
+import org.apache.cassandra.service.QueryState;
 import org.apache.cassandra.service.StorageProxy;
 import org.apache.cassandra.service.StorageService;
 import org.apache.cassandra.thrift.CassandraServer;
 import org.apache.cassandra.thrift.CfDef;
+import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ColumnPath;
+import org.apache.cassandra.thrift.CqlResult;
+import org.apache.cassandra.thrift.CqlRow;
 import org.apache.cassandra.thrift.KsDef;
+import org.apache.cassandra.transport.messages.ResultMessage;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -106,6 +118,10 @@ public class IntraService {
   			  createFilter(req,res,state,i,vertx);
   			} else if (op.getType().equals(IntraOp.Type.FILTERMODE)){
   			  filterMode(req,res,state,i,vertx);
+  			} else if (op.getType().equals(IntraOp.Type.CQLQUERY)){
+  			  cqlQuery(req,res,state,i,vertx);
+  			} else if (op.getType().equals(IntraOp.Type.CLEAR)){
+  			  clear(req,res,state,i,vertx);
   			}
 			} catch (Exception ex){ 
 			  res.setExceptionAndId(ex,i);
@@ -154,7 +170,8 @@ public class IntraService {
 	    byte [] entireComp = CompositeTool.makeComposite(b, sep);
 	    return ByteBuffer.wrap(entireComp);
 	  } else if (o instanceof Integer){
-	    return ByteBufferUtil.bytes( ((Integer) o).intValue());
+	    return Int32Type.instance.decompose( (Integer)o);
+	    //return ByteBufferUtil.bytes( ((Integer) o).intValue());
 	  } else if (o instanceof String){
 			return ByteBufferUtil.bytes((String) o);
 		} else if (o instanceof byte[] ) { 
@@ -459,5 +476,50 @@ public class IntraService {
     List<Map> toProcess = (List<Map>)res.getOpsRes().get(inputId);
     List<Map> results = p.process(toProcess);
     res.getOpsRes().put(i, results);
+  }
+  
+  private void cqlQuery(IntraReq req, IntraRes res, IntraState state, int i,Vertx vertx) {
+    IntraOp op = req.getE().get(i);
+    ClientState clientState = new ClientState();
+    try {
+      clientState.setCQLVersion((String) op.getOp().get("version"));
+      clientState.setKeyspace(state.currentKeyspace);
+    } catch (InvalidRequestException e) {
+      res.setExceptionAndId(e, i);
+      return;
+    }
+    QueryState queryState = new QueryState(clientState);
+    ResultMessage rm = null;
+    try {
+      rm = QueryProcessor.process((String) op.getOp().get("query"), state.consistency, queryState);
+    } catch (RequestExecutionException e) {
+      res.setExceptionAndId(e, i);
+      return;
+    } catch (RequestValidationException e) {
+      res.setExceptionAndId(e, i);
+      return;
+    }
+    //ToDo maybe processInternal
+    CqlResult result = rm.toThriftResult();
+    
+    List<CqlRow> rows = result.getRows();
+    List<HashMap> returnRows = new ArrayList<HashMap>();
+    for (CqlRow row: rows){
+      List<Column> columns = row.getColumns();
+      for (Column c: columns){
+        HashMap m = new HashMap();
+        m.put("value", c.value);
+        m.put("name", c.name);
+        returnRows.add(m);
+      }
+    }
+    res.getOpsRes().put(i,returnRows);
+  }
+  
+  private void clear(IntraReq req, IntraRes res, IntraState state, int i,Vertx vertx) {
+    IntraOp op = req.getE().get(i);
+    int id = (Integer) op.getOp().get("id");
+    res.getOpsRes().put(id, new ArrayList<HashMap>());
+    
   }
 }
