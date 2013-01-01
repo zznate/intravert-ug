@@ -12,8 +12,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.cassandra.cql3.QueryProcessor;
+import org.apache.cassandra.db.ConsistencyLevel;
+import org.apache.cassandra.db.marshal.Int32Type;
 import org.apache.cassandra.db.marshal.IntegerType;
 import org.apache.cassandra.service.CassandraDaemon;
+import org.apache.cassandra.thrift.Column;
+import org.apache.cassandra.thrift.CqlResult;
+import org.apache.cassandra.thrift.ThriftClientState;
+import org.apache.cassandra.transport.messages.ResultMessage;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -23,6 +30,8 @@ import org.junit.runner.RunWith;
 import org.usergrid.vx.server.IntravertCassandraServer;
 import org.usergrid.vx.server.IntravertDeamon;
 import org.vertx.java.core.Vertx;
+
+import static junit.framework.Assert.assertNotNull;
 
 @RunWith(CassandraRunner.class)
 @RequiresKeyspace(ksName = "myks")
@@ -120,7 +129,7 @@ public class IntraServiceTest {
      req.add( IntraOp.assumeOp("filterks", "filtercf", "value", "UTF-8"));//5
      req.add( IntraOp.setOp("rowa", "col1", "20")); //6
      req.add( IntraOp.setOp("rowa", "col2", "22")); //7
-     req.add( IntraOp.createFilterOp("over21", "groovy", 
+     req.add( IntraOp.createFilterOp("over21", "groovy",
      		"public class Over21 implements org.usergrid.vx.experimental.Filter { \n"+
         " public Map filter(Map row){ \n" +
         "   if (Integer.parseInt( row.get(\"value\") ) >21){ \n"+
@@ -220,7 +229,7 @@ public class IntraServiceTest {
    }
 	    
 	 
-	 @Ignore
+	 @Test
    public void CqlTest() throws CharacterCodingException{ 
      IntraReq req = new IntraReq();
      req.add( IntraOp.setKeyspaceOp("cqlks") ); //0
@@ -237,10 +246,12 @@ public class IntraServiceTest {
      IntraRes res = new IntraRes();
      is.handleIntraReq(req, res, x);
      List<Map> x = (List<Map>) res.getOpsRes().get(8);
+
      Assert.assertEquals( 1,  x.get(0).get("name") );
      Assert.assertEquals( 2,  x.get(0).get("value") );
      x = (List<Map>) res.getOpsRes().get(9);
-     Assert.assertEquals( 2, IntegerType.instance.compose((ByteBuffer)x.get(0).get("value")) );
+     //Assert.assertEquals( 2, ((ByteBuffer)x.get(2).get("value")).getInt() );
+     Assert.assertEquals( new Integer(2), Int32Type.instance.compose((ByteBuffer)x.get(2).get("value")) );
      
    }
 
@@ -268,5 +279,29 @@ public class IntraServiceTest {
      x = (List<Map>) res.getOpsRes().get(8);
      Assert.assertEquals(0, x.size());
    }
-	 
+
+  @Test
+  @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+  public void cqlEngineTest() throws Exception {
+    IntraReq req = new IntraReq();
+    req.add( IntraOp.setKeyspaceOp("myks") ); //0
+    req.add( IntraOp.setColumnFamilyOp("mycf") ); //1
+    req.add( IntraOp.setAutotimestampOp() ); //2
+    req.add( IntraOp.setOp("rowa", "col1", "7")); //3
+    IntraRes res = new IntraRes();
+    is.handleIntraReq(req, res, x);
+
+    ThriftClientState tcs = new ThriftClientState();
+    tcs.setKeyspace("myks");
+    ResultMessage rm = QueryProcessor.process("select * from mycf", ConsistencyLevel.ONE,tcs.getQueryState());
+    CqlResult cr = rm.toThriftResult();
+    List<Column> cols = cr.getRows().get(0).getColumns();
+    String col0 = ByteBufferUtil.string(cols.get(0).bufferForName());
+    String col1 = ByteBufferUtil.string(cols.get(1).bufferForName());
+    String col2 = ByteBufferUtil.string(cols.get(2).bufferForName());
+    String val0 = ByteBufferUtil.string(cols.get(0).bufferForValue());
+    String val1 = ByteBufferUtil.string(cols.get(1).bufferForValue());
+    String val2 = ByteBufferUtil.string(cols.get(2).bufferForValue());
+    assertNotNull(rm);
+  }
 }
