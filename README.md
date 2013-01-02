@@ -7,13 +7,13 @@ Intravert is built on top of Cassandra. It **is not** a fork. Rather, it is a pl
 ## Game Changer Features
 Intravert is more then an RPC library, query language, or transport for Cassandra. IntraVert gives access to new powerful ways of working with Cassandra.
 
-* The [Processing](https://github.com/zznate/intravert-ug/blob/master/src/main/java/org/usergrid/vx/experimental/PROCESSING.md) system allows users to perform arbitary programatic transformations on the server side before the results are return to the client.
+* The [Processing](https://github.com/zznate/intravert-ug/wiki/Processing) system allows users to perform arbitary programatic transformations on the server side before the results are return to the client.
 
-* [GETREF](https://github.com/zznate/intravert-ug/blob/master/src/main/java/org/usergrid/vx/experimental/GETREF.md) feature can be used to execute procedure and join like logic in a single RPC request.
+* [GETREF](https://github.com/zznate/intravert-ug/wiki/GETREF) feature can be used to execute procedure and join like logic in a single RPC request.
 
-* A simple sync/async [API and Transport](https://github.com/zznate/intravert-ug/blob/master/src/main/java/org/usergrid/vx/experimental/JSON.md) that runs over HTTP allows clients to chose from JSON, JSON compressed by smile, and even big fat sexy XML.
+* A simple sync/async [API and Transport](https://github.com/zznate/intravert-ug/wiki/JSON) that runs over HTTP allows clients to chose from JSON, JSON compressed by smile, and even big fat sexy XML.
 
-* No more dealing with byte[] or ByteBuffers. IntraVert lets users work with simple familiar objects like String or Integer. See [Types and Composites](src/main/java/org/usergrid/vx/experimental/COMPOSITES.md).
+* No more dealing with byte[] or ByteBuffers. IntraVert lets users work with simple familiar objects like String or Integer. See [Types and Composites](https://github.com/zznate/intravert-ug/wiki/Composites).
 
 ## Motivations
 Intravert was conceived of and designed by long time users of Cassandra who have written numerous real-world applications built on the existing Thrift API. 
@@ -26,4 +26,4 @@ Spend some time looking through the documentation, test cases, and examples to s
 
 ## Getting Started
 You can find a brief overview located here:
-<https://github.com/zznate/intravert-ug/tree/master/src/main/java/org/usergrid/vx/experimental/README.md>
+<https://github.com/zznate/intravert-ug/wiki>
