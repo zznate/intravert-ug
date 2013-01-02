@@ -20,5 +20,6 @@ public class IntraState {
 	//TODO separate per/request state from application/session state
 	static Map<String,Processor> processors = new HashMap<String,Processor>();
 	static Map<String,Filter> filters = new HashMap<String,Filter>(); 
+	static Map<String,MultiProcessor> multiProcessors = new HashMap<String,MultiProcessor>();
 	Filter currentFilter;
 }

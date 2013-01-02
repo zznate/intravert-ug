@@ -8,6 +8,8 @@ Terminology
 * PROCESS: Instructs a processor to operate on the result of an operation
 * CREATEFILTER: Creates and loads a filter
 * FILTERMODE: Enables or disables filters 
+* CREATEMULTIPROCESSOR: Creates and loads a multi-processor
+* MULTIPROCESS: run a multiprocessor
 
 Processor example
 ----
@@ -128,3 +130,85 @@ Notice although the slice should have returned two columns the filter removed on
      Assert.assertEquals( "22", results.get(0).get("value") );
      Assert.assertEquals(1, results.size());
 
+MultiProcessor example
+----
+Processors can operate on the result of one operation. When a user may wishes to combine
+the results of two or more operations a MultiProcessor is used.
+
+API
+----
+
+A MutliProcess has all the results of all the executed steps (res.getOptRes()). Params
+are supplied from the user in the request.
+
+    package org.usergrid.vx.experimental;
+
+    import java.util.List;
+    import java.util.Map;
+
+    public interface MultiProcessor {
+      public List<Map> multiProcess(Map<Integer,Object> results, Map params);
+    }
+    
+Example
+----
+
+The user wishes to run two slice operations and do a server side union of the results. 
+
+    @Test
+    @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+    public void multiProcessTest() throws Exception {
+      IntraReq req = new IntraReq();
+      req.add( IntraOp.setKeyspaceOp("myks") ); //0
+      req.add( IntraOp.setColumnFamilyOp("mycf") ); //1
+      req.add( IntraOp.setAutotimestampOp() ); //2
+      req.add( IntraOp.assumeOp("myks", "mycf", "value", "UTF-8")); //3
+      req.add( IntraOp.setOp("rowzz", "col1", "7")); //4
+      req.add( IntraOp.setOp("rowzz", "col2", "8")); //5
+      req.add( IntraOp.setOp("rowyy", "col4", "9")); //6
+      req.add( IntraOp.setOp("rowyy", "col2", "7")); //7
+      
+ Perform two slice operations.
+      
+      req.add( IntraOp.sliceOp("rowzz", "a", "z", 100));//8
+      req.add( IntraOp.sliceOp("rowyy", "a", "z", 100));//9
+ 
+ Create the union MultiProcess.
+    
+       req.add( IntraOp.createMultiProcess("union", "groovy", 
+       "public class Union implements org.usergrid.vx.experimental.MultiProcessor { \n"+
+       "  public List<Map> multiProcess(Map<Integer,Object> results, Map params){ \n"+
+       "    java.util.HashMap s = new java.util.HashMap(); \n"+
+       "    List<Integer> ids = (List<Integer>) params.get(\"steps\");\n"+
+       "    for (Integer id: ids) { \n"+
+       "      List<Map> rows = results.get(id); \n"+
+       "      for (Map row: rows){ \n"+
+       "        s.put(row.get(\"value\"),\"\"); \n"+
+       "      } \n"+
+       "    } \n"+ 
+       "    List<HashMap> ret = new ArrayList<HashMap>(); \n"+
+       "    ret.add(s) \n"+
+       "    return ret; \n" +
+       "  } \n"+
+       "} \n" )); //10 
+
+Create the parameters that will tell the MultiProcess what result ids to include.
+
+    Map paramsMap = new HashMap();
+    List<Integer> steps = new ArrayList<Integer>();
+    steps.add(8);
+    steps.add(9);
+    paramsMap.put("steps", steps);
+    req.add( IntraOp.multiProcess("union", paramsMap)); //11
+    
+    IntraRes res = new IntraRes();
+    is.handleIntraReq(req, res, x);
+
+The results contain the results after being send to the processor.
+
+    List<Map> x = (List<Map>) res.getOpsRes().get(11);
+    Set<String> expectedResults = new HashSet<String>();
+    expectedResults.addAll( Arrays.asList(new String[] { "7", "8", "9"}));
+    Assert.assertEquals(expectedResults, x.get(0).keySet());
+    
+  }

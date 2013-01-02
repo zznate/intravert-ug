@@ -205,6 +205,21 @@ public class IntraOp implements Serializable{
     return i;
   }
   
+  public static IntraOp createMultiProcess(String name, String spec, String value){
+    IntraOp i = new IntraOp(Type.CREATEMULTIPROCESS);
+    i.set("name", name);
+    i.set("spec", spec);
+    i.set("value", value);
+    return i;
+  }
+  
+  public static IntraOp multiProcess(String processorName, Map params){
+    IntraOp i = new IntraOp(Type.MULTIPROCESS);
+    i.set("name", processorName);
+    i.set("params", params);
+    return i;
+  }
+  
 	public Type getType() {
 		return type;
 	}
@@ -238,7 +253,9 @@ public class IntraOp implements Serializable{
     CREATEFILTER,
     FILTERMODE,
     CQLQUERY,
-    CLEAR
+    CLEAR,
+    CREATEMULTIPROCESS,
+    MULTIPROCESS
     
   }
 	
