@@ -63,6 +63,7 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import com.hazelcast.core.Message;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections;
 
 public class IntraService {
 
@@ -122,6 +123,10 @@ public class IntraService {
   			  cqlQuery(req,res,state,i,vertx);
   			} else if (op.getType().equals(IntraOp.Type.CLEAR)){
   			  clear(req,res,state,i,vertx);
+  			} else if (op.getType().equals(IntraOp.Type.CREATEMULTIPROCESS)){
+  			  createMultiProcess(req,res,state,i,vertx);
+  			} else if (op.getType().equals(IntraOp.Type.MULTIPROCESS)){
+  			  multiProcess(req,res,state,i,vertx);
   			}
 			} catch (Exception ex){ 
 			  res.setExceptionAndId(ex,i);
@@ -131,7 +136,19 @@ public class IntraService {
 		return true;
 	}
 	
-	private Object resolveObject(Object o, IntraReq req, IntraRes res,IntraState state, int i){
+	private void multiProcess(IntraReq req, IntraRes res, IntraState state,
+      int i, Vertx vertx) {
+	  IntraOp op = req.getE().get(i);
+    String name = (String) op.getOp().get("name");
+    Map params  = (Map) op.getOp().get("params");
+    //Processor p = state.processors.get(processorName);
+    MultiProcessor p = state.multiProcessors.get(name);
+    
+    List<Map> mpResults =  p.multiProcess(res.getOpsRes(), params);
+    res.getOpsRes().put(i, mpResults);
+    
+  }
+  private Object resolveObject(Object o, IntraReq req, IntraRes res,IntraState state, int i){
 		if (o instanceof Object[]){
 		  return o;
 		} else if (o instanceof Integer){
@@ -521,5 +538,23 @@ public class IntraService {
     int id = (Integer) op.getOp().get("id");
     res.getOpsRes().put(id, new ArrayList<HashMap>());
     
+  }
+  
+  private void createMultiProcess(IntraReq req, IntraRes res, IntraState state, int i,Vertx vertx) {
+    IntraOp op = req.getE().get(i);
+    String name  = (String) op.getOp().get("name");
+    GroovyClassLoader gc = new GroovyClassLoader();
+    Class c = gc.parseClass((String) op.getOp().get("value") );
+    MultiProcessor p = null;
+    try {
+      p = (MultiProcessor) c.newInstance();
+    } catch (InstantiationException e) {
+      res.setExceptionAndId(e, i);
+      return;
+    } catch (IllegalAccessException e) {
+      res.setExceptionAndId(e, i);
+      return;
+    }
+    IntraState.multiProcessors.put(name, p);
   }
 }
