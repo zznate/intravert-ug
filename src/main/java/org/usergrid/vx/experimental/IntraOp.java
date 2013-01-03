@@ -375,13 +375,7 @@ public class IntraOp implements Serializable{
       		} catch (ReadTimeoutException e) {
       		  res.setExceptionAndId(e.getMessage(), i);
       			return;
-      		} catch (org.apache.cassandra.exceptions.UnavailableException e) {
-      		  res.setExceptionAndId(e.getMessage(), i);
-      			return;
-      		} catch (IsBootstrappingException e) {
-      		  res.setExceptionAndId(e.getMessage(), i);
-      			return;
-      		} catch (IOException e) {
+      		} catch (org.apache.cassandra.exceptions.UnavailableException | IsBootstrappingException | IOException e) {
       		  res.setExceptionAndId(e.getMessage(), i);
       			return;
       		}
