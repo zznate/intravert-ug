@@ -372,10 +372,8 @@ public class IntraOp implements Serializable{
       			  IntraService.readCf(cf, finalResults, state);
       			}
       			res.getOpsRes().put(i,finalResults);
-      		} catch (ReadTimeoutException e) {
-      		  res.setExceptionAndId(e.getMessage(), i);
-      			return;
-      		} catch (org.apache.cassandra.exceptions.UnavailableException | IsBootstrappingException | IOException e) {
+      		} catch (ReadTimeoutException | org.apache.cassandra.exceptions.UnavailableException
+                  | IsBootstrappingException | IOException e) {
       		  res.setExceptionAndId(e.getMessage(), i);
       			return;
       		}
@@ -411,16 +409,8 @@ public class IntraOp implements Serializable{
             IntraService.readCf(cf, finalResults, state);
           }
           res.getOpsRes().put(i, finalResults);
-        } catch (ReadTimeoutException e) {
-          res.getOpsRes().put(i, e.getMessage());
-          return;
-        } catch (UnavailableException e) {
-          res.getOpsRes().put(i, e.getMessage());
-          return;
-        } catch (IsBootstrappingException e) {
-          res.getOpsRes().put(i, e.getMessage());
-          return;
-        } catch (IOException e) {
+        } catch (ReadTimeoutException | org.apache.cassandra.exceptions.UnavailableException
+                          | IsBootstrappingException | IOException e) {
           res.getOpsRes().put(i, e.getMessage());
           return;
         }
@@ -444,16 +434,9 @@ public class IntraOp implements Serializable{
       		try {
       			StorageProxy.mutate(Arrays.asList(rm), state.consistency);
       			res.getOpsRes().put(i, "OK");
-      		} catch (WriteTimeoutException e) {
+      		} catch (WriteTimeoutException | org.apache.cassandra.exceptions.UnavailableException | OverloadedException e) {
       		  res.setExceptionAndId(e.getMessage(), i);
-      		  return;
-      		} catch (org.apache.cassandra.exceptions.UnavailableException e) {
-      		  res.setExceptionAndId(e.getMessage(), i);
-      		  return;
-      		} catch (OverloadedException e) {
-      		  res.setExceptionAndId(e.getMessage(), i);
-      		  return;
-      		}
+      		  return;}
       }
     },
     AUTOTIMESTAMP {
@@ -501,10 +484,7 @@ public class IntraOp implements Serializable{
         Processor p = null;
         try {
           p = (Processor) c.newInstance();
-        } catch (InstantiationException e) {
-          res.setExceptionAndId(e, i);
-          return;
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
           res.setExceptionAndId(e, i);
           return;
         }
@@ -540,10 +520,7 @@ public class IntraOp implements Serializable{
         Filter f = null;
         try {
           f = (Filter) c.newInstance();
-        } catch (InstantiationException e) {
-          res.setExceptionAndId(e, i);
-          return;
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
           res.setExceptionAndId(e, i);
           return;
         }
@@ -585,10 +562,7 @@ public class IntraOp implements Serializable{
         ResultMessage rm = null;
         try {
           rm = QueryProcessor.process((String) op.getOp().get("query"), state.consistency, queryState);
-        } catch (RequestExecutionException e) {
-          res.setExceptionAndId(e, i);
-          return;
-        } catch (RequestValidationException e) {
+        } catch (RequestExecutionException | RequestValidationException e) {
           res.setExceptionAndId(e, i);
           return;
         }
@@ -627,10 +601,7 @@ public class IntraOp implements Serializable{
         MultiProcessor p = null;
         try {
           p = (MultiProcessor) c.newInstance();
-        } catch (InstantiationException e) {
-          res.setExceptionAndId(e, i);
-          return;
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
           res.setExceptionAndId(e, i);
           return;
         }
