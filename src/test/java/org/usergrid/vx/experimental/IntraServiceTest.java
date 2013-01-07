@@ -356,4 +356,37 @@ public class IntraServiceTest {
   }
   
   
+  
+  @Test
+  @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+  public void batchSetTest() throws Exception {
+    IntraReq req = new IntraReq();
+    req.add( IntraOp.setKeyspaceOp("myks") ); //0
+    req.add( IntraOp.setColumnFamilyOp("mycf") ); //1
+    req.add( IntraOp.setAutotimestampOp() ); //2
+    req.add( IntraOp.assumeOp("myks", "mycf", "value", "UTF-8")); //3
+    req.add( IntraOp.assumeOp("myks", "mycf", "column", "UTF-8")); //4
+    Map row1 = new HashMap();
+    row1.put("rowkey", "batchkeya");
+    row1.put("name", "col1");
+    row1.put("value", "val1");
+    
+    Map row2 = new HashMap();
+    row2.put("rowkey", "batchkeya");
+    row2.put("name", "col2");
+    row2.put("value", "val2");
+
+    List<Map> rows = new ArrayList<Map>();
+    rows.add(row1);
+    rows.add(row2);
+    req.add( IntraOp.batchSetOp(rows));//5
+    req.add( IntraOp.sliceOp("batchkeya", "a", "z", 100));//6
+    IntraRes res = new IntraRes();
+    is.handleIntraReq(req, res, x);
+    List<Map> x = (List<Map>) res.getOpsRes().get(6);
+    Assert.assertEquals(2, x.size());
+    Assert.assertEquals("val1", x.get(0).get("value"));
+    Assert.assertEquals("val2", x.get(1).get("value"));
+    
+  }
 }

@@ -80,17 +80,22 @@ public class IntraOp implements Serializable{
     Preconditions.checkArgument(columnValue != null, "Cannot set a column to null for {}", Type.SET);
 		IntraOp i = new IntraOp(Type.SET);
 		i.set("rowkey", rowkey);
-		i.set("columnName", columnName);
+		i.set("name", columnName);
 		i.set("value", columnValue);
 		return i;
 	}
 	
+	public static IntraOp batchSetOp(List<Map> rows){
+	  IntraOp i = new IntraOp(Type.BATCHSET);
+	  i.set("rows", rows);
+	  return i;
+	}
 	public static IntraOp getOp(Object rowkey, Object columnName){
     Preconditions.checkArgument(rowkey != null, "The rowkey cannot be null for {}", Type.GET);
     Preconditions.checkArgument(columnName != null, "The columnName cannot be null for {}", Type.GET);
 		IntraOp i = new IntraOp(Type.GET);
 		i.set("rowkey", rowkey);
-		i.set("column", columnName);
+		i.set("name", columnName);
 		return i;
 	}
 	
@@ -394,7 +399,7 @@ public class IntraOp implements Serializable{
         ByteBuffer rowkey = IntraService.byteBufferForObject(IntraService.resolveObject(
                 op.getOp().get("rowkey"), req, res, state, i));
         ByteBuffer column = IntraService.byteBufferForObject(IntraService.resolveObject(
-                op.getOp().get("column"), req, res, state, i));
+                op.getOp().get("name"), req, res, state, i));
         QueryPath path = new QueryPath(state.currentColumnFamily, null);
         List<ByteBuffer> nameAsList = Arrays.asList(column);
         ReadCommand command = new SliceByNamesReadCommand(state.currentKeyspace,
@@ -425,7 +430,7 @@ public class IntraOp implements Serializable{
                           IntraService.resolveObject(op.getOp().get("rowkey"), req, res, state, i)
                   ));
       		QueryPath qp = new QueryPath(state.currentColumnFamily,null, IntraService.byteBufferForObject(
-                  IntraService.resolveObject(op.getOp().get("columnName"), req, res, state, i)
+                  IntraService.resolveObject(op.getOp().get("name"), req, res, state, i)
           ) );
       		Object val = op.getOp().get("value");
       		rm.add(qp, IntraService.byteBufferForObject(
@@ -436,7 +441,8 @@ public class IntraOp implements Serializable{
       			res.getOpsRes().put(i, "OK");
       		} catch (WriteTimeoutException | org.apache.cassandra.exceptions.UnavailableException | OverloadedException e) {
       		  res.setExceptionAndId(e.getMessage(), i);
-      		  return;}
+      		  return;
+      		}
       }
     },
     AUTOTIMESTAMP {
@@ -619,6 +625,37 @@ public class IntraOp implements Serializable{
 
         List<Map> mpResults =  p.multiProcess(res.getOpsRes(), params);
         res.getOpsRes().put(i, mpResults);
+      }
+    },
+    BATCHSET {
+      @Override
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+        IntraOp op = req.getE().get(i);
+        List<Map> rows = (List<Map>) op.getOp().get("rows");
+        List<RowMutation> m = new ArrayList<RowMutation>();
+        for (Map row:rows){
+          //code is mostly cloned from Type.SET
+          RowMutation rm = new RowMutation(state.currentKeyspace,
+              IntraService.byteBufferForObject(IntraService.resolveObject(
+                  row.get("rowkey"), req, res, state, i)));
+          QueryPath qp = new QueryPath(state.currentColumnFamily, null,
+              IntraService.byteBufferForObject(IntraService.resolveObject(
+                  row.get("name"), req, res, state, i)));
+          rm.add( qp,IntraService.byteBufferForObject(IntraService.resolveObject(
+              row.get("value"), req, res, state, i)),
+              (Long) (state.autoTimestamp ? state.nanotime : op.getOp().get(
+                  "timestamp")));
+          m.add(rm);
+        }
+        try {
+          StorageProxy.mutate(m, state.consistency);
+          res.getOpsRes().put(i, "OK");
+        } catch (WriteTimeoutException
+            | org.apache.cassandra.exceptions.UnavailableException
+            | OverloadedException e) {
+          res.setExceptionAndId(e.getMessage(), i);
+          return;
+        }
       }
     };
 
