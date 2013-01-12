@@ -31,7 +31,7 @@ import org.vertx.java.core.http.HttpClientResponse;
 public class IntraClient implements Handler<HttpClientResponse> {
 	private static Logger logger = LoggerFactory.getLogger(IntraClient.class);
 	private static Vertx vertx;
-	private static String payload;
+	 static String payload;
 	private HttpClient httpClient;
 	static ObjectMapper mapper = new ObjectMapper();
 	ArrayBlockingQueue<IntraRes> q = new ArrayBlockingQueue<IntraRes>(1);
@@ -54,7 +54,6 @@ public class IntraClient implements Handler<HttpClientResponse> {
 			req.write(payload);
 		} else if (payload.equalsIgnoreCase("json")){
 			String value = mapper.writeValueAsString(i);
-			System.out.println(value);
 			req.putHeader("content-length", value.length());
 			req.write(value);
 		} else if (payload.equalsIgnoreCase("jsonsmile")){
@@ -136,4 +135,13 @@ public class IntraClient implements Handler<HttpClientResponse> {
 		Thread.sleep(4000);
 		
 	}
+
+  public String getPayload() {
+    return payload;
+  }
+
+  public void setPayload(String payload) {
+    IntraClient.payload = payload;
+  }
+	
 }
