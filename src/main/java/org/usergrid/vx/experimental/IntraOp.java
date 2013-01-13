@@ -247,6 +247,19 @@ public class IntraOp implements Serializable{
 	public Type getType() {
 		return type;
 	}
+	
+	public static IntraOp saveState(){
+	  IntraOp i = new IntraOp(Type.STATE);
+	  i.set("mode", "save");
+	  return i;
+	}
+	
+	public static IntraOp restoreState(int id){
+	  IntraOp i = new IntraOp(Type.STATE);
+	  i.set("mode", "get");
+	  i.set("id", id);
+	  return i;
+	}
 
   private static void checkForBlankStr(String arg, String msg, Type type) {
     Preconditions.checkArgument(arg != null && arg.length() > 0,
@@ -625,6 +638,27 @@ public class IntraOp implements Serializable{
 
         List<Map> mpResults =  p.multiProcess(res.getOpsRes(), params);
         res.getOpsRes().put(i, mpResults);
+      }
+    },
+    STATE {
+      @Override
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i,
+          Vertx vertx) {
+        IntraOp op = req.getE().get(i);
+        if (((String)op.getOp().get("mode")).equalsIgnoreCase("save")){
+          res.getOpsRes().put(i, state.saveState(state));
+        } else if (((String)op.getOp().get("mode")).equalsIgnoreCase("get")){
+          Integer id = (Integer) op.getOp().get("id");
+          IntraState other = state.getState(id.intValue());
+          state.currentColumnFamily=other.currentColumnFamily;
+          state.currentKeyspace=other.currentKeyspace;
+          state.consistency = other.consistency;
+          state.autoTimestamp = other.autoTimestamp;
+          state.nanotime = other.nanotime;
+          state.meta = other.meta;
+          state.currentFilter = other.currentFilter;
+          
+        }
       }
     },
     BATCHSET {

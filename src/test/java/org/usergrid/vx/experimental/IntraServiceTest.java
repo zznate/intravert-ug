@@ -389,4 +389,35 @@ public class IntraServiceTest {
     Assert.assertEquals("val2", x.get(1).get("value"));
     
   }
+  
+  @Test
+  @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+  public void saveStateTest() throws Exception {
+    //IntraClient ic = new IntraClient();
+    //ic.setPayload("json");
+    IntraReq r = new IntraReq();
+    r.add( IntraOp.setKeyspaceOp("myks"));//0
+    r.add( IntraOp.setColumnFamilyOp("mycf")); //1
+    r.add( IntraOp.setAutotimestampOp() ); //2
+    r.add( IntraOp.setOp("a", "b", "c") ); //3
+    r.add( IntraOp.assumeOp("myks", "mycf", "value", "UTF-8") );//4
+    r.add( IntraOp.saveState() );//5
+    
+    IntraRes res = new IntraRes();
+    is.handleIntraReq(r, res, x);
+    
+    //IntraRes res = ic.sendBlocking(r);
+    Assert.assertEquals("OK",res.getOpsRes().get(3) );
+    int id = (Integer) res.getOpsRes().get(5);
+    
+    IntraReq r2 = new IntraReq();
+    r2.add( IntraOp.restoreState(id));//0
+    r2.add( IntraOp.setOp("d", "e", "f"));//1
+    r2.add( IntraOp.getOp("d", "e")); //2
+    IntraRes res2 = new IntraRes();
+    is.handleIntraReq(r2, res2, x);
+    Assert.assertEquals("f", ((List<Map>) res2.getOpsRes().get(2)).get(0).get("value") );
+  }
+  
+  
 }
