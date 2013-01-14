@@ -31,7 +31,7 @@ import org.vertx.java.core.http.HttpClientResponse;
 public class IntraClient implements Handler<HttpClientResponse> {
 	private static Logger logger = LoggerFactory.getLogger(IntraClient.class);
 	private static Vertx vertx;
-	 static String payload;
+	private String payload;
 	private HttpClient httpClient;
 	static ObjectMapper mapper = new ObjectMapper();
 	ArrayBlockingQueue<IntraRes> q = new ArrayBlockingQueue<IntraRes>(1);
@@ -141,7 +141,6 @@ public class IntraClient implements Handler<HttpClientResponse> {
   }
 
   public void setPayload(String payload) {
-    IntraClient.payload = payload;
+    this.payload = payload;
   }
-	
 }
