@@ -419,5 +419,37 @@ public class IntraServiceTest {
     Assert.assertEquals("f", ((List<Map>) res2.getOpsRes().get(2)).get(0).get("value") );
   }
   
+  @Test
+  @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+  public void loadTestClient() throws Exception{
+    final int ops=1;
+    long start = System.currentTimeMillis();
+    
+    Thread t = new Thread (){
+       IntraClient ic = new IntraClient();
+       
+      public void run(){
+        //ic.setPayload("json");
+        ic.setPayload("jsonsmile");
+        for (int i =0;i<ops;++i){
+          IntraReq req = new IntraReq();
+          req.add( IntraOp.setKeyspaceOp("myks") ); //0
+          req.add( IntraOp.setColumnFamilyOp("mycf") ); //1
+          req.add( IntraOp.setAutotimestampOp() ); //2
+          req.add( IntraOp.setOp("rowzz", "col1", "7")); //4
+          IntraRes res = null;
+          try {
+            res = ic.sendBlocking(req);
+          } catch (Exception e) {
+            e.printStackTrace();
+          }
+        }
+      }
+    };
+    t.start();
+    t.join();
+    long end = System.currentTimeMillis();
+    System.out.println(end-start);
+  }
   
 }

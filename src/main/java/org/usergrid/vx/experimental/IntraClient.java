@@ -54,7 +54,6 @@ public class IntraClient implements Handler<HttpClientResponse> {
 			req.write(payload);
 		} else if (payload.equalsIgnoreCase("json")){
 			String value = mapper.writeValueAsString(i);
-			System.out.println(value);
 			req.putHeader("content-length", value.length());
 			req.write(value);
 		} else if (payload.equalsIgnoreCase("jsonsmile")){
@@ -144,6 +143,4 @@ public class IntraClient implements Handler<HttpClientResponse> {
   public void setPayload(String payload) {
     this.payload = payload;
   }
-	
-	
 }

@@ -22,16 +22,16 @@ public class TypeHelper {
       int start = s.indexOf("(");
       int end = s.indexOf(")");
       String list = s.substring(start+1,end);
-      System.out.println("list is" + list);
+      //System.out.println("list is" + list);
       
       String [] parts = list.split(",");
       Object [] results = new Object[parts.length] ;
-      System.out.println("parts " + parts.length);
+      //System.out.println("parts " + parts.length);
       byte[] by = new byte[bb.remaining()];
       bb.get(by);
       List<byte[]> comp = CompositeTool.readComposite(by);
-      System.out.println("results size "+results.length);
-      System.out.println("comp size"+ comp.size());
+      //System.out.println("results size "+results.length);
+      //System.out.println("comp size"+ comp.size());
       for (int i=0;i<parts.length;i++){
         results[i]= getTyped(parts[i], ByteBuffer.wrap(comp.get(i)) ); 
       }

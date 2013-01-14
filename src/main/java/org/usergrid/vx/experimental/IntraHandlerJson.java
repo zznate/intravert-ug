@@ -35,6 +35,7 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
 				IntraReq req = null;
 				try {
 					req = mapper.readValue(buffer.getBytes(), IntraReq.class);
+
 				} catch (JsonParseException e) {
 					e.printStackTrace();
 				} catch (JsonMappingException e) {
@@ -55,7 +56,7 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
-				System.out.println(value);
+				//System.out.println(value);
 				request.response.end(value);
 			}
 		});

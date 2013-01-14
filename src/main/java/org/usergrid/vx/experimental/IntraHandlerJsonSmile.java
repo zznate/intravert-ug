@@ -35,6 +35,8 @@ public class IntraHandlerJsonSmile implements Handler<HttpServerRequest>{
 				IntraReq req = null;
 				try {
 					req = mapper.readValue(buffer.getBytes(), IntraReq.class);
+	         //System.out.println("Mapped req");
+	         // System.out.println(req.getE());
 				} catch (JsonParseException e) {
 					e.printStackTrace();
 				} catch (JsonMappingException e) {
@@ -47,8 +49,8 @@ public class IntraHandlerJsonSmile implements Handler<HttpServerRequest>{
 				
 				byte [] value=null;
 				try {
-					value = mapper.writeValueAsBytes(value);
-					System.out.println(value);
+					value = mapper.writeValueAsBytes(res);
+					//ystem.out.println(value);
 				} catch (JsonGenerationException e1) {
 					e1.printStackTrace();
 				} catch (JsonMappingException e1) {
@@ -57,6 +59,8 @@ public class IntraHandlerJsonSmile implements Handler<HttpServerRequest>{
 					e1.printStackTrace();
 				}
 				request.response.end( new Buffer(value));
+				//System.out.println("sent back buffer");
+				//request.response.write(new Buffer(value));
 			}
 		});
 	}
