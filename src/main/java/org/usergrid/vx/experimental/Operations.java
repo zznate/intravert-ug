@@ -12,34 +12,34 @@ import java.util.Map;
  */
 public class Operations {
 
-  public static final String KEYSPACE = "keyspace";
-  public static final String COLUMN_FAMILY = "columnfamily";
-  public static final String ROWKEY = "rowkey";
-  public static final String NAME = "name";
-  public static final String VALUE = "value";
-  public static final String ROWS = "rows";
-  public static final String WANTED = "wanted";
-  public static final String RESULTREF = "resultref";
-  public static final String START = "start";
-  public static final String END = "end";
-  public static final String SIZE = "size";
-  public static final String WANTEDCOLS = "wantedcols";
-  public static final String ACTION = "action";
-  public static final String REPLICATION = "replication";
-  public static final String LEVEL = "level";
-  public static final String TYPE = "type";
-  public static final String CLAZZ = "clazz";
-  public static final String SPEC = "spec";
-  public static final String PROCESSORNAME = "processorname";
-  public static final String PARAMS = "params";
-  public static final String INPUT = "input";
-  public static final String ON = "on";
-  public static final String QUERY = "query";
-  public static final String VERSION = "version";
-  public static final String ID = "id";
-  public static final String MODE = "mode";
-  public static final String SAVE = "save";
-  public static final String GET = "get";
+  private static final String KEYSPACE = "keyspace";
+  private static final String COLUMN_FAMILY = "columnfamily";
+  private static final String ROWKEY = "rowkey";
+  private static final String NAME = "name";
+  private static final String VALUE = "value";
+  private static final String ROWS = "rows";
+  private static final String WANTED = "wanted";
+  private static final String RESULTREF = "resultref";
+  private static final String START = "start";
+  private static final String END = "end";
+  private static final String SIZE = "size";
+  private static final String WANTEDCOLS = "wantedcols";
+  private static final String ACTION = "action";
+  private static final String REPLICATION = "replication";
+  private static final String LEVEL = "level";
+  private static final String TYPE = "type";
+  private static final String CLAZZ = "clazz";
+  private static final String SPEC = "spec";
+  private static final String PROCESSORNAME = "processorname";
+  private static final String PARAMS = "params";
+  private static final String INPUT = "input";
+  private static final String ON = "on";
+  private static final String QUERY = "query";
+  private static final String VERSION = "version";
+  private static final String ID = "id";
+  private static final String MODE = "mode";
+  private static final String SAVE = "save";
+  private static final String GET = "get";
 
   private Operations() {}
 
