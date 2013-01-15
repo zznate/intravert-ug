@@ -11,18 +11,48 @@ import java.util.Map;
  * @author zznate
  */
 public class Operations {
+
+  public static final String KEYSPACE = "keyspace";
+  public static final String COLUMN_FAMILY = "columnfamily";
+  public static final String ROWKEY = "rowkey";
+  public static final String NAME = "name";
+  public static final String VALUE = "value";
+  public static final String ROWS = "rows";
+  public static final String WANTED = "wanted";
+  public static final String RESULTREF = "resultref";
+  public static final String START = "start";
+  public static final String END = "end";
+  public static final String SIZE = "size";
+  public static final String WANTEDCOLS = "wantedcols";
+  public static final String ACTION = "action";
+  public static final String REPLICATION = "replication";
+  public static final String LEVEL = "level";
+  public static final String TYPE = "type";
+  public static final String CLAZZ = "clazz";
+  public static final String SPEC = "spec";
+  public static final String PROCESSORNAME = "processorname";
+  public static final String PARAMS = "params";
+  public static final String INPUT = "input";
+  public static final String ON = "on";
+  public static final String QUERY = "query";
+  public static final String VERSION = "version";
+  public static final String ID = "id";
+  public static final String MODE = "mode";
+  public static final String SAVE = "save";
+  public static final String GET = "get";
+
   private Operations() {}
 
   public static IntraOp setKeyspaceOp(String keyspace){
-    checkForBlankStr(keyspace, "keyspace", IntraOp.Type.SETKEYSPACE);
+    checkForBlankStr(keyspace, KEYSPACE, IntraOp.Type.SETKEYSPACE);
     return new IntraOp(IntraOp.Type.SETKEYSPACE)
-            .set("keyspace", keyspace);
+            .set(KEYSPACE, keyspace);
   }
 
   public static IntraOp setColumnFamilyOp(String columnFamily){
-    checkForBlankStr(columnFamily, "columnFamily", IntraOp.Type.SETCOLUMNFAMILY);
+    checkForBlankStr(columnFamily, COLUMN_FAMILY, IntraOp.Type.SETCOLUMNFAMILY);
  		return new IntraOp(IntraOp.Type.SETCOLUMNFAMILY)
-             .set("columnfamily", columnFamily);
+             .set(COLUMN_FAMILY, columnFamily);
  	}
 
   public static IntraOp setAutotimestampOp(){
@@ -34,57 +64,58 @@ public class Operations {
     Preconditions.checkArgument(columnName != null, "The columnName cannot be null for {}", IntraOp.Type.SET);
     Preconditions.checkArgument(columnValue != null, "Cannot set a column to null for {}", IntraOp.Type.SET);
     return new IntraOp(IntraOp.Type.SET)
-            .set("rowkey", rowkey)
-            .set("name", columnName)
-            .set("value", columnValue);
+            .set(ROWKEY, rowkey)
+            .set(NAME, columnName)
+            .set(VALUE, columnValue);
  	}
 
   public static IntraOp batchSetOp(List<Map> rows){
- 	  return new IntraOp(IntraOp.Type.BATCHSET).set("rows", rows);
+ 	  return new IntraOp(IntraOp.Type.BATCHSET)
+             .set(ROWS, rows);
  	}
 
   public static IntraOp getOp(Object rowkey, Object columnName){
     Preconditions.checkArgument(rowkey != null, "The rowkey cannot be null for {}", IntraOp.Type.GET);
     Preconditions.checkArgument(columnName != null, "The columnName cannot be null for {}", IntraOp.Type.GET);
  		return new IntraOp(IntraOp.Type.GET)
-             .set("rowkey", rowkey)
-             .set("name", columnName);
+             .set(ROWKEY, rowkey)
+             .set(NAME, columnName);
  	}
 
   public static IntraOp getResRefOp(int reference, String wanted){
     Preconditions.checkArgument(reference >= 0);
-    checkForBlankStr(wanted, "wanted", IntraOp.Type.GETREF);
+    checkForBlankStr(wanted, WANTED, IntraOp.Type.GETREF);
     return new IntraOp(IntraOp.Type.GETREF)
-            .set("resultref", reference)
-            .set("wanted", wanted);
+            .set(RESULTREF, reference)
+            .set(WANTED, wanted);
  	}
 
   public static IntraOp sliceOp( Object rowkey , Object start, Object end, int size){
     Preconditions.checkArgument(rowkey != null,"A row key is required for {}", IntraOp.Type.SLICE);
     Preconditions.checkArgument(size > 0, "A slice size must be positive integer for {}", IntraOp.Type.SLICE);
     return new IntraOp(IntraOp.Type.SLICE)
-            .set("rowkey", rowkey)
-            .set("start", start)
-            .set("end", end)
-            .set("size", size);
+            .set(ROWKEY, rowkey)
+            .set(START, start)
+            .set(END, end)
+            .set(SIZE, size);
   }
 
   public static IntraOp columnPredicateOp( Object rowkey, Object [] columnList){
     Preconditions.checkArgument(columnList != null, "You much provide a columnList array");
  		return new IntraOp(IntraOp.Type.COLUMNPREDICATE)
-             .set("wantedcols", columnList);
+             .set(WANTEDCOLS, columnList);
  	}
 
   public static IntraOp forEachOp( int opRef, IntraOp action){
     Preconditions.checkArgument(action != null, "The IntraOp action cannot be null");
     return new IntraOp(IntraOp.Type.FOREACH)
-            .set("action", action);
+            .set(ACTION, action);
   }
 
  	public static IntraOp createCfOp(String cfName){
     checkForBlankStr(cfName, "columnFamily name", IntraOp.Type.CREATECOLUMNFAMILY);
  		return new IntraOp(IntraOp.Type.CREATECOLUMNFAMILY)
-             .set("name", cfName);
+             .set(NAME, cfName);
  	}
 
   public static IntraOp createKsOp(String ksname, int replication){
@@ -92,15 +123,15 @@ public class Operations {
     Preconditions.checkArgument(replication > 0,
             "A value for positive value for 'replication' is required for {}", IntraOp.Type.CREATEKEYSPACE);
     return new IntraOp(IntraOp.Type.CREATEKEYSPACE)
-            .set("name", ksname)
-            .set("replication", replication);
+            .set(NAME, ksname)
+            .set(REPLICATION, replication);
   }
 
   public static IntraOp consistencyOp(String name){
      // Force an IllegalArgumentException
     ConsistencyLevel.valueOf(name);
  		return new IntraOp(IntraOp.Type.CONSISTENCY)
-             .set("level", name);
+             .set(LEVEL, name);
  	}
 
  	public static IntraOp listKeyspacesOp(){
@@ -110,82 +141,82 @@ public class Operations {
   public static IntraOp listColumnFamilyOp(String keyspace){
     checkForBlankStr(keyspace, "Keyspace name", IntraOp.Type.LISTCOLUMNFAMILY);
     return new IntraOp(IntraOp.Type.LISTCOLUMNFAMILY)
-            .set("keyspace", keyspace);
+            .set(KEYSPACE, keyspace);
   }
 
   public static IntraOp assumeOp(String keyspace,String columnfamily,String type, String clazz){
     return new IntraOp(IntraOp.Type.ASSUME)
-            .set("keyspace", keyspace)
-            .set("columnfamily", columnfamily)
-            .set("type", type) //should be column rowkey value
-            .set("clazz", clazz );
+            .set(KEYSPACE, keyspace)
+            .set(COLUMN_FAMILY, columnfamily)
+            .set(TYPE, type) //should be column rowkey value
+            .set(CLAZZ, clazz );
   }
 
   public static IntraOp createProcessorOp(String name, String spec, String value){
     return new IntraOp(IntraOp.Type.CREATEPROCESSOR)
-            .set("name",name)
-            .set("spec", spec)
-            .set("value", value);
+            .set(NAME,name)
+            .set(SPEC, spec)
+            .set(VALUE, value);
   }
 
  	public static IntraOp processOp(String processorName, Map params, int inputId){
  	  return new IntraOp(IntraOp.Type.PROCESS)
-             .set("processorname", processorName)
-             .set("params", params)
-             .set("input", inputId);
+             .set(PROCESSORNAME, processorName)
+             .set(PARAMS, params)
+             .set(INPUT, inputId);
  	}
 
  	public static IntraOp dropKeyspaceOp(String ksname){
  	  return new IntraOp(IntraOp.Type.DROPKEYSPACE)
-             .set("keyspace", ksname);
+             .set(KEYSPACE, ksname);
  	}
 
   public static IntraOp createFilterOp(String name, String spec, String value) {
     return new IntraOp(IntraOp.Type.CREATEFILTER)
-            .set("name", name)
-            .set("spec", spec)
-            .set("value", value);
+            .set(NAME, name)
+            .set(SPEC, spec)
+            .set(VALUE, value);
   }
 
   public static IntraOp filterModeOp(String name, boolean on) {
     return new IntraOp(IntraOp.Type.FILTERMODE)
-            .set("name", name)
-            .set("on", on);
+            .set(NAME, name)
+            .set(ON, on);
   }
 
   public static IntraOp cqlQuery(String query, String version){
     return new IntraOp(IntraOp.Type.CQLQUERY)
-            .set("query", query)
-            .set("version", version);
+            .set(QUERY, query)
+            .set(VERSION, version);
   }
 
   public static IntraOp clear(int resultId){
     return new IntraOp(IntraOp.Type.CLEAR)
-            .set("id", resultId);
+            .set(ID, resultId);
   }
 
   public static IntraOp createMultiProcess(String name, String spec, String value){
     return new IntraOp(IntraOp.Type.CREATEMULTIPROCESS)
-            .set("name", name)
-            .set("spec", spec)
-            .set("value", value);
+            .set(NAME, name)
+            .set(SPEC, spec)
+            .set(VALUE, value);
   }
 
   public static IntraOp multiProcess(String processorName, Map params){
     return new IntraOp(IntraOp.Type.MULTIPROCESS)
-            .set("name", processorName)
-            .set("params", params);
+            .set(NAME, processorName)
+            .set(PARAMS, params);
   }
 
   public static IntraOp saveState(){
     return new IntraOp(IntraOp.Type.STATE)
-            .set("mode", "save");
+            .set(MODE, SAVE);
   }
 
   public static IntraOp restoreState(int id){
     return new IntraOp(IntraOp.Type.STATE)
-            .set("mode", "get")
-            .set("id", id);
+            .set(MODE, GET)
+            .set(ID, id);
   }
 
 
