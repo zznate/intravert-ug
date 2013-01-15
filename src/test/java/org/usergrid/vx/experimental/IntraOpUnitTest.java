@@ -12,22 +12,22 @@ public class IntraOpUnitTest {
 
   @Test
   public void validateOk() {
-    IntraOp op = IntraOp.listColumnFamilyOp("mykeyspace");
-    op = IntraOp.consistencyOp("QUORUM");
-    op = IntraOp.createKsOp("mykeyspace",1);
-    op = IntraOp.getOp("rowkey","colname");
-    op = IntraOp.setOp("rowkey","colname","colvalue");
-    op = IntraOp.sliceOp("rowkey","start","end",10);
-    op = IntraOp.sliceOp("rowkey", null, null, 10);
-    op = IntraOp.createCfOp("MyCf");
-    op = IntraOp.createKsOp("MyKeyspace",3);
+    IntraOp op = Operations.listColumnFamilyOp("mykeyspace");
+    op = Operations.consistencyOp("QUORUM");
+    op = Operations.createKsOp("mykeyspace",1);
+    op = Operations.getOp("rowkey","colname");
+    op = Operations.setOp("rowkey","colname","colvalue");
+    op = Operations.sliceOp("rowkey","start","end",10);
+    op = Operations.sliceOp("rowkey", null, null, 10);
+    op = Operations.createCfOp("MyCf");
+    op = Operations.createKsOp("MyKeyspace",3);
     try {
-      op = IntraOp.createKsOp("mykeyspace",0);
+      op = Operations.createKsOp("mykeyspace",0);
       fail(op.getType().toString());
     } catch (IllegalArgumentException iae) {} // nom nom nom
 
     try {
-      op = IntraOp.consistencyOp("foo");
+      op = Operations.consistencyOp("foo");
       fail(op.getType().toString());
     } catch (IllegalArgumentException iae) {} // nom nom nom
 
