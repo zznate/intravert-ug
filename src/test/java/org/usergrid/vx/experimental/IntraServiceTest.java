@@ -392,6 +392,35 @@ public class IntraServiceTest {
   
   @Test
   @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+  public void serviceProcessorTest() throws Exception {
+	  IntraReq req = new IntraReq();
+	  req.add( Operations.createServiceProcess("buildMySecondary", "groovy",
+	  		"import org.usergrid.vx.experimental.* \n"+
+			"public class MyBuilder extends TwoExBuilder { \n"+
+	  		"   \n"+
+			"} \n" ) ); //0
+	  Map reqObj = new HashMap();
+	  reqObj.put("userid", "bsmith");
+	  reqObj.put("fname", "bob");
+	  reqObj.put("lname", "smith");
+	  reqObj.put("city", "NYC");
+		
+	  req.add( Operations.setKeyspaceOp("myks") );//1
+	  req.add( Operations.setAutotimestampOp() );//2
+	  req.add( Operations.createCfOp("users") );//3
+	  req.add( Operations.createCfOp("usersbycity") );//4
+	  req.add( Operations.createCfOp("usersbylast") );//5
+	  req.add( Operations.serviceProcess("buildMySecondary", reqObj) );//6
+	  req.add( Operations.setColumnFamilyOp("usersbycity")); //7
+	  req.add( Operations.sliceOp("NYC", "a", "z", 5)); //8
+	  IntraRes res = new IntraRes();
+	  is.handleIntraReq(req, res, x);
+	  List<Map> r = (List<Map>) res.getOpsRes().get(8);
+	  Assert.assertEquals("bsmith", ByteBufferUtil.string( (ByteBuffer)r.get(0).get("name")));
+  }
+  
+  @Test
+  @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
   public void jsonTest() throws Exception {
 	  String array = "[{\"value\": 1},{\"value\": 2}, {\"value\": 3},{\"value\": 4}]";
     IntraReq req = new IntraReq();

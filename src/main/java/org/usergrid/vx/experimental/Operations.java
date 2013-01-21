@@ -219,6 +219,14 @@ public class Operations {
             .set(ID, id);
   }
 
+	public static IntraOp createServiceProcess(String name, String spec, String value) {
+		return new IntraOp(IntraOp.Type.CREATESERVICEPROCESS).set(NAME, name)
+				.set(SPEC, spec).set(VALUE, value);
+	}
+	
+	public static IntraOp serviceProcess(String name, Map params){
+		return new IntraOp(IntraOp.Type.SERVICEPROCESS).set(NAME, name).set(PARAMS, params);
+	}
 
   private static void checkForBlankStr(String arg, String msg, IntraOp.Type type) {
     Preconditions.checkArgument(arg != null && arg.length() > 0,
