@@ -25,6 +25,7 @@ public class IntraState {
 	static Map<String,Processor> processors = new HashMap<String,Processor>();
 	static Map<String,Filter> filters = new HashMap<String,Filter>(); 
 	static Map<String,MultiProcessor> multiProcessors = new HashMap<String,MultiProcessor>();
+	static Map<String,ServiceProcessor> serviceProcessors = new HashMap<String,ServiceProcessor>();
 	Filter currentFilter;
 	
 	public int saveState(IntraState s){

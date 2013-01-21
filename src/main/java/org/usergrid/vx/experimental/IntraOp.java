@@ -61,7 +61,7 @@ public class IntraOp implements Serializable{
   public enum Type {
     LISTCOLUMNFAMILY {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         String keyspace = (String) op.getOp().get("keyspace");
         KSMetaData ks = Schema.instance.getKSMetaData(keyspace);
@@ -70,14 +70,14 @@ public class IntraOp implements Serializable{
     },
     LISTKEYSPACES {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         res.getOpsRes().put(i, Schema.instance.getNonSystemTables());
       }
     },
     CONSISTENCY {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         ConsistencyLevel level = ConsistencyLevel.valueOf((String) op.getOp().get("level"));
         res.getOpsRes().put(i, "OK");
@@ -86,7 +86,7 @@ public class IntraOp implements Serializable{
     },
     CREATEKEYSPACE {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         Collection<CFMetaData> cfDefs = new ArrayList<CFMetaData>(0);
         IntraOp op = req.getE().get(i);
         String ks = (String) op.getOp().get("name");
@@ -116,7 +116,7 @@ public class IntraOp implements Serializable{
     },
     CREATECOLUMNFAMILY {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         String cf = (String) op.getOp().get("name");
         CfDef def = new CfDef();
@@ -146,19 +146,19 @@ public class IntraOp implements Serializable{
     },
     FOREACH {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
 
       }
     },
     COLUMNPREDICATE {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
 
       }
     },
     SLICE {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
       		List<Map> finalResults = new ArrayList<Map>();
       		ByteBuffer rowkey = IntraService.byteBufferForObject(IntraService.resolveObject(op.getOp().get("rowkey"), req, res, state, i));
@@ -190,13 +190,13 @@ public class IntraOp implements Serializable{
     },
     GETREF {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
-
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
+    	  //this is never used as a standalone op, but for now we can keep it here
       }
     },
     GET {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         List<Map> finalResults = new ArrayList<Map>();
         ByteBuffer rowkey = IntraService.byteBufferForObject(IntraService.resolveObject(
@@ -226,7 +226,7 @@ public class IntraOp implements Serializable{
     },
     SET {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
       		RowMutation rm = new RowMutation(state.currentKeyspace,
                   IntraService.byteBufferForObject(
@@ -250,14 +250,14 @@ public class IntraOp implements Serializable{
     },
     AUTOTIMESTAMP {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         state.autoTimestamp = true;
         res.getOpsRes().put(i, "OK");
       }
     },
     SETKEYSPACE {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         state.currentKeyspace = (String) op.getOp().get("keyspace");
         res.getOpsRes().put(i, "OK");
@@ -265,7 +265,7 @@ public class IntraOp implements Serializable{
     },
     SETCOLUMNFAMILY {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         state.currentColumnFamily = (String) op.getOp().get("columnfamily");
         res.getOpsRes().put(i, "OK");
@@ -273,7 +273,7 @@ public class IntraOp implements Serializable{
     },
     ASSUME {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         IntraMetaData imd = new IntraMetaData();
         imd.keyspace = (String) op.getOp().get("keyspace");
@@ -285,7 +285,7 @@ public class IntraOp implements Serializable{
     },
     CREATEPROCESSOR {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         String name  = (String) op.getOp().get("name");
         GroovyClassLoader gc = new GroovyClassLoader();
@@ -302,7 +302,7 @@ public class IntraOp implements Serializable{
     },
     PROCESS {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         String processorName = (String) op.getOp().get("processorname");
         Map params  = (Map) op.getOp().get("params");
@@ -315,13 +315,13 @@ public class IntraOp implements Serializable{
     },
     DROPKEYSPACE {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
 
       }
     },
     CREATEFILTER {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         String name  = (String) op.getOp().get("name");
         GroovyClassLoader gc = new GroovyClassLoader();
@@ -338,7 +338,7 @@ public class IntraOp implements Serializable{
     },
     FILTERMODE {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         String name  = (String) op.getOp().get("name");
         Boolean on  = (Boolean) op.getOp().get("on");
@@ -357,7 +357,7 @@ public class IntraOp implements Serializable{
     },
     CQLQUERY {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         ClientState clientState = new ClientState();
         try {
@@ -394,7 +394,7 @@ public class IntraOp implements Serializable{
     },
     CLEAR {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         int id = (Integer) op.getOp().get("id");
         res.getOpsRes().put(id, new ArrayList<HashMap>());
@@ -402,7 +402,7 @@ public class IntraOp implements Serializable{
     },
     CREATEMULTIPROCESS {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         String name  = (String) op.getOp().get("name");
         GroovyClassLoader gc = new GroovyClassLoader();
@@ -419,7 +419,7 @@ public class IntraOp implements Serializable{
     },
     MULTIPROCESS {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         String name = (String) op.getOp().get("name");
         Map params  = (Map) op.getOp().get("params");
@@ -433,7 +433,7 @@ public class IntraOp implements Serializable{
     STATE {
       @Override
       public void execute(IntraReq req, IntraRes res, IntraState state, int i,
-          Vertx vertx) {
+          Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         if (((String)op.getOp().get("mode")).equalsIgnoreCase("save")){
           res.getOpsRes().put(i, state.saveState(state));
@@ -453,7 +453,7 @@ public class IntraOp implements Serializable{
     },
     BATCHSET {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx) {
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         List<Map> rows = (List<Map>) op.getOp().get("rows");
         List<RowMutation> m = new ArrayList<RowMutation>();
@@ -481,9 +481,36 @@ public class IntraOp implements Serializable{
           return;
         }
       }
+    }, CREATESERVICEPROCESS{
+		@Override
+		public void execute(IntraReq req, IntraRes res, IntraState state,
+				int i, Vertx vertx, IntraService is) {
+			IntraOp op = req.getE().get(i);
+	        String name  = (String) op.getOp().get("name");
+	        GroovyClassLoader gc = new GroovyClassLoader();
+	        Class c = gc.parseClass((String) op.getOp().get("value") );
+	        ServiceProcessor sp = null;
+	        try {
+	          sp = (ServiceProcessor) c.newInstance();
+	        } catch (InstantiationException | IllegalAccessException e) {
+	          res.setExceptionAndId(e, i);
+	          return;
+	        }
+	        IntraState.serviceProcessors.put(name, sp);
+	        res.getOpsRes().put(i,"OK");
+		}
+    }, SERVICEPROCESS {
+		@Override
+		public void execute(IntraReq req, IntraRes res, IntraState state,
+				int i, Vertx vertx, IntraService is) {
+			IntraOp op = req.getE().get(i);
+			String name = (String) op.getOp().get("name");
+			ServiceProcessor sp = IntraState.serviceProcessors.get(name);
+			sp.process(req, res, state, i, vertx, is);
+		}   	
     };
 
-    public abstract void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx);
+    public abstract void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is);
     
   }
 	

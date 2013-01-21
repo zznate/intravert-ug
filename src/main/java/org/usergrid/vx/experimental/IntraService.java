@@ -28,7 +28,7 @@ public class IntraService {
 		for (int i=0;i<req.getE().size() && res.getException() == null ;i++){
 			IntraOp op = req.getE().get(i);
 			try {
-        op.getType().execute(req, res, state, i, vertx);
+				op.getType().execute(req, res, state, i, vertx, this);
 			} catch (Exception ex){ 
 			  res.setExceptionAndId(ex,i);
 			  ex.printStackTrace();
