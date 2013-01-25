@@ -118,13 +118,13 @@ public class IntraService {
 
 
    
-  static void readCf(ColumnFamily cf , List<Map> finalResults, IntraState state){
+  static void readCf(ColumnFamily cf , List<Map> finalResults, IntraState state, IntraOp op){
     Iterator<IColumn> it = cf.iterator();
     while (it.hasNext()) {
       IColumn ic = it.next();
-      HashMap m = new HashMap();
-      m.put("name", TypeHelper.getTypedIfPossible(state, "column", ic.name()));
-      m.put("value", TypeHelper.getTypedIfPossible(state, "value", ic.value()));
+      HashMap m = new HashMap(); 
+      m.put("name", TypeHelper.getTypedIfPossible(state, "column", ic.name(), op));
+      m.put("value", TypeHelper.getTypedIfPossible(state, "value", ic.value(), op));
       if (state.currentFilter != null){
         Map newMap = state.currentFilter.filter(m);
         if (newMap != null){
@@ -136,5 +136,23 @@ public class IntraService {
     }
   }
 
+	static String determineKs(IntraOp op, IntraState state) {
+      String ks = null;
+	  if (op.getOp().containsKey("keyspace")) {
+	    ks = (String) op.getOp().get("keyspace");
+	  } else {
+	    ks = state.currentKeyspace;
+	  }
+	  return ks;
+	}
 
+	static String determineCf(IntraOp op, IntraState state) {
+      String cf = null;
+	  if (op.getOp().containsKey("columnfamily")) {
+	    cf = (String) op.getOp().get("columnfamily");
+	  } else {
+	    cf = state.currentColumnFamily;
+	  }
+	  return cf;
+	}
 }

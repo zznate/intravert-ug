@@ -7,8 +7,9 @@ import java.util.List;
 import org.apache.cassandra.utils.ByteBufferUtil;
 
 public class TypeHelper {
-  public static Object getTypedIfPossible(IntraState state, String type, ByteBuffer bb){
-    IntraMetaData imd = new IntraMetaData(state.currentKeyspace,state.currentColumnFamily,type);
+  public static Object getTypedIfPossible(IntraState state, String type, ByteBuffer bb, IntraOp op){
+	  
+    IntraMetaData imd = new IntraMetaData(IntraService.determineKs(op, state),IntraService.determineCf(op, state),type);
     String s = state.meta.get(imd);
     if (s == null){
       return bb;

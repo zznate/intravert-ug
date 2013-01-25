@@ -177,7 +177,7 @@ public class IntraOp implements Serializable{
       			ColumnFamily cf = results.get(0).cf;
       			if (cf == null){ //cf= null is no data
       			} else {
-      			  IntraService.readCf(cf, finalResults, state);
+      			  IntraService.readCf(cf, finalResults, state,op);
       			}
       			res.getOpsRes().put(i,finalResults);
       		} catch (ReadTimeoutException | org.apache.cassandra.exceptions.UnavailableException
@@ -198,23 +198,24 @@ public class IntraOp implements Serializable{
       @Override
       public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
+   
         List<Map> finalResults = new ArrayList<Map>();
         ByteBuffer rowkey = IntraService.byteBufferForObject(IntraService.resolveObject(
                 op.getOp().get("rowkey"), req, res, state, i));
         ByteBuffer column = IntraService.byteBufferForObject(IntraService.resolveObject(
                 op.getOp().get("name"), req, res, state, i));
-        QueryPath path = new QueryPath(state.currentColumnFamily, null);
+        QueryPath path = new QueryPath(IntraService.determineCf(op, state), null);
         List<ByteBuffer> nameAsList = Arrays.asList(column);
-        ReadCommand command = new SliceByNamesReadCommand(state.currentKeyspace,
+        ReadCommand command = new SliceByNamesReadCommand(IntraService.determineKs(op, state),
             rowkey, path, nameAsList);
         List<Row> rows = null;
 
         try {
           rows = StorageProxy.read(Arrays.asList(command), state.consistency);
-          ColumnFamily cf = rows.get(0).cf;
-          if (cf == null) { // cf= null is no data
+          ColumnFamily cf1 = rows.get(0).cf;
+          if (cf1 == null) { // cf= null is no data
           } else {
-            IntraService.readCf(cf, finalResults, state);
+            IntraService.readCf(cf1, finalResults, state, op);
           }
           res.getOpsRes().put(i, finalResults);
         } catch (ReadTimeoutException | org.apache.cassandra.exceptions.UnavailableException
@@ -226,28 +227,51 @@ public class IntraOp implements Serializable{
     },
     SET {
       @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
-        IntraOp op = req.getE().get(i);
-      		RowMutation rm = new RowMutation(state.currentKeyspace,
-                  IntraService.byteBufferForObject(
-                          IntraService.resolveObject(op.getOp().get("rowkey"), req, res, state, i)
-                  ));
-      		QueryPath qp = new QueryPath(state.currentColumnFamily,null, IntraService.byteBufferForObject(
-                  IntraService.resolveObject(op.getOp().get("name"), req, res, state, i)
-          ) );
-      		Object val = op.getOp().get("value");
-      		rm.add(qp, IntraService.byteBufferForObject(
-                  IntraService.resolveObject(val, req, res, state, i)
-          ), (Long) (state.autoTimestamp ? state.nanotime : op.getOp().get("timestamp")));
-      		try {
-      			StorageProxy.mutate(Arrays.asList(rm), state.consistency);
-      			res.getOpsRes().put(i, "OK");
-      		} catch (WriteTimeoutException | org.apache.cassandra.exceptions.UnavailableException | OverloadedException e) {
-      		  res.setExceptionAndId(e.getMessage(), i);
-      		  return;
-      		}
-      }
-    },
+		public void execute(IntraReq req, IntraRes res, IntraState state,
+				int i, Vertx vertx, IntraService is) {
+			IntraOp op = req.getE().get(i);
+			RowMutation rm = null;
+			String ks = null;
+			String cf = null;
+			
+			if (op.getOp().containsKey("keyspace")) {
+				ks = (String) op.getOp().get("keyspace");
+			} else {
+				ks = state.currentKeyspace;
+			}
+			if (op.getOp().get("columnfamily") != null){
+				cf = (String) op.getOp().get("columnfamily");
+			} else {
+				cf = state.currentColumnFamily;
+			}
+			
+			System.out.println(op);
+			System.out.println(op.getOp());
+			rm = new RowMutation(ks,
+					IntraService.byteBufferForObject(IntraService
+							.resolveObject(op.getOp().get("rowkey"), req,
+									res, state, i)));
+
+			QueryPath qp = new QueryPath(cf, null,
+					IntraService.byteBufferForObject(IntraService
+							.resolveObject(op.getOp().get("name"), req,
+									res, state, i)));
+			Object val = op.getOp().get("value");
+			rm.add(qp, IntraService.byteBufferForObject(IntraService
+					.resolveObject(val, req, res, state, i)),
+					(Long) (state.autoTimestamp ? state.nanotime : op
+							.getOp().get("timestamp")));
+			try {
+				StorageProxy.mutate(Arrays.asList(rm), state.consistency);
+				res.getOpsRes().put(i, "OK");
+			} catch (WriteTimeoutException
+					| org.apache.cassandra.exceptions.UnavailableException
+					| OverloadedException e) {
+				res.setExceptionAndId(e.getMessage(), i);
+				return;
+			}
+		}
+	},
     AUTOTIMESTAMP {
       @Override
       public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {

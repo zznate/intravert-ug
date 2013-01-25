@@ -530,5 +530,29 @@ public class IntraServiceTest {
     long end = System.currentTimeMillis();
     System.out.println(end-start);
   }
+ 
   
+	 @Test
+	 @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+	   public void optioanKSandCSTest() {
+	     IntraReq req = new IntraReq();
+	    
+	     req.add( Operations.setAutotimestampOp() ); //0
+	     req.add( Operations.assumeOp("myks", "mycf", "value", "UTF-8"));//1
+	     req.add( Operations.assumeOp("myks", "mycf", "column", "int32"));//2
+	     IntraOp setOp = Operations.setOp("optional", 1, "wow"); //3
+	     setOp.set("keyspace", "myks");
+	     setOp.set("columnfamily", "mycf");
+	     req.add( setOp );
+	     //opa sexyy builder style
+	     req.add( Operations.getOp("optional", 1)
+	    		 .set("keyspace", "myks")
+	    		 .set("columnfamily", "mycf")); //4
+	     IntraRes res = new IntraRes();
+	     is.handleIntraReq(req, res, x);
+	     List<Map> x = (List<Map>) res.getOpsRes().get(4);
+	     
+	     Assert.assertEquals( "wow",  x.get(0).get("value") );
+	     Assert.assertEquals( 1,  x.get(0).get("name") );
+	   }
 }
