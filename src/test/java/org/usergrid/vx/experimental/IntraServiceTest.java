@@ -255,6 +255,18 @@ public class IntraServiceTest {
      
    }
 
+	@Test
+	public void CqlNoResultTest() throws CharacterCodingException {
+		IntraReq req = new IntraReq();
+		req.add(Operations
+				.cqlQuery(
+						"CREATE KEYSPACE test WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}",
+						"3.0.0"));// 0
+		IntraRes res = new IntraRes();
+		is.handleIntraReq(req, res, x);
+		List<Map> x = (List<Map>) res.getOpsRes().get(0);
+		Assert.assertEquals(1, x.size());
+	}
 	 
 	 @Test
    public void clearTest() throws CharacterCodingException{
