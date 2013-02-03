@@ -5,6 +5,7 @@ import org.apache.cassandra.db.ConsistencyLevel;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Factory class for building IntraOp objects
@@ -226,6 +227,10 @@ public class Operations {
 	
 	public static IntraOp serviceProcess(String name, Map params){
 		return new IntraOp(IntraOp.Type.SERVICEPROCESS).set(NAME, name).set(PARAMS, params);
+	}
+	
+	public static IntraOp componentSelect(Set<String> components){
+		return new IntraOp(IntraOp.Type.COMPONENTSELECT).set("components", components);
 	}
 
   private static void checkForBlankStr(String arg, String msg, IntraOp.Type type) {

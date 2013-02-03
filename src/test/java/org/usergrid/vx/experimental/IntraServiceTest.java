@@ -496,7 +496,7 @@ public class IntraServiceTest {
             "    List<Map> results = new ArrayList<HashMap>();"+
             "    for (Map row: input){" +
             "      Map newRow = new HashMap(); "+
-            // grovvy requires you to escape ?
+            // grovvy requires you to escape $
             "      Integer match = JsonPath.read(row.get(\"value\").toString(), \"\\$.[1].value\"); \n"+
             "      newRow.put(\"value\",match.toString()); \n "+
             "      results.add(newRow); \n"+
@@ -605,4 +605,31 @@ public class IntraServiceTest {
 	     Assert.assertEquals( "wow",  x.get(0).get("value") );
 	     Assert.assertEquals( 1,  x.get(0).get("name") );
 	   }
+	 
+	 
+	@Test
+	@RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+	public void componentTest() {
+		IntraReq req = new IntraReq();
+		req.add(Operations.setAutotimestampOp()); // 0
+		req.add(Operations.assumeOp("myks", "mycf", "value", "UTF-8"));// 1
+		req.add(Operations.assumeOp("myks", "mycf", "column", "int32"));// 2
+		IntraOp setOp = Operations.setOp("optional", 1, "wow"); // 3
+		setOp.set("keyspace", "myks");
+		setOp.set("columnfamily", "mycf");
+		req.add(setOp);
+		Set<String> wanted = new HashSet<String>();
+		wanted.addAll( Arrays.asList( new String []{"value","timestamp"}));
+		req.add( Operations.componentSelect(wanted)); //4
+		// opa sexyy builder style
+		req.add(Operations.getOp("optional", 1).set("keyspace", "myks")
+				.set("columnfamily", "mycf")); // 5
+		IntraRes res = new IntraRes();
+		is.handleIntraReq(req, res, x);
+		List<Map> x = (List<Map>) res.getOpsRes().get(5);
+
+		Assert.assertEquals("wow", x.get(0).get("value"));
+		Assert.assertEquals(true, x.get(0).containsKey("timestamp"));
+		Assert.assertTrue( (Long)x.get(0).get("timestamp") > 0);
+	}
 }
