@@ -206,6 +206,27 @@ public class IntraServiceTest {
      Assert.assertEquals( "wow",  x.get(0).get("value") );
      Assert.assertEquals( 1,  x.get(0).get("name") );
    }
+	 @Test
+	 public void ttlTest () {
+	     IntraReq req = new IntraReq();
+	     req.add( Operations.setKeyspaceOp("ttlks") ); //0
+	     req.add( Operations.createKsOp("ttlks", 1)); //1
+	     req.add( Operations.createCfOp("ttlcf")); //2
+	     req.add( Operations.setColumnFamilyOp("ttlcf") ); //3
+	     req.add( Operations.setAutotimestampOp() ); //4
+	     req.add( Operations.assumeOp("ttlks", "ttlcf", "value", "UTF-8"));//5
+	     req.add( Operations.assumeOp("ttlks", "ttlcf", "column", "int32"));//6
+	     req.add( Operations.setOp("rowa", 1, "wow")); //7
+	     req.add( Operations.setOp("rowa", 2, "wow").set("ttl", 2)); //8
+	     //req.add( Operations.sliceOp("rowa", 1, 5, 4) ); //9
+		 
+	     IntraRes res = new IntraRes();
+	     is.handleIntraReq(req, res, x);
+	     Assert.assertEquals( "OK", res.getOpsRes().get(8));
+	     
+	     
+		 
+	 }
 	 
 	 @Test
    public void compositeTest() throws CharacterCodingException{ 
@@ -258,14 +279,15 @@ public class IntraServiceTest {
 	@Test
 	public void CqlNoResultTest() throws CharacterCodingException {
 		IntraReq req = new IntraReq();
+		req.add ( Operations.setKeyspaceOp("system") );
 		req.add(Operations
 				.cqlQuery(
 						"CREATE KEYSPACE test WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}",
 						"3.0.0"));// 0
 		IntraRes res = new IntraRes();
 		is.handleIntraReq(req, res, x);
-		List<Map> x = (List<Map>) res.getOpsRes().get(0);
-		Assert.assertEquals(1, x.size());
+		List<Map> x = (List<Map>) res.getOpsRes().get(1);
+		Assert.assertEquals(2, x.size());
 	}
 	 
 	 @Test
