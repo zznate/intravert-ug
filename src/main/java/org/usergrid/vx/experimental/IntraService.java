@@ -123,9 +123,19 @@ public class IntraService {
     while (it.hasNext()) {
       IColumn ic = it.next();
       if (ic.isLive()){
-	      HashMap m = new HashMap(); 
-	      m.put("name", TypeHelper.getTypedIfPossible(state, "column", ic.name(), op));
-	      m.put("value", TypeHelper.getTypedIfPossible(state, "value", ic.value(), op));
+	      HashMap m = new HashMap();
+	      if (state.components.contains("name")){
+	    	  m.put("name", TypeHelper.getTypedIfPossible(state, "column", ic.name(), op));
+	      }
+	      if (state.components.contains("value")){
+	    	  m.put("value", TypeHelper.getTypedIfPossible(state, "value", ic.value(), op));
+	      }
+	      if (state.components.contains("timestamp")){
+	    	  m.put("timestamp",ic.timestamp());
+	      }
+	      if (state.components.contains("markeddelete")){
+	    	  m.put("markeddelete", ic.getMarkedForDeleteAt());
+	      }
 	      if (state.currentFilter != null){
 	        Map newMap = state.currentFilter.filter(m);
 	        if (newMap != null){

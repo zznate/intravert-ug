@@ -542,6 +542,14 @@ public class IntraOp implements Serializable{
 			ServiceProcessor sp = IntraState.serviceProcessors.get(name);
 			sp.process(req, res, state, i, vertx, is);
 		}   	
+    }, COMPONENTSELECT {
+		@Override
+		public void execute(IntraReq req, IntraRes res, IntraState state,
+				int i, Vertx vertx, IntraService is) {
+			IntraOp op = req.getE().get(i);
+			Set<String> parts = (Set<String>) op.getOp().get("components");
+			state.components = parts;
+		}
     };
 
     public abstract void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is);

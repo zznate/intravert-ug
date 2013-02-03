@@ -11,11 +11,17 @@ import org.apache.cassandra.db.ConsistencyLevel;
 
 /* class that holds properties for the request lifecycle */
 public class IntraState {
+	
+	public IntraState(){
+		components.add("name");
+		components.add("value");
+	}
   //TODO this should be an epiring cache
   private static Map<Integer,IntraState> savedState = new HashMap<Integer,IntraState>();
   private static AtomicInteger id=new AtomicInteger(0);
 	String currentKeyspace="";
 	String currentColumnFamily="";
+	Set<String> components = new HashSet<String>();
 	boolean autoTimestamp= true;
 	long nanotime = System.nanoTime();
 	ConsistencyLevel consistency= ConsistencyLevel.ONE;
