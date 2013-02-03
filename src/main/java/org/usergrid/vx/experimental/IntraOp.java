@@ -263,6 +263,7 @@ public class IntraOp implements Serializable{
 					(Long) (state.autoTimestamp ? state.nanotime : op
 							.getOp().get("timestamp"))); 
 			} else {
+				System.out.println("We have a ttl");
 				int ttl = (Integer) op.getOp().get("ttl");
 				rm.add(qp, IntraService.byteBufferForObject(IntraService
 						.resolveObject(val, req, res, state, i)),

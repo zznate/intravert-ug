@@ -122,16 +122,18 @@ public class IntraService {
     Iterator<IColumn> it = cf.iterator();
     while (it.hasNext()) {
       IColumn ic = it.next();
-      HashMap m = new HashMap(); 
-      m.put("name", TypeHelper.getTypedIfPossible(state, "column", ic.name(), op));
-      m.put("value", TypeHelper.getTypedIfPossible(state, "value", ic.value(), op));
-      if (state.currentFilter != null){
-        Map newMap = state.currentFilter.filter(m);
-        if (newMap != null){
-          finalResults.add(newMap);
-        }
-      } else {
-        finalResults.add(m);
+      if (ic.isLive()){
+	      HashMap m = new HashMap(); 
+	      m.put("name", TypeHelper.getTypedIfPossible(state, "column", ic.name(), op));
+	      m.put("value", TypeHelper.getTypedIfPossible(state, "value", ic.value(), op));
+	      if (state.currentFilter != null){
+	        Map newMap = state.currentFilter.filter(m);
+	        if (newMap != null){
+	          finalResults.add(newMap);
+	        }
+	      } else {
+	        finalResults.add(m);
+	      }
       }
     }
   }

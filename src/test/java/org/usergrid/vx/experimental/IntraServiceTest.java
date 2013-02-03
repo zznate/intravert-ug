@@ -217,15 +217,31 @@ public class IntraServiceTest {
 	     req.add( Operations.assumeOp("ttlks", "ttlcf", "value", "UTF-8"));//5
 	     req.add( Operations.assumeOp("ttlks", "ttlcf", "column", "int32"));//6
 	     req.add( Operations.setOp("rowa", 1, "wow")); //7
-	     req.add( Operations.setOp("rowa", 2, "wow").set("ttl", 2)); //8
+	     req.add( Operations.setOp("rowa", 2, "wow").set("ttl", 1)); //8
 	     //req.add( Operations.sliceOp("rowa", 1, 5, 4) ); //9
 		 
 	     IntraRes res = new IntraRes();
 	     is.handleIntraReq(req, res, x);
 	     Assert.assertEquals( "OK", res.getOpsRes().get(8));
+	     try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+		}
 	     
-	     
-		 
+	    IntraReq r = new IntraReq();
+	    r.add( Operations.setKeyspaceOp("ttlks") ); //0
+	    r.add( Operations.setColumnFamilyOp("ttlcf") ); //1
+	     r.add( Operations.assumeOp("ttlks", "ttlcf", "value", "UTF-8"));//2
+	     r.add( Operations.assumeOp("ttlks", "ttlcf", "column", "int32"));//3
+	    r.add( Operations.sliceOp("rowa", 1, 5, 4) ); //4
+	    IntraRes rs = new IntraRes();
+	    
+	    is.handleIntraReq(r, rs, x);
+	    
+	    List<Map> x = (List<Map>) rs.getOpsRes().get(4);
+	    System.out.println(x);
+	    Assert.assertEquals(1, x.size());
+	    
 	 }
 	 
 	 @Test
@@ -287,7 +303,7 @@ public class IntraServiceTest {
 		IntraRes res = new IntraRes();
 		is.handleIntraReq(req, res, x);
 		List<Map> x = (List<Map>) res.getOpsRes().get(1);
-		Assert.assertEquals(2, x.size());
+		Assert.assertEquals(2, res.getOpsRes().size());
 	}
 	 
 	 @Test
