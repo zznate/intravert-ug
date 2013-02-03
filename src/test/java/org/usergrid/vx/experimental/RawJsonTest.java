@@ -43,8 +43,8 @@ public class RawJsonTest {
 		     " \"keyspace\": \"system\" "+
 		     " } "+
 		     "}, "+
-		     " { "+
-		     "   \"type\":\"CQLQUERY\", "+
+		     "{  "+
+		     "  \"type\":\"CQLQUERY\", "+
 		     "  \"op\": { "+
 		     "     \"version\": \"3.0.0\", "+
 		     "     \"query\": \"CREATE KEYSPACE simple WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}\" "+

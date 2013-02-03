@@ -246,8 +246,6 @@ public class IntraOp implements Serializable{
 				cf = state.currentColumnFamily;
 			}
 			
-			System.out.println(op);
-			System.out.println(op.getOp());
 			rm = new RowMutation(ks,
 					IntraService.byteBufferForObject(IntraService
 							.resolveObject(op.getOp().get("rowkey"), req,
@@ -258,10 +256,20 @@ public class IntraOp implements Serializable{
 							.resolveObject(op.getOp().get("name"), req,
 									res, state, i)));
 			Object val = op.getOp().get("value");
-			rm.add(qp, IntraService.byteBufferForObject(IntraService
+			
+			if (!op.getOp().containsKey("ttl")){
+				rm.add(qp, IntraService.byteBufferForObject(IntraService
 					.resolveObject(val, req, res, state, i)),
 					(Long) (state.autoTimestamp ? state.nanotime : op
-							.getOp().get("timestamp")));
+							.getOp().get("timestamp"))); 
+			} else {
+				System.out.println("We have a ttl");
+				int ttl = (Integer) op.getOp().get("ttl");
+				rm.add(qp, IntraService.byteBufferForObject(IntraService
+						.resolveObject(val, req, res, state, i)),
+						(Long) (state.autoTimestamp ? state.nanotime : op
+								.getOp().get("timestamp")), ttl);				
+			}
 			try {
 				StorageProxy.mutate(Arrays.asList(rm), state.consistency);
 				res.getOpsRes().put(i, "OK");
