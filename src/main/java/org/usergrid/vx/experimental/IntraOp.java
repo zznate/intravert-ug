@@ -19,6 +19,7 @@ import org.apache.cassandra.service.QueryState;
 import org.apache.cassandra.service.StorageProxy;
 import org.apache.cassandra.thrift.*;
 import org.apache.cassandra.transport.messages.ResultMessage;
+import org.apache.cassandra.transport.messages.ResultMessage.Kind;
 import org.vertx.java.core.Vertx;
 
 import java.io.IOException;
@@ -399,20 +400,21 @@ public class IntraOp implements Serializable{
           res.setExceptionAndId(e, i);
           return;
         }
-        //ToDo maybe processInternal
-        CqlResult result = rm.toThriftResult();
-
-        List<CqlRow> rows = result.getRows();
         List<HashMap> returnRows = new ArrayList<HashMap>();
-        for (CqlRow row: rows){
-          List<org.apache.cassandra.thrift.Column> columns = row.getColumns();
-          for (org.apache.cassandra.thrift.Column c: columns){
-            HashMap m = new HashMap();
-            m.put("value", c.value);
-            m.put("name", c.name);
-            returnRows.add(m);
-          }
-        }
+        if (rm.kind == Kind.ROWS) {
+	      //ToDo maybe processInternal
+	      CqlResult result = rm.toThriftResult();
+	      List<CqlRow> rows = result.getRows();
+	      for (CqlRow row: rows){
+	        List<org.apache.cassandra.thrift.Column> columns = row.getColumns();
+	        for (org.apache.cassandra.thrift.Column c: columns){
+	          HashMap m = new HashMap();
+	          m.put("value", c.value);
+	          m.put("name", c.name);
+	          returnRows.add(m);
+	        }
+	      }
+        }	
         res.getOpsRes().put(i,returnRows);
       }
     },
