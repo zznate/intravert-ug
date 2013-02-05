@@ -1,0 +1,22 @@
+{"e": [
+    {
+        "type": "SETKEYSPACE",
+        "op": {
+            "keyspace": "myks"
+        }
+    },
+    {
+        "type": "SETCOLUMNFAMILY",
+        "op": {
+            "columnfamily": "mycf"
+        }
+    },
+    {
+        "type": "SET",
+        "op": {
+            "rowkey": "row_key1",
+            "name": "column1",
+            "value": "value1"
+        }
+    }
+]}
