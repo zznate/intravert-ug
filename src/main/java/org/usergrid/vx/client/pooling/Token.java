@@ -4,6 +4,9 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 
 /**
+ * Originally derived from the very well done CQL Java Driver
+ * by the good folks at DataStax: https://github.com/datastax/java-driver
+ *
  * @author zznate
  */
 public abstract class Token implements Comparable {

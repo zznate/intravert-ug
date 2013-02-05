@@ -4,6 +4,9 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 /**
+ * Derived from the similarly named classes on very well done CQL Java Driver
+ * by the good folks at DataStax: https://github.com/datastax/java-driver
+ *
  * @author zznate
  */
 public class TokenMap {
