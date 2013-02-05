@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.util.List;
 
+import org.apache.cassandra.db.marshal.Int32Type;
 import org.apache.cassandra.utils.ByteBufferUtil;
 
 public class TypeHelper {
@@ -41,7 +42,7 @@ public class TypeHelper {
       throw new RuntimeException("Do not know what to do with "+s);
     }
   }
-  private static Object getTyped(String type, ByteBuffer bb){
+  public static Object getTyped(String type, ByteBuffer bb){
     if (type.equals("UTF-8")){
       try {
         return ByteBufferUtil.string(bb);
@@ -51,5 +52,20 @@ public class TypeHelper {
     } else {
       return bb;
     }
+  }
+  
+  public static Object getCqlTyped(String type, ByteBuffer bb){
+	  if (bb == null){
+		  return null;
+	  }
+	  if (type.equals("UTF8Type")){
+	      try {
+	          return ByteBufferUtil.string(bb);
+	        } catch (Exception ex){ throw new RuntimeException(ex); } 
+	  }
+	  if (type.equals("Int32Type")){
+		  return Int32Type.instance.compose(bb);
+	  }
+	  throw new RuntimeException("wahat is "+type +" ?" );
   }
 }

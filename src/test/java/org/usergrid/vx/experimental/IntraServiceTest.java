@@ -632,4 +632,39 @@ public class IntraServiceTest {
 		Assert.assertEquals(true, x.get(0).containsKey("timestamp"));
 		Assert.assertTrue( (Long)x.get(0).get("timestamp") > 0);
 	}
+	
+	@Test
+	@RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+	public void cql3Schema() {
+		IntraReq req = new IntraReq();
+		String ks = "cqltesting";
+		req.add( Operations.setKeyspaceOp("system"));//0
+		req.add( Operations.createKsOp(ks, 1) );//1
+		req.add( Operations.setKeyspaceOp(ks) ); //2
+		String videos= "CREATE TABLE videos ( "+
+				  " videoid varchar, "+
+				  " videoname varchar, "+
+				  " username varchar, "+
+				  " description int, "+
+				  " tags varchar, "+
+				  " PRIMARY KEY (videoid,videoname) "+ 
+				" ); ";
+		req.add(Operations.cqlQuery(videos, "3.0.0"));//3
+		//String query = "SELECT columnfamily_name, comparator, default_validator, key_validator FROM system.schema_columnfamilies WHERE keyspace_name='%s'";
+		//String formatted = String.format(query, ks);
+		//req.add( Operations.setKeyspaceOp("system"));//4
+		//req.add( Operations.cqlQuery(formatted, "3.0.0").set("convert", "")); //5
+		String videoIns = "INSERT INTO videos (videoid,videoname,tags) VALUES (1,'weekend','fun games')"; 
+		String videoIns1 = "INSERT INTO videos (videoid,videoname,tags) VALUES (2,'weekend2','fun games returns')";
+		req.add( Operations.cqlQuery(videoIns, "3.0.0") );
+		req.add( Operations.cqlQuery(videoIns1, "3.0.0") );
+		req.add( Operations.cqlQuery("select * from videos WHERE videoid=2", "3.0.0").set("convert", true) );
+		IntraRes res = new IntraRes();
+		is.handleIntraReq(req, res, x);
+		System.out.println(res.getException());
+		List<Map> results = (List<Map>) res.getOpsRes().get(6) ;
+		Assert.assertEquals("videoid", results.get(0).get("name"));
+		Assert.assertEquals("2", results.get(0).get("value"));	
+		
+	}
 }
