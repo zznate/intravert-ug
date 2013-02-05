@@ -138,9 +138,60 @@
 				<version>1.2.3.4</version>
 				<configuration>
 					<verticleName>org.usergrid.vx.server.IntravertVerticle</verticleName>
-
 				</configuration>
 			</plugin>
+            <!-- demarcation of integration tests with unit tests -->
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.13</version>
+                <configuration>
+                    <systemProperties combine.children="append">
+                        <dataDir>${basedir}/src/test/resources</dataDir>
+                    </systemProperties>
+                    <!--
+                    <properties>
+                        <property>
+                            <name>listener</name>
+                            <value>org.hectorclient.testutils.CassandraRunListener</value>
+                        </property>
+                    </properties>
+                    -->
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <configuration>
+                            <skip>false</skip>
+                            <includes>
+                                <include>**/*ITest.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*UnitTest.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- run unit tests in parallel -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.13</version>
+                <configuration>
+                    <parallel>methods</parallel>
+                    <threadCount>10</threadCount>
+                    <includes>
+                        <include>**/*UnitTest.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude>**/*ITest.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
 		</plugins>
 	</build>
 </project>
