@@ -1,8 +1,12 @@
 package org.usergrid.vx.experimental;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.cassandra.config.Schema;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,23 +39,8 @@ public class RawJsonTest {
 
     @Test
     public void createKeyspaceViaCQL() throws Exception {
-        String post =
-            "{\"e\":[" +
-                "{ " +
-                " \"type\": \"SETKEYSPACE\", " +
-                " \"op\": { " +
-                " \"keyspace\": \"system\" " +
-                " } " +
-                "}, " +
-                " { " +
-                "   \"type\":\"CQLQUERY\", " +
-                "  \"op\": { " +
-                "     \"version\": \"3.0.0\", " +
-                "     \"query\": \"CREATE KEYSPACE simple WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}\" " +
-                "  } " +
-                " } " +
-                " ]} ";
-        System.out.println("posting " + post);
+        String json = loadJSON("create_keyspace_cql.json");
+        System.out.println("posting " + json);
         final CountDownLatch doneSignal = new CountDownLatch(1);
         HttpClientRequest req = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
             @Override
@@ -71,8 +60,8 @@ public class RawJsonTest {
                 });
             }
         });
-        req.putHeader("content-length", post.length());
-        req.write(post);
+        req.putHeader("content-length", json.length());
+        req.write(json);
         req.end();
         doneSignal.await();
 
@@ -82,29 +71,8 @@ public class RawJsonTest {
 
     @Test
     public void setAndGetColumn() throws Exception {
-        String setColumnJSON =
-            "{\"e\": [" +
-                "  {" +
-                "    \"type\": \"SETKEYSPACE\"," +
-                "    \"op\": {" +
-                "      \"keyspace\": \"myks\"" +
-                "    }" +
-                "  }," +
-                "  {" +
-                "    \"type\": \"SETCOLUMNFAMILY\"," +
-                "    \"op\": {" +
-                "      \"columnfamily\": \"mycf\"" +
-                "    }" +
-                "  }," +
-                "  {" +
-                "    \"type\": \"SET\"," +
-                "    \"op\": {" +
-                "      \"rowkey\": \"row_key1\"," +
-                "      \"name\": \"column1\"," +
-                "      \"value\": \"value1\"" +
-                "    }" +
-                "  }" +
-                "]}";
+        String setColumnJSON = loadJSON("set_column.json");
+
         final CountDownLatch doneSignal = new CountDownLatch(1);
         final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
             @Override
@@ -121,46 +89,8 @@ public class RawJsonTest {
         setReq.write(setColumnJSON);
         setReq.end();
 
-        final String getColumnJSON =
-            "{\"e\": [" +
-                "  {" +
-                "    \"type\": \"SETKEYSPACE\"," +
-                "    \"op\": {" +
-                "      \"keyspace\": \"myks\"" +
-                "    }" +
-                "  }," +
-                "  {" +
-                "    \"type\": \"SETCOLUMNFAMILY\"," +
-                "    \"op\": {\n" +
-                "      \"columnfamily\": \"mycf\"" +
-                "    }" +
-                "  }," +
-                "{" +
-                "    \"type\": \"ASSUME\"," +
-                "    \"op\": {\n" +
-                "      \"keyspace\": \"myks\"," +
-                "      \"columnfamily\": \"mycf\"," +
-                "      \"type\": \"column\"," +
-                "      \"clazz\": \"UTF-8\"" +
-                "    }" +
-                "  }," +
-                "{" +
-                "    \"type\": \"ASSUME\"," +
-                "    \"op\": {" +
-                "      \"keyspace\": \"myks\"," +
-                "      \"columnfamily\": \"mycf\"," +
-                "      \"type\": \"value\"," +
-                "      \"clazz\": \"UTF-8\"" +
-                "    }" +
-                "  }," +
-                "  {" +
-                "    \"type\": \"GET\"," +
-                "    \"op\": {" +
-                "      \"rowkey\": \"row_key1\"," +
-                "      \"name\": \"column1\"" +
-                "    }" +
-                "  }" +
-                "]}";
+        final String getColumnJSON = loadJSON("get_column.json");
+
         final Buffer data = new Buffer(0);
         final HttpClientRequest getReq = httpClient.request("POST", "/:appid/intrareq-json",
             new Handler<HttpClientResponse>() {
@@ -186,9 +116,32 @@ public class RawJsonTest {
         getReq.end();
         doneSignal.await();
 
-        String expectedResponse =
-            "{\"exception\":null,\"exceptionId\":null,\"opsRes\":{\"0\":\"OK\",\"1\":\"OK\",\"2\":\"OK\",\"3\":\"OK\",\"4\":[{\"name\":\"column1\",\"value\":\"value1\"}]}}";
+        String expectedResponse = loadJSON("get_column_response.json");
 
-        Assert.assertEquals("The response was incorrect", expectedResponse, data.toString());
+        assertJSONEquals("The response was incorrect", expectedResponse, data.toString());
+    }
+
+    private String loadJSON(String file) throws Exception {
+        try (
+            BufferedInputStream input = new BufferedInputStream(getClass().getResourceAsStream(file));
+            ByteArrayOutputStream output = new ByteArrayOutputStream()
+        ) {
+            byte[] buffer = new byte[2048];
+
+            for (int bytesRead = input.read(buffer); bytesRead != -1; bytesRead = input.read(buffer)) {
+                output.write(buffer, 0, bytesRead);
+            }
+            output.flush();
+
+            return new String(output.toByteArray());
+        }
+    }
+
+    private void assertJSONEquals(String msg, String expected, String actual) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode expectedJson = mapper.readTree(expected);
+        JsonNode actualJson = mapper.readTree(actual);
+
+        Assert.assertEquals(msg, expectedJson, actualJson);
     }
 }

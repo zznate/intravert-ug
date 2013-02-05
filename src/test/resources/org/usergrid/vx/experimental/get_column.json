@@ -1,0 +1,39 @@
+{"e": [
+    {
+        "type": "SETKEYSPACE",
+        "op": {
+            "keyspace": "myks"
+        }
+    },
+    {
+        "type": "SETCOLUMNFAMILY",
+        "op": {
+            "columnfamily": "mycf"
+        }
+    },
+    {
+        "type": "ASSUME",
+        "op": {
+            "keyspace": "myks",
+            "columnfamily": "mycf",
+            "type": "column",
+            "clazz": "UTF-8"
+        }
+    },
+    {
+        "type": "ASSUME",
+        "op": {
+            "keyspace": "myks",
+            "columnfamily": "mycf",
+            "type": "value",
+            "clazz": "UTF-8"
+        }
+    },
+    {
+        "type": "GET",
+        "op": {
+            "rowkey": "row_key1",
+            "name": "column1"
+        }
+    }
+]}
