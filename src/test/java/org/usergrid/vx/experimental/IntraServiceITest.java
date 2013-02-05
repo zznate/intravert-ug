@@ -36,7 +36,7 @@ import static junit.framework.Assert.assertNotNull;
 @RunWith(CassandraRunner.class)
 @RequiresKeyspace(ksName = "myks")
 @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
-public class IntraServiceTest {
+public class IntraServiceITest {
 
   IntraService is = new IntraService();
   Vertx x = Vertx.newVertx();
@@ -324,7 +324,7 @@ public class IntraServiceTest {
      is.handleIntraReq(req, res, x);
      
      List<Map> x = (List<Map>) res.getOpsRes().get(7);
-     Assert.assertEquals( "wow",  x.get(0).get("value") );
+     Assert.assertEquals("wow", x.get(0).get("value"));
      
      x = (List<Map>) res.getOpsRes().get(8);
      Assert.assertEquals(0, x.size());
@@ -362,31 +362,31 @@ public class IntraServiceTest {
     IntraReq req = new IntraReq();
     req.add( Operations.setKeyspaceOp("myks") ); //0
     req.add( Operations.setColumnFamilyOp("mycf") ); //1
-    req.add( Operations.setAutotimestampOp() ); //2
-    req.add( Operations.assumeOp("myks", "mycf", "value", "UTF-8")); //3
-    req.add( Operations.setOp("rowzz", "col1", "7")); //4
-    req.add( Operations.setOp("rowzz", "col2", "8")); //5
+    req.add(Operations.setAutotimestampOp()); //2
+    req.add(Operations.assumeOp("myks", "mycf", "value", "UTF-8")); //3
+    req.add(Operations.setOp("rowzz", "col1", "7")); //4
+    req.add(Operations.setOp("rowzz", "col2", "8")); //5
     req.add( Operations.setOp("rowyy", "col4", "9")); //6
     req.add( Operations.setOp("rowyy", "col2", "7")); //7
     req.add( Operations.sliceOp("rowzz", "a", "z", 100));//8
-    req.add( Operations.sliceOp("rowyy", "a", "z", 100));//9
+    req.add(Operations.sliceOp("rowyy", "a", "z", 100));//9
     
-    req.add( Operations.createMultiProcess("union", "groovy", 
-    "public class Union implements org.usergrid.vx.experimental.MultiProcessor { \n"+
-    "  public List<Map> multiProcess(Map<Integer,Object> results, Map params){ \n"+
-    "    java.util.HashMap s = new java.util.HashMap(); \n"+
-    "    List<Integer> ids = (List<Integer>) params.get(\"steps\");\n"+
-    "    for (Integer id: ids) { \n"+
-    "      List<Map> rows = results.get(id); \n"+
-    "      for (Map row: rows){ \n"+
-    "        s.put(row.get(\"value\"),\"\"); \n"+
-    "      } \n"+
-    "    } \n"+ 
-    "    List<HashMap> ret = new ArrayList<HashMap>(); \n"+
-    "    ret.add(s) \n"+
-    "    return ret; \n" +
-    "  } \n"+
-    "} \n" )); //10 
+    req.add( Operations.createMultiProcess("union", "groovy",
+            "public class Union implements org.usergrid.vx.experimental.MultiProcessor { \n" +
+                    "  public List<Map> multiProcess(Map<Integer,Object> results, Map params){ \n" +
+                    "    java.util.HashMap s = new java.util.HashMap(); \n" +
+                    "    List<Integer> ids = (List<Integer>) params.get(\"steps\");\n" +
+                    "    for (Integer id: ids) { \n" +
+                    "      List<Map> rows = results.get(id); \n" +
+                    "      for (Map row: rows){ \n" +
+                    "        s.put(row.get(\"value\"),\"\"); \n" +
+                    "      } \n" +
+                    "    } \n" +
+                    "    List<HashMap> ret = new ArrayList<HashMap>(); \n" +
+                    "    ret.add(s) \n" +
+                    "    return ret; \n" +
+                    "  } \n" +
+                    "} \n")); //10
     Map paramsMap = new HashMap();
     List<Integer> steps = new ArrayList<Integer>();
     steps.add(8);
@@ -430,7 +430,7 @@ public class IntraServiceTest {
     rows.add(row1);
     rows.add(row2);
     req.add( Operations.batchSetOp(rows));//5
-    req.add( Operations.sliceOp("batchkeya", "a", "z", 100));//6
+    req.add(Operations.sliceOp("batchkeya", "a", "z", 100));//6
     IntraRes res = new IntraRes();
     is.handleIntraReq(req, res, x);
     List<Map> x = (List<Map>) res.getOpsRes().get(6);
@@ -458,15 +458,15 @@ public class IntraServiceTest {
 	  req.add( Operations.setKeyspaceOp("myks") );//1
 	  req.add( Operations.setAutotimestampOp() );//2
 	  req.add( Operations.createCfOp("users") );//3
-	  req.add( Operations.createCfOp("usersbycity") );//4
+	  req.add(Operations.createCfOp("usersbycity"));//4
 	  req.add( Operations.createCfOp("usersbylast") );//5
-	  req.add( Operations.serviceProcess("buildMySecondary", reqObj) );//6
+	  req.add(Operations.serviceProcess("buildMySecondary", reqObj));//6
 	  req.add( Operations.setColumnFamilyOp("usersbycity")); //7
 	  req.add( Operations.sliceOp("NYC", "a", "z", 5)); //8
 	  IntraRes res = new IntraRes();
 	  is.handleIntraReq(req, res, x);
 	  List<Map> r = (List<Map>) res.getOpsRes().get(8);
-	  Assert.assertEquals("bsmith", ByteBufferUtil.string( (ByteBuffer)r.get(0).get("name")));
+	  Assert.assertEquals("bsmith", ByteBufferUtil.string((ByteBuffer) r.get(0).get("name")));
   }
   
   @Test
@@ -619,7 +619,7 @@ public class IntraServiceTest {
 		setOp.set("columnfamily", "mycf");
 		req.add(setOp);
 		Set<String> wanted = new HashSet<String>();
-		wanted.addAll( Arrays.asList( new String []{"value","timestamp"}));
+		wanted.addAll(Arrays.asList(new String[]{"value", "timestamp"}));
 		req.add( Operations.componentSelect(wanted)); //4
 		// opa sexyy builder style
 		req.add(Operations.getOp("optional", 1).set("keyspace", "myks")
