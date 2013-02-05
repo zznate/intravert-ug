@@ -24,7 +24,7 @@ import org.vertx.java.core.http.HttpClientResponse;
 @RunWith(CassandraRunner.class)
 @RequiresKeyspace(ksName = "myks")
 @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
-public class RawJsonTest {
+public class RawJsonITest {
 
     private static Logger logger = LoggerFactory.getLogger(IntraClient.class);
     private static Vertx vertx;
