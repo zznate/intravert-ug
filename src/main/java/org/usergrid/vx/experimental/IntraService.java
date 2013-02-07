@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 public class IntraService {
 
-
+	//TODO: Static + bounded size?
 	ExecutorService ex = Executors.newCachedThreadPool();
 	public IntraRes handleIntraReq(IntraReq req, IntraRes res, Vertx vertx){
 		IntraState state = new IntraState();
