@@ -695,8 +695,5 @@ public class IntraServiceITest {
 		is.handleIntraReq(req, res, x);
 		Assert.assertNotNull(res.getException());
 		Assert.assertEquals( new Integer(10), res.getExceptionId());
-		
-
 	}
-	
 }
