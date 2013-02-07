@@ -1,6 +1,7 @@
 package org.usergrid.vx.experimental;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.util.concurrent.CountDownLatch;
 
@@ -225,11 +226,13 @@ public class RawJsonITest {
 
     private String loadJSON(String file) throws Exception {
         try (
+        	
             BufferedInputStream input = new BufferedInputStream(getClass().getResourceAsStream(file));
-            ByteArrayOutputStream output = new ByteArrayOutputStream()
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+   
         ) {
             byte[] buffer = new byte[2048];
-
+            
             for (int bytesRead = input.read(buffer); bytesRead != -1; bytesRead = input.read(buffer)) {
                 output.write(buffer, 0, bytesRead);
             }
