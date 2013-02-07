@@ -1,0 +1,60 @@
+{"e": [
+    {
+        "type": "SETKEYSPACE",
+        "op": {
+            "keyspace": "myks"
+        }
+    },
+    {
+        "type": "SETCOLUMNFAMILY",
+        "op": {
+            "columnfamily": "mycf"
+        }
+    },
+    {
+        "type": "ASSUME",
+        "op": {
+            "keyspace": "myks",
+            "columnfamily": "mycf",
+            "type": "column",
+            "clazz": "UTF-8"
+        }
+    },
+    {
+        "type": "ASSUME",
+        "op": {
+            "keyspace": "myks",
+            "columnfamily": "mycf",
+            "type": "value",
+            "clazz": "UTF-8"
+        }
+    },
+    {
+        "type": "GET",
+        "op": {
+            "rowkey": "getref_test",
+            "name": "col1"
+        }
+    },
+    {
+        "type": "SET",
+        "op": {
+            "rowkey": "getref_test",
+            "name": "col3",
+            "value": {
+                "type": "GETREF",
+                "op": {
+                    "resultref": 4,
+                    "wanted": "value"
+                }
+            }
+        }
+    },
+    {
+        "type": "GET",
+        "op": {
+            "rowkey": "getref_test",
+            "name": "col3"
+        }
+    }
+]}

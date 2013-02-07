@@ -70,7 +70,7 @@ public class RawJsonITest {
         Assert.assertNotNull("Failed to find keyspace", Schema.instance.getTableDefinition("simple"));
     }
 
-    @Test
+    //@Test
     public void setAndGetColumn() throws Exception {
         String setColumnJSON = loadJSON("set_column.json");
 
@@ -120,6 +120,108 @@ public class RawJsonITest {
         String expectedResponse = loadJSON("get_column_response.json");
 
         assertJSONEquals("The response was incorrect", expectedResponse, data.toString());
+    }
+
+    @Test
+    public void executeColumnSliceQuery() throws Exception {
+        String insertBeersJSON = loadJSON("insert_beers.json");
+        final CountDownLatch doneSignal = new CountDownLatch(1);
+        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
+            @Override
+            public void handle(HttpClientResponse resp) {
+                resp.endHandler(new SimpleHandler() {
+                    @Override
+                    protected void handle() {
+                    }
+                });
+            }
+        });
+
+        setReq.putHeader("content-length", insertBeersJSON.length());
+        setReq.write(insertBeersJSON);
+        setReq.end();
+
+        final String getBeersJSON = loadJSON("get_beers.json");
+        final Buffer data = new Buffer(0);
+        final HttpClientRequest getReq = httpClient.request("POST", "/:appid/intrareq-json",
+            new Handler<HttpClientResponse>() {
+                @Override
+                public void handle(HttpClientResponse resp) {
+                    resp.dataHandler(new Handler<Buffer>() {
+                        @Override
+                        public void handle(Buffer buffer) {
+                            data.appendBuffer(buffer);
+                        }
+                    });
+
+                    resp.endHandler(new SimpleHandler() {
+                        @Override
+                        protected void handle() {
+                            doneSignal.countDown();
+                        }
+                    });
+                }
+            });
+        getReq.putHeader("content-length", getBeersJSON.length());
+        getReq.write(getBeersJSON);
+        getReq.end();
+        doneSignal.await();
+
+        String actualResponse = data.toString();
+        String expectedResponse = loadJSON("beers_slice_response.json");
+
+        assertJSONEquals("The response for the slice query was incorrect", expectedResponse, actualResponse);
+    }
+
+    @Test
+    public void setColumnUsingGetRef() throws Exception {
+        String insertColumnsJSON = loadJSON("insert_columns_for_getref.json");
+        final CountDownLatch doneSignal = new CountDownLatch(1);
+        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
+            @Override
+            public void handle(HttpClientResponse resp) {
+                resp.endHandler(new SimpleHandler() {
+                    @Override
+                    protected void handle() {
+                    }
+                });
+            }
+        });
+
+        setReq.putHeader("content-length", insertColumnsJSON.length());
+        setReq.write(insertColumnsJSON);
+        setReq.end();
+
+        String getrefJSON = loadJSON("getref.json");
+        final Buffer data = new Buffer(0);
+        final HttpClientRequest getReq = httpClient.request("POST", "/:appid/intrareq-json",
+            new Handler<HttpClientResponse>() {
+                @Override
+                public void handle(HttpClientResponse resp) {
+                    resp.dataHandler(new Handler<Buffer>() {
+                        @Override
+                        public void handle(Buffer buffer) {
+                            data.appendBuffer(buffer);
+                        }
+                    });
+
+                    resp.endHandler(new SimpleHandler() {
+                        @Override
+                        protected void handle() {
+                            doneSignal.countDown();
+                        }
+                    });
+                }
+            });
+        getReq.putHeader("content-length", getrefJSON.length());
+        getReq.write(getrefJSON);
+        getReq.end();
+        doneSignal.await();
+
+        String actualResponse = data.toString();
+        String expectedResponse = loadJSON("getref_response.json");
+
+        assertJSONEquals("Failed to set column using " + IntraOp.Type.GETREF, expectedResponse, actualResponse);
     }
 
     private String loadJSON(String file) throws Exception {
