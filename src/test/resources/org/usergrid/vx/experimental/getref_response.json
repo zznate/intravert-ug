@@ -1,0 +1,19 @@
+{"exception":null, "exceptionId":null, "opsRes":{
+    "0":"OK",
+    "1":"OK",
+    "2":"OK",
+    "3":"OK",
+    "4":[
+        {
+            "name":"col1",
+            "value":"val1"
+        }
+    ],
+    "5":"OK",
+    "6":[
+        {
+            "name":"col3",
+            "value":"val1"
+        }
+    ]
+}}
