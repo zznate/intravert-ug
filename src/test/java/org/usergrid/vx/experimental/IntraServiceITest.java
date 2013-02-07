@@ -667,4 +667,36 @@ public class IntraServiceITest {
 		Assert.assertEquals("2", results.get(0).get("value"));	
 		
 	}
+	
+	
+	@Test
+	public void timeoutOpTest() throws CharacterCodingException {
+		IntraReq req = new IntraReq();
+		req.add(Operations.setKeyspaceOp("timeoutks")); // 0
+		req.add(Operations.createKsOp("timeoutks", 1)); // 1
+		req.add(Operations.createCfOp("timeoutcf")); // 2
+		req.add(Operations.setColumnFamilyOp("timeoutcf")); // 3
+		req.add(Operations.setAutotimestampOp()); // 4
+		req.add(Operations.assumeOp("timeoutks", "timeoutcf", "value", "UTF-8"));// 5
+		req.add(Operations.setOp("rowa", "col1", "20")); // 6
+		req.add(Operations.setOp("rowa", "col2", "22")); // 7
+		req.add(Operations
+				.createFilterOp(
+						"ALongOne",
+						"groovy",
+						"public class ALongOne implements org.usergrid.vx.experimental.Filter { \n"
+								+ " public Map filter(Map row){ \n"
+								+ "   Thread.sleep(5000); \n"
+								+ "   return null; \n"
+								+ "} }\n")); // 8
+		req.add(Operations.filterModeOp("ALongOne", true)); // 9
+		req.add(Operations.sliceOp("rowa", "col1", "col3", 10).set("timeout", 3000)); // 10
+		IntraRes res = new IntraRes();
+		is.handleIntraReq(req, res, x);
+		Assert.assertNotNull(res.getException());
+		Assert.assertEquals( new Integer(10), res.getExceptionId());
+		
+
+	}
+	
 }
