@@ -6,12 +6,21 @@ import org.apache.cassandra.db.marshal.Int32Type;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.vertx.java.core.Vertx;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class IntraService {
 
 
+	ExecutorService ex = Executors.newCachedThreadPool();
 	public IntraRes handleIntraReq(IntraReq req, IntraRes res, Vertx vertx){
 		IntraState state = new IntraState();
 		if ( verifyReq(req,res) == false ){
@@ -24,11 +33,27 @@ public class IntraService {
 	/* Process a request, return a response.  Trap errors
 	 * and set the res object appropriately. Try not to do much heavy lifting here
 	 * delegate complex processing to methods.*/
-	protected boolean executeReq(IntraReq req, IntraRes res, IntraState state, Vertx vertx) {
+	protected boolean executeReq(final IntraReq req, final IntraRes res, final IntraState state, final Vertx vertx) {
 		for (int i=0;i<req.getE().size() && res.getException() == null ;i++){
-			IntraOp op = req.getE().get(i);
+			final IntraOp op = req.getE().get(i);
+			final IntraService me = this;
+			final int iCopy=i;
+			long defaultTimeout=10000;
+			
 			try {
-				op.getType().execute(req, res, state, i, vertx, this);
+				if (op.getOp().containsKey("timeout")){
+					defaultTimeout=(Integer) op.getOp().get("timeout");
+				}
+				Callable<Boolean> c = new Callable<Boolean>(){
+					@Override
+					public Boolean call() throws Exception {
+						op.getType().execute(req, res, state, iCopy, vertx, me);
+						//throw new RuntimeException("this is bad");
+						return true;
+					}
+				};
+				Future<Boolean> f = ex.submit(c);
+				f.get(defaultTimeout, TimeUnit.MILLISECONDS);
 			} catch (Exception ex){ 
 			  res.setExceptionAndId(ex,i);
 			  ex.printStackTrace();
