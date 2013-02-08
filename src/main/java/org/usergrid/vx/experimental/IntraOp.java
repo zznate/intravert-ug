@@ -208,9 +208,9 @@ public class IntraOp implements Serializable{
                 op.getOp().get("rowkey"), req, res, state, i));
         ByteBuffer column = IntraService.byteBufferForObject(IntraService.resolveObject(
                 op.getOp().get("name"), req, res, state, i));
-        QueryPath path = new QueryPath(IntraService.determineCf(op, state), null);
+        QueryPath path = new QueryPath(IntraService.determineCf(null, op, state), null);
         List<ByteBuffer> nameAsList = Arrays.asList(column);
-        ReadCommand command = new SliceByNamesReadCommand(IntraService.determineKs(op, state),
+        ReadCommand command = new SliceByNamesReadCommand(IntraService.determineKs(null, op, state),
             rowkey, path, nameAsList);
         List<Row> rows = null;
 
@@ -503,10 +503,10 @@ public class IntraOp implements Serializable{
         List<RowMutation> m = new ArrayList<RowMutation>();
         for (Map row:rows){
           //code is mostly cloned from Type.SET
-          RowMutation rm = new RowMutation(state.currentKeyspace,
+          RowMutation rm = new RowMutation(IntraService.determineKs(row, op, state),
               IntraService.byteBufferForObject(IntraService.resolveObject(
                   row.get("rowkey"), req, res, state, i)));
-          QueryPath qp = new QueryPath(state.currentColumnFamily, null,
+          QueryPath qp = new QueryPath(IntraService.determineCf(row, op , state), null,
               IntraService.byteBufferForObject(IntraService.resolveObject(
                   row.get("name"), req, res, state, i)));
           rm.add( qp,IntraService.byteBufferForObject(IntraService.resolveObject(
