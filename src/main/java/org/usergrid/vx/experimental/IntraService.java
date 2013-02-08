@@ -212,7 +212,9 @@ public class IntraService {
 
 	static String determineCf(Map row, IntraOp op, IntraState state) {
       String cf = null;
-	  if (op.getOp().containsKey("columnfamily")) {
+      if (row != null && row.containsKey("columnfamily")){
+    	  cf = (String) row.get("columnfamily");
+      } else if (op.getOp().containsKey("columnfamily")) {
 	    cf = (String) op.getOp().get("columnfamily");
 	  } else {
 	    cf = state.currentColumnFamily;
