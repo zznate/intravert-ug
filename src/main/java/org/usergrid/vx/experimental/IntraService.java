@@ -6,23 +6,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.cassandra.db.ColumnFamily;
 import org.apache.cassandra.db.IColumn;
 import org.apache.cassandra.db.marshal.Int32Type;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.vertx.java.core.Vertx;
-
-import java.lang.Thread.UncaughtExceptionHandler;
-import java.nio.ByteBuffer;
-import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 public class IntraService {
 
@@ -91,23 +85,15 @@ public class IntraService {
                         throw new IllegalArgumentException("Do not know what to do with " + o);
                     }
                 } else if (o instanceof IntraOp){
-			IntraOp op = (IntraOp) o;
-			if (op.getType().equals(IntraOp.Type.GETREF)){
-				Integer resultRef = (Integer) op.getOp().get("resultref");
-				String wanted = (String) op.getOp().get("wanted");
-				List aresult = (List) res.getOpsRes().get(resultRef);
-				Map result = (Map) aresult.get(0);
-				return result.get(wanted);
-			} else {
-				throw new RuntimeException(" do not know what to do with "+op.getType());
-			}
+                    IntraOp op = (IntraOp) o;
+                    throw new RuntimeException(" do not know what to do with "+op.getType());
 		} else {
 			throw new RuntimeException(" do not know what to do with "+o.getClass());
 		}
 	}
 
     private static boolean isGetRef(Object typeAttr) {
-        return typeAttr != null && typeAttr instanceof String && typeAttr.equals(IntraOp.Type.GETREF.toString());
+        return typeAttr != null && typeAttr instanceof String && typeAttr.equals("GETREF");
     }
 
     static ByteBuffer byteBufferForObject(Object o){

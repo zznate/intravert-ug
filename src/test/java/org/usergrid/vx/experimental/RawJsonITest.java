@@ -1,7 +1,6 @@
 package org.usergrid.vx.experimental;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.util.concurrent.CountDownLatch;
 
@@ -221,7 +220,7 @@ public class RawJsonITest {
         String actualResponse = data.toString();
         String expectedResponse = loadJSON("getref_response.json");
 
-        assertJSONEquals("Failed to set column using " + IntraOp.Type.GETREF, expectedResponse, actualResponse);
+        assertJSONEquals("Failed to set column using GETREF", expectedResponse, actualResponse);
     }
 
     private String loadJSON(String file) throws Exception {
