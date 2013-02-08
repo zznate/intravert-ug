@@ -694,4 +694,46 @@ public class IntraServiceITest {
 		Assert.assertNotNull(res.getException());
 		Assert.assertEquals(new Integer(10), res.getExceptionId());
 	}
+	
+	@Test
+	public void batchAcrossKeyspaces() throws CharacterCodingException {
+		List<Map> batch = new ArrayList<Map>();
+		Map row = new HashMap();
+		row.put("keyspace","ks1");
+		row.put("columnfamily","cf1");
+		row.put("rowkey","mykey");
+		row.put("name","mycol");
+		row.put("value","myvalue");
+		batch.add(row);
+		row = new HashMap();
+		row.put("keyspace","ks2");
+		row.put("columnfamily","cf2");
+		row.put("rowkey","mykey2");
+		row.put("name","mycol2");
+		row.put("value","myvalue2");
+		batch.add(row);
+		
+		IntraReq req = new IntraReq();
+		req.add( Operations.setAutotimestampOp() )
+			.add( Operations.createKsOp("ks1", 1))
+			.add( Operations.setKeyspaceOp("ks1"))
+			.add( Operations.createCfOp("cf1"))
+			.add( Operations.createKsOp("ks2", 1))
+			.add( Operations.setKeyspaceOp("ks2"))
+			.add( Operations.createCfOp("cf2"))
+			.add( Operations.batchSetOp(batch).set("timeout", 1000000))
+			.add( Operations.assumeOp("ks1", "cf1", "value", "UTF-8"))
+			.add( Operations.assumeOp("ks2", "cf2", "value", "UTF-8"))
+			.add( Operations.getOp("mykey", "mycol")
+					.set("keyspace", "ks1")
+					.set("columnfamily", "cf1"));
+		
+		IntraRes res = new IntraRes();
+		is.handleIntraReq(req, res, x);
+		System.out.println(res.getException());
+		System.out.println(res.getExceptionId());
+		List<Map> x = (List<Map>) res.getOpsRes().get(10);
+		Assert.assertEquals("myvalue", x.get(0).get("value") );
+		
+	}
 }

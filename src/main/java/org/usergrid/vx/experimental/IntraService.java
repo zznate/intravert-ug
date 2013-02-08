@@ -184,9 +184,11 @@ public class IntraService {
     }
   }
 
-	static String determineKs(IntraOp op, IntraState state) {
+	static String determineKs(Map row, IntraOp op, IntraState state) {
       String ks = null;
-	  if (op.getOp().containsKey("keyspace")) {
+      if (row != null && row.containsKey("keyspace")){
+    	ks = (String) row.get("keyspace");
+      } else if (op.getOp().containsKey("keyspace")) {
 	    ks = (String) op.getOp().get("keyspace");
 	  } else {
 	    ks = state.currentKeyspace;
@@ -194,9 +196,11 @@ public class IntraService {
 	  return ks;
 	}
 
-	static String determineCf(IntraOp op, IntraState state) {
+	static String determineCf(Map row, IntraOp op, IntraState state) {
       String cf = null;
-	  if (op.getOp().containsKey("columnfamily")) {
+      if (row != null && row.containsKey("columnfamily")){
+    	  cf = (String) row.get("columnfamily");
+      } else if (op.getOp().containsKey("columnfamily")) {
 	    cf = (String) op.getOp().get("columnfamily");
 	  } else {
 	    cf = state.currentColumnFamily;

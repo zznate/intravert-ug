@@ -10,7 +10,7 @@ import org.apache.cassandra.utils.ByteBufferUtil;
 public class TypeHelper {
   public static Object getTypedIfPossible(IntraState state, String type, ByteBuffer bb, IntraOp op){
 	  
-    IntraMetaData imd = new IntraMetaData(IntraService.determineKs(op, state),IntraService.determineCf(op, state),type);
+    IntraMetaData imd = new IntraMetaData(IntraService.determineKs(null ,op, state),IntraService.determineCf(null, op, state),type);
     String s = state.meta.get(imd);
     if (s == null){
       return bb;
