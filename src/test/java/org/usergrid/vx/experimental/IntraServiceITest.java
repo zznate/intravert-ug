@@ -1,6 +1,7 @@
 package org.usergrid.vx.experimental;
 
-import java.io.File;
+import static junit.framework.Assert.assertNotNull;
+
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.util.ArrayList;
@@ -12,26 +13,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.apache.cassandra.cql3.QueryProcessor;
 import org.apache.cassandra.db.ConsistencyLevel;
 import org.apache.cassandra.db.marshal.Int32Type;
-import org.apache.cassandra.db.marshal.IntegerType;
-import org.apache.cassandra.service.CassandraDaemon;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.CqlResult;
 import org.apache.cassandra.thrift.ThriftClientState;
 import org.apache.cassandra.transport.messages.ResultMessage;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.usergrid.vx.server.IntravertCassandraServer;
-import org.usergrid.vx.server.IntravertDeamon;
 import org.vertx.java.core.Vertx;
-
-import static junit.framework.Assert.assertNotNull;
 
 @RunWith(CassandraRunner.class)
 @RequiresKeyspace(ksName = "myks")
@@ -52,7 +47,10 @@ public class IntraServiceITest {
 		req.add( Operations.sliceOp("rowa", "col1", "z", 4)); //4
 		req.add( Operations.getOp("rowa", "col1")); //5
 		//create a rowkey "rowb" with a column "col2" and a value of the result of operation 7
-		req.add( Operations.setOp("rowb", "col2", Operations.getResRefOp(5, "value"))); //6
+                req.add( Operations.setOp("rowb", "col2", ImmutableMap.of(
+                    "type", "GETREF",
+                    "op", ImmutableMap.of("resultref", 5, "wanted", "value")
+                ))); //6
 		//Read this row back 
 		req.add( Operations.getOp("rowb", "col2"));//7
 		
@@ -694,6 +692,6 @@ public class IntraServiceITest {
 		IntraRes res = new IntraRes();
 		is.handleIntraReq(req, res, x);
 		Assert.assertNotNull(res.getException());
-		Assert.assertEquals( new Integer(10), res.getExceptionId());
+		Assert.assertEquals(new Integer(10), res.getExceptionId());
 	}
 }

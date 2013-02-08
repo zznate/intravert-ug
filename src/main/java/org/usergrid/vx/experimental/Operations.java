@@ -1,11 +1,12 @@
 package org.usergrid.vx.experimental;
 
-import com.google.common.base.Preconditions;
-import org.apache.cassandra.db.ConsistencyLevel;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.base.Preconditions;
+
+import org.apache.cassandra.db.ConsistencyLevel;
 
 /**
  * Factory class for building IntraOp objects
@@ -81,14 +82,6 @@ public class Operations {
  		return new IntraOp(IntraOp.Type.GET)
              .set(ROWKEY, rowkey)
              .set(NAME, columnName);
- 	}
-
-  public static IntraOp getResRefOp(int reference, String wanted){
-    Preconditions.checkArgument(reference >= 0);
-    checkForBlankStr(wanted, WANTED, IntraOp.Type.GETREF);
-    return new IntraOp(IntraOp.Type.GETREF)
-            .set(RESULTREF, reference)
-            .set(WANTED, wanted);
  	}
 
   public static IntraOp sliceOp( Object rowkey , Object start, Object end, int size){

@@ -1,33 +1,52 @@
 package org.usergrid.vx.experimental;
 
-import com.google.common.base.Preconditions;
-import groovy.lang.GroovyClassLoader;
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.cassandra.config.CFMetaData;
 import org.apache.cassandra.config.KSMetaData;
 import org.apache.cassandra.config.Schema;
 import org.apache.cassandra.cql3.QueryProcessor;
-import org.apache.cassandra.db.*;
-import org.apache.cassandra.db.Column;
+import org.apache.cassandra.db.ColumnFamily;
 import org.apache.cassandra.db.ConsistencyLevel;
+import org.apache.cassandra.db.ReadCommand;
+import org.apache.cassandra.db.Row;
+import org.apache.cassandra.db.RowMutation;
+import org.apache.cassandra.db.SliceByNamesReadCommand;
+import org.apache.cassandra.db.SliceFromReadCommand;
 import org.apache.cassandra.db.filter.QueryPath;
-import org.apache.cassandra.exceptions.*;
+import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.cassandra.exceptions.InvalidRequestException;
-import org.apache.cassandra.exceptions.UnavailableException;
+import org.apache.cassandra.exceptions.IsBootstrappingException;
+import org.apache.cassandra.exceptions.OverloadedException;
+import org.apache.cassandra.exceptions.ReadTimeoutException;
+import org.apache.cassandra.exceptions.RequestExecutionException;
+import org.apache.cassandra.exceptions.RequestValidationException;
+import org.apache.cassandra.exceptions.WriteTimeoutException;
 import org.apache.cassandra.service.ClientState;
 import org.apache.cassandra.service.MigrationManager;
 import org.apache.cassandra.service.QueryState;
 import org.apache.cassandra.service.StorageProxy;
-import org.apache.cassandra.thrift.*;
-import org.apache.cassandra.thrift.CqlRow._Fields;
+import org.apache.cassandra.thrift.CfDef;
+import org.apache.cassandra.thrift.ColumnPath;
+import org.apache.cassandra.thrift.CqlResult;
+import org.apache.cassandra.thrift.CqlRow;
+import org.apache.cassandra.thrift.KsDef;
 import org.apache.cassandra.transport.messages.ResultMessage;
 import org.apache.cassandra.transport.messages.ResultMessage.Kind;
 import org.vertx.java.core.Vertx;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.nio.ByteBuffer;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import groovy.lang.GroovyClassLoader;
 
 public class IntraOp implements Serializable{
 
@@ -188,12 +207,6 @@ public class IntraOp implements Serializable{
       			return;
       		}
       		res.getOpsRes().put(i, finalResults);
-      }
-    },
-    GETREF {
-      @Override
-      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
-    	  //this is never used as a standalone op, but for now we can keep it here
       }
     },
     GET {
