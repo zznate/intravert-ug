@@ -86,6 +86,7 @@ public class IntraOp implements Serializable{
         state.consistency = level;
       }
     },
+    
     CREATEKEYSPACE {
       @Override
       public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
@@ -96,6 +97,7 @@ public class IntraOp implements Serializable{
         def.setName(ks);
         def.setStrategy_class("SimpleStrategy");
         Map<String, String> strat = new HashMap<String, String>();
+        //TODO we should be able to get all this information from the client
         strat.put("replication_factor", "1");
         def.setStrategy_options(strat);
         KSMetaData ksm = null;

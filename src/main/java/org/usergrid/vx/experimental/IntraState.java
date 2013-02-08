@@ -21,6 +21,7 @@ public class IntraState {
   private static AtomicInteger id=new AtomicInteger(0);
 	String currentKeyspace="";
 	String currentColumnFamily="";
+	//TODO use enum map supposedly fast
 	Set<String> components = new HashSet<String>();
 	boolean autoTimestamp= true;
 	long nanotime = System.nanoTime();
