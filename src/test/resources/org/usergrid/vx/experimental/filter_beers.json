@@ -1,0 +1,56 @@
+{"e": [
+    {
+        "type": "SETKEYSPACE",
+        "op": {
+            "keyspace": "myks"
+        }
+    },
+    {
+        "type": "SETCOLUMNFAMILY",
+        "op": {
+            "columnfamily": "mycf"
+        }
+    },
+    {
+        "type": "ASSUME",
+        "op": {
+            "keyspace": "myks",
+            "columnfamily": "mycf",
+            "type": "column",
+            "clazz": "UTF-8"
+        }
+    },
+    {
+        "type": "ASSUME",
+        "op": {
+            "keyspace": "myks",
+            "columnfamily": "mycf",
+            "type": "value",
+            "clazz": "UTF-8"
+        }
+    },
+    {
+        "type": "CREATEFILTER",
+        "op": {
+            "name": "stouts",
+            "spec": "groovy",
+            "value": "class Stout implements org.usergrid.vx.experimental.Filter {\n  Map filter(Map row)  {\n  if (row[\"value\"] == \"Breakfast Stout\") {\n  return row\n} else {\n  return null\n} } }"
+        }
+    },
+    {
+        "type": "FILTERMODE",
+        "op": {
+            "name": "stouts",
+            "on": true
+        }
+    },
+    {
+        "type": "SLICE",
+        "op": {
+            "rowkey": "beers",
+            "start": "Allagash",
+            "end": "Sierra Nevada",
+            "size": 9
+        }
+    }
+]}
