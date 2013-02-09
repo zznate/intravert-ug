@@ -19,9 +19,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-/* unless testing performance chances this should like be ignored
+/* unless testing performance chances this should like be ignored */
 @Ignore
-*/
+
 @RunWith(CassandraRunner.class)
 @RequiresKeyspace(ksName = "myks")
 @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
@@ -48,6 +48,8 @@ public class PerfTestingITest {
 		final int ops = 25000;
 		long start = System.currentTimeMillis();
 		IntraClient2 ic = new IntraClient2("localhost", 8080);
+		//IntraClient ic = new IntraClient();
+		//ic.setPayload("json");
 		String ks = "myks";
 		String cf = "mycf";
 		String keyspace = "keyspace";
