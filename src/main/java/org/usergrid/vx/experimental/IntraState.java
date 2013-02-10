@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.cassandra.db.ConsistencyLevel;
@@ -45,7 +44,7 @@ public class IntraState {
 	Map<IntraMetaData,String> meta = new HashMap<IntraMetaData,String>();
 	//TODO separate per/request state from application/session state
 	static Map<String,Processor> processors = new HashMap<String,Processor>();
-	static Map<String,Filter> filters = new HashMap<String,Filter>(); 
+	static Map<String,Filter> filters = new HashMap<String,Filter>();
 	static Map<String,MultiProcessor> multiProcessors = new HashMap<String,MultiProcessor>();
 	static Map<String,ServiceProcessor> serviceProcessors = new HashMap<String,ServiceProcessor>();
 	Filter currentFilter;

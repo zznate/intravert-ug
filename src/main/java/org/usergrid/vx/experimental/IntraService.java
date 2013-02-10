@@ -187,14 +187,14 @@ public class IntraService {
 	      if (state.components.contains("markeddelete")){
 	    	  m.put("markeddelete", ic.getMarkedForDeleteAt());
 	      }
-	      if (state.currentFilter != null){
-	        Map newMap = state.currentFilter.filter(m);
-	        if (newMap != null){
-	          finalResults.add(newMap);
-	        }
-	      } else {
-	        finalResults.add(m);
-	      }
+              if (state.currentFilter != null) {
+                  Map newMap = (Map) state.currentFilter.filter(m);
+                  if (newMap != null) {
+                      finalResults.add(newMap);
+                  }
+              } else {
+                  finalResults.add(m);
+              }
       }
     }
   }
