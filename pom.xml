@@ -113,6 +113,11 @@
 			<artifactId>groovy-all</artifactId>
 			<version>${groovy-version}</version>
 		</dependency>
+    <dependency>
+      <groupId>org.mozilla</groupId>
+      <artifactId>rhino</artifactId>
+      <version>1.7R4</version>
+    </dependency>
 		<dependency>
 			<groupId>com.jayway.jsonpath</groupId>
 			<artifactId>json-path</artifactId>
