@@ -143,14 +143,7 @@ public class IntraServiceITest {
      req.add( Operations.setOp("rowa", "col1", "20")); //6
      req.add( Operations.setOp("rowa", "col2", "22")); //7
      req.add( Operations.createFilterOp("over21", "groovy",
-     		"public class Over21 implements org.usergrid.vx.experimental.Filter { \n"+
-        " public Map filter(Map row){ \n" +
-        "   if (Integer.parseInt( row.get(\"value\") ) >21){ \n"+
-        "     return row; \n" +
-        "   } else { return null; } \n" +
-        " } \n" +
-        "} \n"
-     )); //8
+         "{ row -> if (row['value'].toInteger() > 21) return row else return null }")); // 8
      req.add( Operations.filterModeOp("over21", true)); //9
      req.add( Operations.sliceOp("rowa", "col1", "col3", 10)); //10
      IntraRes res = new IntraRes();
@@ -161,6 +154,30 @@ public class IntraServiceITest {
      Assert.assertEquals(1, results.size());
      
 	 }
+
+    @Test
+    public void executeJavaScriptFilter() throws CharacterCodingException {
+        IntraReq req = new IntraReq();
+        req.add(Operations.setKeyspaceOp("jsFilterks")); //0
+        req.add(Operations.createKsOp("jsFilterks", 1)); //1
+        req.add(Operations.createCfOp("filtercf")); //2
+        req.add(Operations.setColumnFamilyOp("filtercf")); //3
+        req.add(Operations.setAutotimestampOp()); //4
+        req.add(Operations.assumeOp("jsFilterks", "filtercf", "value", "UTF-8"));//5
+        req.add(Operations.setOp("rowa", "col1", "20")); //6
+        req.add(Operations.setOp("rowa", "col2", "22")); //7
+        req.add(Operations.createFilterOp("over21", "javascript",
+            "function over21(row) { if (row['value'] > 21) return row; else return null; }")); // 8
+        req.add(Operations.filterModeOp("over21", true)); //9
+        req.add(Operations.sliceOp("rowa", "col1", "col3", 10)); //10
+        IntraRes res = new IntraRes();
+        is.handleIntraReq(req, res, x);
+        System.out.println(res.getException());
+        List<Map> results = (List<Map>) res.getOpsRes().get(10);
+        Assert.assertEquals("22", results.get(0).get("value"));
+        Assert.assertEquals(1, results.size());
+
+    }
 	 
 	 @Test
    public void processorTest() throws CharacterCodingException{
@@ -693,15 +710,7 @@ public class IntraServiceITest {
 		req.add(Operations.assumeOp("timeoutks", "timeoutcf", "value", "UTF-8"));// 5
 		req.add(Operations.setOp("rowa", "col1", "20")); // 6
 		req.add(Operations.setOp("rowa", "col2", "22")); // 7
-		req.add(Operations
-				.createFilterOp(
-						"ALongOne",
-						"groovy",
-						"public class ALongOne implements org.usergrid.vx.experimental.Filter { \n"
-								+ " public Map filter(Map row){ \n"
-								+ "   Thread.sleep(5000); \n"
-								+ "   return null; \n"
-								+ "} }\n")); // 8
+                req.add(Operations.createFilterOp("ALongOne", "groovy", "{ row -> Thread.sleep(5000) }")); // 8
 		req.add(Operations.filterModeOp("ALongOne", true)); // 9
 		req.add(Operations.sliceOp("rowa", "col1", "col3", 10).set("timeout", 3000)); // 10
 		IntraRes res = new IntraRes();

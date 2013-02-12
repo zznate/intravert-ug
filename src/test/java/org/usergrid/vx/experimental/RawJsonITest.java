@@ -289,6 +289,57 @@ public class RawJsonITest {
         assertJSONEquals("Failed to apply filter", expectedResponse, actualResponse);
     }
 
+    @Test
+    public void javascriptFilterColumnSlice() throws Exception {
+        String insertBeersJSON = loadJSON("insert_beers.json");
+        final CountDownLatch doneSignal = new CountDownLatch(1);
+        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
+            @Override
+            public void handle(HttpClientResponse resp) {
+                resp.endHandler(new SimpleHandler() {
+                    @Override
+                    protected void handle() {
+                    }
+                });
+            }
+        });
+
+        setReq.putHeader("content-length", insertBeersJSON.length());
+        setReq.write(insertBeersJSON);
+        setReq.end();
+
+        final String getBeersJSON = loadJSON("filter_beers_js.json");
+        final Buffer data = new Buffer(0);
+        final HttpClientRequest getReq = httpClient.request("POST", "/:appid/intrareq-json",
+            new Handler<HttpClientResponse>() {
+                @Override
+                public void handle(HttpClientResponse resp) {
+                    resp.dataHandler(new Handler<Buffer>() {
+                        @Override
+                        public void handle(Buffer buffer) {
+                            data.appendBuffer(buffer);
+                        }
+                    });
+
+                    resp.endHandler(new SimpleHandler() {
+                        @Override
+                        protected void handle() {
+                            doneSignal.countDown();
+                        }
+                    });
+                }
+            });
+        getReq.putHeader("content-length", getBeersJSON.length());
+        getReq.write(getBeersJSON);
+        getReq.end();
+        doneSignal.await();
+
+        String actualResponse = data.toString();
+        String expectedResponse = loadJSON("filter_beers_response.json");
+
+        assertJSONEquals("Failed to apply filter", expectedResponse, actualResponse);
+    }
+
     private String loadJSON(String file) throws Exception {
         try (
         	

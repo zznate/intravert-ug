@@ -59,6 +59,8 @@ import org.apache.cassandra.thrift.CqlRow;
 import org.apache.cassandra.thrift.KsDef;
 import org.apache.cassandra.transport.messages.ResultMessage;
 import org.apache.cassandra.transport.messages.ResultMessage.Kind;
+import org.usergrid.vx.experimental.filter.FactoryProvider;
+import org.usergrid.vx.experimental.filter.FilterFactory;
 import org.vertx.java.core.Vertx;
 
 import groovy.lang.GroovyClassLoader;
@@ -386,18 +388,14 @@ public class IntraOp implements Serializable{
     CREATEFILTER {
       @Override
       public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
-        IntraOp op = req.getE().get(i);
-        String name  = (String) op.getOp().get("name");
-        GroovyClassLoader gc = new GroovyClassLoader();
-        Class c = gc.parseClass((String) op.getOp().get("value") );
-        Filter f = null;
-        try {
-          f = (Filter) c.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-          res.setExceptionAndId(e, i);
-          return;
-        }
-        IntraState.filters.put(name, f);
+          IntraOp op = req.getE().get(i);
+          String name  = (String) op.getOp().get("name");
+          String scriptSource = (String) op.getOp().get("value");
+          String spec = (String) op.getOp().get("spec");
+
+          FactoryProvider factoryProvider = new FactoryProvider();
+          FilterFactory filterFactory = factoryProvider.getFilterFactory(spec);
+          IntraState.filters.put(name, filterFactory.createFilter(scriptSource));
       }
     },
     FILTERMODE {
