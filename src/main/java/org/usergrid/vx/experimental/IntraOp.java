@@ -59,8 +59,8 @@ import org.apache.cassandra.thrift.CqlRow;
 import org.apache.cassandra.thrift.KsDef;
 import org.apache.cassandra.transport.messages.ResultMessage;
 import org.apache.cassandra.transport.messages.ResultMessage.Kind;
-import org.usergrid.vx.experimental.filter.groovy.GroovyFilterFactory;
-import org.usergrid.vx.experimental.filter.javascript.JavaScriptFilterFactory;
+import org.usergrid.vx.experimental.filter.FactoryProvider;
+import org.usergrid.vx.experimental.filter.FilterFactory;
 import org.vertx.java.core.Vertx;
 
 import groovy.lang.GroovyClassLoader;
@@ -393,15 +393,9 @@ public class IntraOp implements Serializable{
           String scriptSource = (String) op.getOp().get("value");
           String spec = (String) op.getOp().get("spec");
 
-          if (spec.equals("groovy")) {
-              GroovyFilterFactory filterFactory = new GroovyFilterFactory();
-              IntraState.filters.put(name, filterFactory.createFilter(scriptSource));
-          } else if (spec.equals("javascript")) {
-              JavaScriptFilterFactory filterFactory = new JavaScriptFilterFactory();
-              IntraState.filters.put(name, filterFactory.createFilter(scriptSource));
-          } else {
-              throw new RuntimeException(spec + " is not supported");
-          }
+          FactoryProvider factoryProvider = new FactoryProvider();
+          FilterFactory filterFactory = factoryProvider.getFilterFactory(spec);
+          IntraState.filters.put(name, filterFactory.createFilter(scriptSource));
       }
     },
     FILTERMODE {
