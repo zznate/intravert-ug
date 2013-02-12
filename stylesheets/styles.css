@@ -1,4 +1,4 @@
-@import url(https://fonts.googleapis.com/css?family=Arvo:400,700,400italic);
+@import url(http://fonts.googleapis.com/css?family=Lato:400,700|Josefin+Slab:600,700);
 
 /* MeyerWeb Reset */
 
@@ -27,7 +27,7 @@ time, mark, audio, video {
 
 body {
   padding:10px 50px 0 0;
-  font-family:"Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family:"Lato", Helvetica, Arial, sans-serif;
 	font-size: 14px;
 	color: #232323;
 	background-color: #FBFAF7;
@@ -47,10 +47,9 @@ p, ul, ol, table, dl {
 }
 
 h1, h2, h3 {
-	font-family: Arvo, Monaco, serif;
+	font-family: "Josefin Slab", Monaco, serif;
   line-height:1.3;
 	font-weight: normal;
-	text-transform:uppercase;
 }
 
 h1,h2, h3 {
@@ -72,7 +71,7 @@ h3 {
 }
 
 h4, h5, h6 {
-	font-family: Arvo, Monaco, serif;
+	font-family: "Josefin Slab", Monaco, serif;
 	font-weight: 700;
 }
 
@@ -183,7 +182,7 @@ table {
  }
 
 th {
-  font-family: 'Arvo', Helvetica, Arial, sans-serif;
+  font-family: 'Josefin Slab', Helvetica, Arial, sans-serif;
 	font-size: 18px;
 	font-weight: normal;
   padding: 10px;
@@ -228,7 +227,7 @@ p.header {
 }
 
 h1.header {
-	font-family: Arvo, sans-serif;
+	font-family: 'Josefin Slab', sans-serif;
 	font-size: 30px;
 	font-weight: 300;
 	line-height: 1.3em;
