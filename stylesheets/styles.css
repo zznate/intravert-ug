@@ -50,6 +50,7 @@ h1, h2, h3 {
 	font-family: "Josefin Slab", Monaco, serif;
   line-height:1.3;
 	font-weight: normal;
+	text-transform: uppercase;
 }
 
 h1,h2, h3 {
