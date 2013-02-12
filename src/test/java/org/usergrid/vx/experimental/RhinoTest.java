@@ -21,7 +21,7 @@ public class RhinoTest {
             "function over21(age) { if (age > 21) return true; else return false; }\n";
         Context context = Context.enter();
         Scriptable scope = context.initStandardObjects();
-        Script compiledScript = context.compileString("return function(row) { return row; }", "test", 1, null);
+        Script compiledScript = context.compileString("function(row) { return row; }", "test", 1, null);
         Object result = context.evaluateString(scope, source, "test", 1, null);
         Map<String, Object> map = new HashMap<>();
         map.put("name", "col1");
