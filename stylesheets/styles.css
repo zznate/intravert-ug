@@ -230,8 +230,8 @@ p.header {
 
 h1.header {
 	font-family: 'Josefin Slab', sans-serif;
-	font-size: 30px;
-	font-weight: 300;
+	font-size: 28px;
+	font-weight: bold;
 	line-height: 1.3em;
 	border-bottom: none;
 	margin-top: 0;
