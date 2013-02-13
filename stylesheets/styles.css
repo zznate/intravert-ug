@@ -330,11 +330,13 @@ section {
 
 footer {
   width:170px;
+  font-size:10px;
   float:left;
   position:fixed;
   bottom:10px;
-	padding-left: 50px;
+	padding-left: 35px;
 }
+
 
 @media print, screen and (max-width: 960px) {
 
