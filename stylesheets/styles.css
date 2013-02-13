@@ -1,4 +1,4 @@
-@import url(http://fonts.googleapis.com/css?family=Lato:400,700|Josefin+Slab:600,700);
+@import url(http://fonts.googleapis.com/css?family=Lato:400,700|Bevan:400);
 
 /* MeyerWeb Reset */
 
@@ -48,7 +48,7 @@ p, ul, ol, table, dl {
 }
 
 h1, h2, h3 {
-	font-family: "Josefin Slab", Monaco, serif;
+	font-family: "Bevan", Monaco, serif;
   line-height:1.3;
 	font-weight: normal;
 }
@@ -78,7 +78,7 @@ h3 {
 }
 
 h4, h5, h6 {
-	font-family: "Josefin Slab", Monaco, serif;
+	font-family: "Bevan", Monaco, serif;
 	font-weight: 700;
 }
 
@@ -193,7 +193,7 @@ table {
  }
 
 th {
-  font-family: 'Josefin Slab', Helvetica, Arial, sans-serif;
+  font-family: "Bevan", Helvetica, Arial, sans-serif;
 	font-size: 18px;
 	font-weight: normal;
   padding: 10px;
@@ -238,7 +238,7 @@ p.header {
 }
 
 h1.header {
-	font-family: 'Josefin Slab', sans-serif;
+	font-family: "Bevan", sans-serif;
 	font-size: 26px;
 	font-weight: 700;
 	line-height: 1.3em;
