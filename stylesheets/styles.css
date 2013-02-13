@@ -110,7 +110,7 @@ p.emphasis {
 
 ul li {
   list-style: inside;
-  padding-left: 10px;
+  padding-left: 0;
 }
 
 ol li {
