@@ -51,7 +51,6 @@ h1, h2, h3 {
 	font-family: "Josefin Slab", Monaco, serif;
   line-height:1.3;
 	font-weight: normal;
-	text-transform: uppercase;
 }
 
 h1,h2, h3 {
@@ -63,16 +62,19 @@ h1,h2, h3 {
 h1 {
 	font-size: 30px;
 	font-weight: 700;
+	font-variant:small-caps;
 }
 
 h2 {
 	font-size: 24px;
-		font-weight: 600;
+	font-weight: 600;
+	text-transform: uppercase;
 
 }
 
 h3 {
 	font-size: 18px;
+	text-transform: uppercase;
 }
 
 h4, h5, h6 {
