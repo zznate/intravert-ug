@@ -40,6 +40,7 @@ body {
 h1, h2, h3, h4, h5, h6 {
   color:#232323;
   margin:36px 0 10px;
+  letter-spacing:normal;
 }
 
 p, ul, ol, table, dl {
@@ -99,6 +100,10 @@ em {
 
 strong {
   font-weight:700;
+}
+
+p.emphasis {
+	font-weight:700;
 }
 
 ul li {
