@@ -40,7 +40,7 @@ body {
 h1, h2, h3, h4, h5, h6 {
   color:#232323;
   margin:36px 0 10px;
-  letter-spacing:normal;
+  letter-spacing:3;
 }
 
 p, ul, ol, table, dl {
