@@ -66,6 +66,8 @@ h1 {
 
 h2 {
 	font-size: 24px;
+		font-weight: 600;
+
 }
 
 h3 {
@@ -230,7 +232,7 @@ p.header {
 
 h1.header {
 	font-family: 'Josefin Slab', sans-serif;
-	font-size: 28px;
+	font-size: 26px;
 	font-weight: 700;
 	line-height: 1.3em;
 	border-bottom: none;
