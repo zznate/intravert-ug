@@ -16,9 +16,11 @@
 package org.usergrid.vx.experimental;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
+import org.vertx.java.core.json.JsonObject;
 
 public class IntraRes implements Serializable{
 	
@@ -60,4 +62,13 @@ public class IntraRes implements Serializable{
     this.setException(exception);
     this.setExceptionId(id);
   }
+
+    public JsonObject toJson() {
+        JsonObject json = new JsonObject();
+        json.putObject("exception", null);
+        json.putNumber("exceptionId", exceptionId);
+        json.putElement("opsRes", new JsonObject((Map)opsRes));
+
+        return json;
+    }
 }

@@ -14,20 +14,18 @@
  *   limitations under the License.
 */
 package org.usergrid.vx.experimental;
- 
-import java.beans.XMLEncoder;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+
 import java.io.IOException;
 
-import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
 
 public class IntraHandlerJson implements Handler<HttpServerRequest>{
 
@@ -49,8 +47,13 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
 			  
 				IntraReq req = null;
 				try {
-					req = mapper.readValue(buffer.getBytes(), IntraReq.class);
-
+                                    req = mapper.readValue(buffer.getBytes(), IntraReq.class);
+                                    vertx.eventBus().send("json-request", req.toJson(), new Handler<Message<JsonObject>>() {
+                                        @Override
+                                        public void handle(Message<JsonObject> event) {
+                                            request.response.end(event.body.toString());
+                                        }
+                                    });
 				} catch (JsonParseException e) {
 					e.printStackTrace();
 				} catch (JsonMappingException e) {
@@ -59,20 +62,20 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
 					e.printStackTrace();
 				}
 				
-				is.handleIntraReq(req,res,vertx);
-				
-				String value=null;
-				try {
-					value = mapper.writeValueAsString(res);
-				} catch (JsonGenerationException e1) {
-					e1.printStackTrace();
-				} catch (JsonMappingException e1) {
-					e1.printStackTrace();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
+//				is.handleIntraReq(req,res,vertx);
+//
+//				String value=null;
+//				try {
+//					value = mapper.writeValueAsString(res);
+//				} catch (JsonGenerationException e1) {
+//					e1.printStackTrace();
+//				} catch (JsonMappingException e1) {
+//					e1.printStackTrace();
+//				} catch (IOException e1) {
+//					e1.printStackTrace();
+//				}
 				//System.out.println(value);
-				request.response.end(value);
+//				request.response.end(value);
 			}
 		});
 	}

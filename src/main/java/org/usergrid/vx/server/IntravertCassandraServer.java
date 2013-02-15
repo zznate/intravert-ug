@@ -15,19 +15,25 @@
 */
 package org.usergrid.vx.server;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.cassandra.service.CassandraDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.usergrid.vx.experimental.IntraHandlerJson;
 import org.usergrid.vx.experimental.IntraHandlerJsonSmile;
 import org.usergrid.vx.experimental.IntraHandlerXml;
-import org.usergrid.vx.experimental.IntraHandlerJson;
+import org.usergrid.vx.experimental.IntraReq;
+import org.usergrid.vx.experimental.IntraRes;
+import org.usergrid.vx.experimental.IntraService;
 import org.usergrid.vx.handler.http.HelloHandler;
 import org.usergrid.vx.handler.http.NoMatchHandler;
 import org.usergrid.vx.handler.http.ThriftHandler;
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.RouteMatcher;
-
-import java.util.concurrent.atomic.AtomicBoolean;
+import org.vertx.java.core.json.JsonObject;
 
 public class IntravertCassandraServer implements CassandraDaemon.Server {
 	
@@ -52,6 +58,19 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
 		rm.post("/:appid/intrareq-json", new IntraHandlerJson(vertx));
 		rm.post("/:appid/intrareq-jsonsmile", new IntraHandlerJsonSmile(vertx));
 		rm.noMatch(new NoMatchHandler() );
+
+            vertx.eventBus().registerHandler("json-request", new Handler<Message<JsonObject>>() {
+                @Override
+                public void handle(Message<JsonObject> event) {
+                    IntraService intraService = new IntraService();
+                    IntraReq request = IntraReq.fromJson(event.body);
+                    IntraRes response = new IntraRes();
+
+                    intraService.handleIntraReq(request, response, vertx);
+                    event.reply(response.toJson());
+                }
+            });
+
 		vertx.createHttpServer().requestHandler(rm).listen(8080);
 		logger.info("IntravertCassandraServer started.");
     running.set(true);
