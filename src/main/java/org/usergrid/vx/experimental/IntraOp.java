@@ -607,17 +607,17 @@ public class IntraOp implements Serializable{
 					int i, Vertx vertx, IntraService is) {
 				IntraOp op = req.getE().get(i);
 				Integer id = (Integer) op.getOp().get("pid");
-				IntraReq preparedReq = state.preparedStatements.get(id);
+				IntraReq preparedReq = IntraState.preparedStatements.get(id);
 				if (preparedReq==null){
 					res.setExceptionAndId( new RuntimeException("ps was null"), id);
 				}
-				System.out.println(preparedReq);
 				Map bind = (Map) op.getOp().get("bind");
-				System.out.println( "bind " +bind);
 				state.bindParams = bind;
 				IntraRes preparedRes = new IntraRes();
 				is.executeReq(preparedReq, preparedRes, state, vertx);
-				System.out.println("res "+ preparedRes);
+				if (preparedRes.getException() != null) {
+					res.setExceptionAndId(preparedRes.getException(), preparedRes.getExceptionId());
+				}
 				res.getOpsRes().putAll(preparedRes.getOpsRes());
 			}
 		};
