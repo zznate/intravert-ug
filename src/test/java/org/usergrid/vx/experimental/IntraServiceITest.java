@@ -760,4 +760,41 @@ public class IntraServiceITest {
 		Assert.assertEquals("myvalue", x.get(0).get("value") );
 		
 	}
+	
+	@Test
+	@RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+	public void preparedStatementTest() throws CharacterCodingException {
+		IntraReq req = new IntraReq();
+		req.add(Operations.setAutotimestampOp())
+				.add(Operations
+						.setOp("preparedrow1", "preparedcol1", "preparedvalue1")
+						.set("keyspace", "myks").set("columnfamily", "mycf"));
+		IntraRes res = new IntraRes();
+		is.handleIntraReq(req, res, x);
+		Assert.assertEquals("OK", res.getOpsRes().get(1));
+
+		IntraReq r2 = new IntraReq();
+		r2.add(Operations.prepare()); // must be the first op
+		r2.add(Operations.getOp(Operations.bindMarker(1), "preparedcol1")
+				.set("keyspace", "myks").set("columnfamily", "mycf"));
+		IntraRes res2 = new IntraRes();
+		is.handleIntraReq(r2, res2, x);
+		Assert.assertEquals(0, res2.getOpsRes().get(0));
+		Assert.assertEquals(1, res2.getOpsRes().size());
+
+		IntraReq req3 = new IntraReq();
+		Map m = new HashMap();
+		m.put(new Integer(1),"preparedrow1");
+		req3.add( Operations.executePrepared(0, m));
+		IntraRes res3 = new IntraRes();
+		is.handleIntraReq(req3, res3, x);
+		System.out.println(res3.getException());
+		System.out.println(res3.getExceptionId());
+		System.out.println(res3.getOpsRes());
+		List<Map> x = (List<Map>) res3.getOpsRes().get(0);
+		Assert.assertEquals("preparedvalue1", ByteBufferUtil.string( (ByteBuffer) x.get(0).get("value")));
+		
+
+	}
+
 }

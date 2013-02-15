@@ -60,4 +60,5 @@ public class IntraRes implements Serializable{
     this.setException(exception);
     this.setExceptionId(id);
   }
+  
 }

@@ -15,6 +15,7 @@
 */
 package org.usergrid.vx.experimental;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -240,7 +241,24 @@ public class Operations {
 	public static IntraOp componentSelect(Set<String> components){
 		return new IntraOp(IntraOp.Type.COMPONENTSELECT).set("components", components);
 	}
+	
+	public static IntraOp prepare() {
+		return new IntraOp(IntraOp.Type.PREPARE);
+	}
 
+	public static Map bindMarker(int mark) {
+		Map m = new HashMap();
+		m.put("type","BINDMARKER");
+		m.put("mark", mark);
+		return m;
+	}
+
+	public static IntraOp executePrepared(int pid, Map bindVars){
+		IntraOp i = new IntraOp(IntraOp.Type.EXECUTEPREPARED);
+		i.set("pid", pid);
+		i.set("bind", bindVars);
+		return i;
+	}
   private static void checkForBlankStr(String arg, String msg, IntraOp.Type type) {
     Preconditions.checkArgument(arg != null && arg.length() > 0,
             "A non-blank '{}' is required for {}", new Object[]{msg, type});

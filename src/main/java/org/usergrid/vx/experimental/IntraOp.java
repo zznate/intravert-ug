@@ -76,7 +76,9 @@ public class IntraOp implements Serializable{
 	private Map<String,Object> op;
 
   protected IntraOp() {}
-
+  	public String toString(){
+  		return this.type + " "+this.op;
+  	}
 	IntraOp(Type type){
     this.type = type;
 		op = new TreeMap<String,Object>();
@@ -586,9 +588,42 @@ public class IntraOp implements Serializable{
 			Set<String> parts = (Set<String>) op.getOp().get("components");
 			state.components = parts;
 		}
-    };
+		},
+		PREPARE {
+			@Override
+			public void execute(IntraReq req, IntraRes res, IntraState state,
+					int i, Vertx vertx, IntraService is) {
+				IntraOp op = req.getE().get(i);
+				req.getE().remove(i);
+				int pid = state.prepareStatement(req);
+				IntraReq r = new IntraReq();
+				r.add(op);
+				req = r;
+				res.getOpsRes().put(0, pid);
+			}
+		},
+		EXECUTEPREPARED {
+			public void execute(IntraReq req, IntraRes res, IntraState state,
+					int i, Vertx vertx, IntraService is) {
+				IntraOp op = req.getE().get(i);
+				Integer id = (Integer) op.getOp().get("pid");
+				IntraReq preparedReq = state.preparedStatements.get(id);
+				if (preparedReq==null){
+					res.setExceptionAndId( new RuntimeException("ps was null"), id);
+				}
+				System.out.println(preparedReq);
+				Map bind = (Map) op.getOp().get("bind");
+				System.out.println( "bind " +bind);
+				state.bindParams = bind;
+				IntraRes preparedRes = new IntraRes();
+				is.executeReq(preparedReq, preparedRes, state, vertx);
+				System.out.println("res "+ preparedRes);
+				res.getOpsRes().putAll(preparedRes.getOpsRes());
+			}
+		};
 
     public abstract void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is);
+    
     
   }
 	

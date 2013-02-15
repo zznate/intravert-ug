@@ -96,6 +96,9 @@ public class IntraService {
                         List referencedResult = (List) res.getOpsRes().get(resultRef);
                         Map result = (Map) referencedResult.get(0);
                         return result.get(wanted);
+                    }  else if ( isBind(typeAttr) ){
+                    	Integer mark = (Integer) map.get("mark");
+                    	return state.bindParams.get(mark);
                     } else {
                         throw new IllegalArgumentException("Do not know what to do with " + o);
                     }
@@ -110,6 +113,11 @@ public class IntraService {
     private static boolean isGetRef(Object typeAttr) {
         return typeAttr != null && typeAttr instanceof String && typeAttr.equals("GETREF");
     }
+    
+	private static boolean isBind(Object typeAttr) {
+		return typeAttr != null && typeAttr instanceof String && typeAttr.equals("BINDMARKER");
+	}
+
 
     static ByteBuffer byteBufferForObject(Object o){
 	  if (o instanceof Object[]){

@@ -48,6 +48,9 @@ public class IntraState {
 	static Map<String,MultiProcessor> multiProcessors = new HashMap<String,MultiProcessor>();
 	static Map<String,ServiceProcessor> serviceProcessors = new HashMap<String,ServiceProcessor>();
 	Filter currentFilter;
+	static Map<Integer,IntraReq> preparedStatements = new HashMap<Integer,IntraReq>();
+	private static AtomicInteger preparedStatementId = new AtomicInteger(0);
+	Map bindParams;
 	
 	public int saveState(IntraState s){
 	  int i = id.getAndIncrement();
@@ -57,5 +60,11 @@ public class IntraState {
 	
 	public IntraState getState(int i){
 	  return this.savedState.get(i);
+	}
+	
+	public int prepareStatement(IntraReq q){
+		int i = preparedStatementId.getAndIncrement();
+		preparedStatements.put(i,q);
+		return i;
 	}
 }
