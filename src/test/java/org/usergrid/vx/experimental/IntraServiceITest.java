@@ -779,18 +779,16 @@ public class IntraServiceITest {
 				.set("keyspace", "myks").set("columnfamily", "mycf"));
 		IntraRes res2 = new IntraRes();
 		is.handleIntraReq(r2, res2, x);
-		Assert.assertEquals(0, res2.getOpsRes().get(0));
+		//Assert.assertEquals(0, res2.getOpsRes().get(0));
 		Assert.assertEquals(1, res2.getOpsRes().size());
+		Integer preparedId = (Integer) res2.getOpsRes().get(0);
 
 		IntraReq req3 = new IntraReq();
 		Map m = new HashMap();
 		m.put(new Integer(1),"preparedrow1");
-		req3.add( Operations.executePrepared(0, m));
+		req3.add( Operations.executePrepared(preparedId, m));
 		IntraRes res3 = new IntraRes();
 		is.handleIntraReq(req3, res3, x);
-		System.out.println(res3.getException());
-		System.out.println(res3.getExceptionId());
-		System.out.println(res3.getOpsRes());
 		List<Map> x = (List<Map>) res3.getOpsRes().get(0);
 		Assert.assertEquals("preparedvalue1", ByteBufferUtil.string( (ByteBuffer) x.get(0).get("value")));
 		
