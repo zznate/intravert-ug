@@ -265,6 +265,12 @@ public class Operations {
 		i.set("bind", bindVars);
 		return i;
 	}
+	
+	 public static IntraOp createScanFilter(String name, String spec, String value) {
+		 return new IntraOp(IntraOp.Type.CREATESCANFILTER).set(NAME, name)
+		 .set(SPEC, spec).set(VALUE, value);
+		 }
+	
   private static void checkForBlankStr(String arg, String msg, IntraOp.Type type) {
     Preconditions.checkArgument(arg != null && arg.length() > 0,
             "A non-blank '{}' is required for {}", new Object[]{msg, type});

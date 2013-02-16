@@ -791,5 +791,38 @@ public class IntraServiceITest {
 		
 
 	}
-
+	
+	@Test
+	@RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+	public void scannerTest() throws Exception {
+		IntraReq req = new IntraReq();
+		req.add(Operations.createScanFilter("peoplefromny", "groovy",
+				"import org.usergrid.vx.experimental.* \n"
+						+ "import org.usergrid.vx.experimental.scan.* \n"
+						+ "public class MyScanner extends PeopleFromNY { \n"
+						+ " public MyScanner() { super(); } \n" + "} \n"))
+				.add(Operations.assumeOp("myks", "mycf", "value", "UTF-8"))
+				.add(Operations.assumeOp("myks", "mycf", "column", "UTF-8"))
+				.add(Operations.setKeyspaceOp("myks"))
+				.add(Operations.setColumnFamilyOp("mycf"))
+				.add(Operations.setOp("scannerrow", "ed", "NY")) // 3
+				.add(Operations.setOp("scannerrow", "bob", "NY"))// 4
+				.add(Operations.setOp("scannerrow", "pete", "FL"))// 5
+				.add(Operations.setOp("scannerrow", "john", "TX"))// 6
+				.add(Operations.setOp("scannerrow", "sara", "??"))// 7
+				.add(Operations.setOp("scannerrow", "stacey", "NY"))// 8
+				.add(Operations.setOp("scannerrow", "paul", "YO"))//9
+				.add(Operations.setOp("scannerrow2", "ed", "NY")) // 10
+				.add(Operations.setOp("scannerrow2", "bob", "NY"))// 11
+				.add(Operations.setOp("scannerrow2", "pete", "FL"))// 12
+				.add(Operations.setOp("scannerrow2", "john", "TX"))// 13
+				.add(Operations.setOp("scannerrow2", "sara", "??"))// 14
+				.add(Operations.setOp("scannerrow2", "stacey", "NY"))// 15
+				.add(Operations.setOp("scannerrow2", "paul", "YO"));// 16
+		
+		IntraClient ic = new IntraClient();
+		ic.setPayload("json");
+		IntraRes res = ic.sendBlocking(req);
+		Assert.assertEquals(null,res.getException());
+	}
 }
