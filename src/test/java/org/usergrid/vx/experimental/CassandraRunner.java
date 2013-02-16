@@ -185,8 +185,8 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
     System.setProperty("log4j.defaultInitOverride","true");
     System.setProperty("log4j.configuration", "log4j.properties");
     System.setProperty("cassandra.ring_delay_ms","1000");
-    System.setProperty("cassandra.start_rpc","false");
-    System.setProperty("cassandra.start_native_transport","false");
+    System.setProperty("cassandra.start_rpc","true");
+    System.setProperty("cassandra.start_native_transport","true");
 
     executor.execute(new Runnable() {
       public void run() {

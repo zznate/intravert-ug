@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 
 import org.apache.cassandra.db.ConsistencyLevel;
 
@@ -252,7 +253,12 @@ public class Operations {
 		m.put("mark", mark);
 		return m;
 	}
-
+	
+	public static Map ref(Integer opId, String wanted) {
+		return ImmutableMap.of("type", "GETREF", "op",
+				ImmutableMap.of("resultref", opId, "wanted", wanted));
+	}
+	
 	public static IntraOp executePrepared(int pid, Map bindVars){
 		IntraOp i = new IntraOp(IntraOp.Type.EXECUTEPREPARED);
 		i.set("pid", pid);

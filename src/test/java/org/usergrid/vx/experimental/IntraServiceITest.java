@@ -62,10 +62,7 @@ public class IntraServiceITest {
 		req.add( Operations.sliceOp("rowa", "col1", "z", 4)); //4
 		req.add( Operations.getOp("rowa", "col1")); //5
 		//create a rowkey "rowb" with a column "col2" and a value of the result of operation 7
-                req.add( Operations.setOp("rowb", "col2", ImmutableMap.of(
-                    "type", "GETREF",
-                    "op", ImmutableMap.of("resultref", 5, "wanted", "value")
-                ))); //6
+                req.add( Operations.setOp("rowb", "col2", Operations.ref(5, "value"))); //6
 		//Read this row back 
 		req.add( Operations.getOp("rowb", "col2"));//7
 		

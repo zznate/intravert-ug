@@ -123,34 +123,7 @@ public class IntraClient implements Handler<HttpClientResponse> {
 		});
 	}
 
-	public static void main(String[] args) throws Exception {
-		IntraClient i = new IntraClient();
-		i.payload="json";
-		IntraReq req = new IntraReq();
-		req.add( Operations.setKeyspaceOp("myks") );
-		req.add( Operations.createKsOp("myks", 1));
-		req.add( Operations.createCfOp("mycf"));
-		req.add( Operations.setColumnFamilyOp("mycf") );
-		req.add( Operations.setAutotimestampOp() );
-		req.add( Operations.setOp("5", "6", "7"));
-		req.add( Operations.sliceOp("5", "1", "9", 4));
-		//req.add( IntraOp.setOp("bob",  new Object [] { 4, "stuff" }, 10) );
-		//req.add( IntraOp.getOp("bob", new Object [] { 4, "stuff" }) );
-		//req.add( IntraOp.setKeyspaceOp("otherks") );
-		//req.add( IntraOp.setColumnFamilyOp("othercf") );
-		//req.add( IntraOp.getOp( IntraOp.getResRefOp(-3, IntraOp.VALUE),  "wantedcolumn") );
-		//req.add( IntraOp.sliceOp(10, "a", "g", 100) );
-		//req.add( IntraOp.setColumnFamilyOp("anothercf") );
-		//req.add( IntraOp.forEachOp(-2, 
-		//		IntraOp.sliceOp( IntraOp.getResRefOp(-2, "COLUMN"), "a", "z", 10)
-		//		)
-		//);
-		
-		System.out.println( i.sendBlocking(req) );
-		Thread.sleep(4000);
-		
-	}
-
+	
   public String getPayload() {
     return payload;
   }
