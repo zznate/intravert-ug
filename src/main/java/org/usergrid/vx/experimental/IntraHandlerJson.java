@@ -92,6 +92,7 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
                 JsonArray operations = event.body.getArray("e");
                 JsonObject operation = (JsonObject) operations.get(idGenerator.get());
                 operation.putNumber("id", idGenerator.get());
+                operation.putObject("state", new JsonObject());
                 idGenerator.incrementAndGet();
 
                 vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation,
@@ -152,6 +153,7 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
             if (idGenerator.get() < operations.size()) {
                 JsonObject operation = (JsonObject) operations.get(idGenerator.get());
                 operation.putNumber("id", idGenerator.get());
+                operation.putObject("state", event.body.getObject("state"));
                 idGenerator.incrementAndGet();
                 vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation, this);
             } else {

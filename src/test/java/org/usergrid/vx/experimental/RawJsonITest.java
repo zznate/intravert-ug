@@ -385,6 +385,51 @@ public class RawJsonITest {
         assertJSONEquals("Failed to create keyspace", actualResponse, expectedResponse);
     }
 
+    @Test
+    @SuppressWarnings("unchecked")
+    public void createColumnFamily() throws Exception {
+        String createCFJson = loadJSON("create_cf.json");
+
+        final Buffer data = new Buffer();
+        final CountDownLatch doneSignal = new CountDownLatch(1);
+        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
+            @Override
+            public void handle(HttpClientResponse resp) {
+                resp.dataHandler(new Handler<Buffer>() {
+                    @Override
+                    public void handle(Buffer buffer) {
+                        data.appendBuffer(buffer);
+                    }
+                });
+
+                resp.endHandler(new SimpleHandler() {
+                    @Override
+                    protected void handle() {
+                        doneSignal.countDown();
+                    }
+                });
+            }
+        });
+
+        setReq.putHeader("content-length", createCFJson.length());
+        setReq.write(createCFJson);
+        setReq.end();
+        doneSignal.await();
+
+        String actualResponse = data.toString();
+
+        String expectedResponse = new JsonObject()
+            .putString("exception", null)
+            .putString("exceptionId", null)
+            .putObject("opRes", new JsonObject((Map) ImmutableMap.of(
+                "0", "OK",
+                "1", "OK",
+                "2", "OK"
+            ))).toString();
+
+        assertJSONEquals("Failed to create column family", expectedResponse, actualResponse);
+    }
+
     private String loadJSON(String file) throws Exception {
         try (
         	
