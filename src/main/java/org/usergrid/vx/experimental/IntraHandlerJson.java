@@ -16,6 +16,8 @@
 package org.usergrid.vx.experimental;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -25,6 +27,7 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 public class IntraHandlerJson implements Handler<HttpServerRequest>{
@@ -37,6 +40,7 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
   public IntraHandlerJson(Vertx vertx){
     super();
     this.vertx=vertx;
+      registerRequestHandler();
   }
 	
 	@Override
@@ -48,7 +52,7 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
 				IntraReq req = null;
 				try {
                                     req = mapper.readValue(buffer.getBytes(), IntraReq.class);
-                                    vertx.eventBus().send("json-request", req.toJson(), new Handler<Message<JsonObject>>() {
+                                    vertx.eventBus().send("request.json", req.toJson(), new Handler<Message<JsonObject>>() {
                                         @Override
                                         public void handle(Message<JsonObject> event) {
                                             request.response.end(event.body.toString());
@@ -79,4 +83,80 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
 			}
 		});
 	}
+
+    private void registerRequestHandler() {
+        vertx.eventBus().registerHandler("request.json", new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> event) {
+                AtomicInteger idGenerator = new AtomicInteger(0);
+                JsonArray operations = event.body.getArray("e");
+                JsonObject operation = (JsonObject) operations.get(idGenerator.get());
+                operation.putNumber("id", idGenerator.get());
+                idGenerator.incrementAndGet();
+
+                vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation,
+                    new OperationsRequestHandler(idGenerator, operations, event));
+            }
+        });
+    }
+
+    private class OperationsRequestHandler implements Handler<Message<JsonObject>> {
+
+        private AtomicInteger idGenerator;
+
+        private JsonArray operations;
+
+        private Message<JsonObject> originalMessage;
+
+        private JsonObject results;
+
+        public OperationsRequestHandler(AtomicInteger idGenerator, JsonArray operations,
+            Message<JsonObject> originalMessage) {
+            this.idGenerator = idGenerator;
+            this.operations = operations;
+            this.originalMessage = originalMessage;
+
+            results = new JsonObject();
+            results.putObject("opRes", new JsonObject());
+            results.putString("exception", null);
+            results.putString("exceptionId", null);
+        }
+
+        @Override
+        public void handle(Message<JsonObject> event) {
+            Integer currentId = idGenerator.get();
+            Integer opId = currentId - 1;
+            Map<String, Object> map = event.body.toMap();
+            Object opResult = map.get(opId.toString());
+
+            // Doing the instanceof check here sucks but there are two reasons why it is
+            // here at least for now. First, with this refactoring I do not want to change
+            // behavior. To the greatest extent possible, I want integration tests to pass
+            // as is. Secondly, I do not want to duplicate logic across each operation
+            // handler. So far the operation handler does not need to worry about the
+            // format of the response that is sent back to the client. That is done here.
+            // The operation handler just provides its own specific response that is keyed
+            // off of its operation id.
+            //
+            // John Sanda
+            if (opResult instanceof String) {
+                results.getObject("opRes").putString(opId.toString(), (String) opResult);
+            } else if (opResult instanceof Number) {
+                results.getObject("opRes").putNumber(opId.toString(), (Number) opResult);
+            } else if (opResult instanceof JsonObject) {
+                results.getObject("opRes").putObject(opId.toString(), (JsonObject) opResult);
+            } else {
+                throw new IllegalArgumentException(opResult.getClass() + " is not a supported result type");
+            }
+
+            if (idGenerator.get() < operations.size()) {
+                JsonObject operation = (JsonObject) operations.get(idGenerator.get());
+                operation.putNumber("id", idGenerator.get());
+                idGenerator.incrementAndGet();
+                vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation, this);
+            } else {
+                originalMessage.reply(results);
+            }
+        }
+    }
 }

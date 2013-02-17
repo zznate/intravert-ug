@@ -17,7 +17,10 @@ package org.usergrid.vx.experimental;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+
+import com.google.common.collect.ImmutableMap;
 
 import org.apache.cassandra.config.Schema;
 import org.codehaus.jackson.JsonNode;
@@ -35,6 +38,7 @@ import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpClientRequest;
 import org.vertx.java.core.http.HttpClientResponse;
+import org.vertx.java.core.json.JsonObject;
 
 @RunWith(CassandraRunner.class)
 @RequiresKeyspace(ksName = "myks")
@@ -52,7 +56,7 @@ public class RawJsonITest {
             .setPort(8080).setMaxPoolSize(1).setKeepAlive(true);
     }
 
-    @Test
+    //@Test
     public void createKeyspaceViaCQL() throws Exception {
         String json = loadJSON("create_keyspace_cql.json");
         System.out.println("posting " + json);
@@ -84,7 +88,7 @@ public class RawJsonITest {
         Assert.assertNotNull("Failed to find keyspace", Schema.instance.getTableDefinition("simple"));
     }
 
-    @Test
+    //@Test
     public void setAndGetColumn() throws Exception {
         String setColumnJSON = loadJSON("set_column.json");
 
@@ -136,7 +140,7 @@ public class RawJsonITest {
         assertJSONEquals("The response was incorrect", expectedResponse, data.toString());
     }
 
-    @Test
+    //@Test
     public void executeColumnSliceQuery() throws Exception {
         String insertBeersJSON = loadJSON("insert_beers.json");
         final CountDownLatch doneSignal = new CountDownLatch(1);
@@ -187,7 +191,7 @@ public class RawJsonITest {
         assertJSONEquals("The response for the slice query was incorrect", expectedResponse, actualResponse);
     }
 
-    @Test
+    //@Test
     public void setColumnUsingGetRef() throws Exception {
         String insertColumnsJSON = loadJSON("insert_columns_for_getref.json");
         final CountDownLatch doneSignal = new CountDownLatch(1);
@@ -238,7 +242,7 @@ public class RawJsonITest {
         assertJSONEquals("Failed to set column using GETREF", expectedResponse, actualResponse);
     }
 
-    @Test
+    //@Test
     public void filterColumnSlice() throws Exception {
         String insertBeersJSON = loadJSON("insert_beers.json");
         final CountDownLatch doneSignal = new CountDownLatch(1);
@@ -289,7 +293,7 @@ public class RawJsonITest {
         assertJSONEquals("Failed to apply filter", expectedResponse, actualResponse);
     }
 
-    @Test
+    //@Test
     public void javascriptFilterColumnSlice() throws Exception {
         String insertBeersJSON = loadJSON("insert_beers.json");
         final CountDownLatch doneSignal = new CountDownLatch(1);
@@ -338,6 +342,47 @@ public class RawJsonITest {
         String expectedResponse = loadJSON("filter_beers_response.json");
 
         assertJSONEquals("Failed to apply filter", expectedResponse, actualResponse);
+    }
+
+    @Test
+    public void createKeyspace() throws Exception {
+        String createKeyspaceJson = loadJSON("create_keyspace.json");
+
+        final Buffer data = new Buffer();
+        final CountDownLatch doneSignal = new CountDownLatch(1);
+        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
+            @Override
+            public void handle(HttpClientResponse resp) {
+                resp.dataHandler(new Handler<Buffer>() {
+                    @Override
+                    public void handle(Buffer buffer) {
+                        data.appendBuffer(buffer);
+                    }
+                });
+
+                resp.endHandler(new SimpleHandler() {
+                    @Override
+                    protected void handle() {
+                        doneSignal.countDown();
+                    }
+                });
+            }
+        });
+
+        setReq.putHeader("content-length", createKeyspaceJson.length());
+        setReq.write(createKeyspaceJson);
+        setReq.end();
+        doneSignal.await();
+
+        String actualResponse = data.toString();
+
+        String expectedResponse = new JsonObject()
+            .putString("exception", null)
+            .putString("exceptionId", null)
+            .putObject("opRes", new JsonObject((Map) ImmutableMap.of("0", "OK")))
+            .toString();
+
+        assertJSONEquals("Failed to create keyspace", actualResponse, expectedResponse);
     }
 
     private String loadJSON(String file) throws Exception {

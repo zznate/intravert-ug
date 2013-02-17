@@ -1,0 +1,11 @@
+{
+    "e":[
+        {
+            "type": "CREATEKEYSPACE",
+            "op": {
+                "name": "create_ks_test",
+                "replication": 1
+            }
+        }
+    ]
+}

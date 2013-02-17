@@ -15,9 +15,18 @@
 */
 package org.usergrid.vx.server;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.cassandra.config.CFMetaData;
+import org.apache.cassandra.config.KSMetaData;
+import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.cassandra.service.CassandraDaemon;
+import org.apache.cassandra.service.MigrationManager;
+import org.apache.cassandra.thrift.KsDef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.usergrid.vx.experimental.IntraHandlerJson;
@@ -59,6 +68,8 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
 		rm.post("/:appid/intrareq-jsonsmile", new IntraHandlerJsonSmile(vertx));
 		rm.noMatch(new NoMatchHandler() );
 
+            registerHandlers();
+
             vertx.eventBus().registerHandler("json-request", new Handler<Message<JsonObject>>() {
                 @Override
                 public void handle(Message<JsonObject> event) {
@@ -88,4 +99,50 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
   public boolean isRunning() {
     return running.get();
   }
+
+    private void registerHandlers() {
+        vertx.eventBus().registerHandler("request.createkeyspace", new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> event) {
+                JsonObject params = event.body.getObject("op");
+                Integer id = event.body.getInteger("id");
+                String keyspace = params.getString("name");
+                int replication = params.getInteger("replication");
+
+                JsonObject response = new JsonObject();
+
+                Collection<CFMetaData> cfDefs = new ArrayList<CFMetaData>(0);
+                KsDef def = new KsDef();
+                def.setName(keyspace);
+                def.setStrategy_class("SimpleStrategy");
+                Map<String, String> strat = new HashMap<String, String>();
+                //TODO we should be able to get all this information from the client
+                strat.put("replication_factor", Integer.toString(replication));
+                def.setStrategy_options(strat);
+                KSMetaData ksm = null;
+                try {
+                    ksm = KSMetaData.fromThrift(def,
+                        cfDefs.toArray(new CFMetaData[cfDefs.size()]));
+                } catch (ConfigurationException e) {
+                    response.putString("exception", e.getMessage());
+                    response.putNumber("exceptionId", id);
+                    event.reply(response);
+                    return;
+                }
+
+                try {
+                    MigrationManager.announceNewKeyspace(ksm);
+                } catch (ConfigurationException e) {
+                    response.putString("exception", e.getMessage());
+                    response.putNumber("exceptionId", id);
+                    event.reply(response);
+                    return;
+                }
+
+                response.putString(id.toString(), "OK");
+                event.reply(response);
+            }
+        });
+    }
+
 }
