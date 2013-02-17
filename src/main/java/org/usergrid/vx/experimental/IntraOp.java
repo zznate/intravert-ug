@@ -53,6 +53,7 @@ import org.apache.cassandra.service.MigrationManager;
 import org.apache.cassandra.service.QueryState;
 import org.apache.cassandra.service.StorageProxy;
 import org.apache.cassandra.thrift.CfDef;
+import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.CqlResult;
 import org.apache.cassandra.thrift.CqlRow;
@@ -193,10 +194,38 @@ public class IntraOp implements Serializable{
 
       }
     },
-    COLUMNPREDICATE {
+    SLICEBYNAMES {
       @Override
       public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
-
+    	  IntraOp op = req.getE().get(i);
+    	  List<Map> finalResults = new ArrayList<Map>();
+    	  ByteBuffer rowkey = IntraService.byteBufferForObject(IntraService.resolveObject(op.getOp().get("rowkey"), req, res, state, i));
+    	  List l = (List) op.getOp().get("wantedcols");
+    	  List<ByteBuffer> columns = new ArrayList<ByteBuffer>(); 
+    	  for (Object o: l){
+    		  columns.add(IntraService.byteBufferForObject(IntraService.resolveObject(o, req, res, state, i)));
+    	  }
+    	  List<ReadCommand> commands = new ArrayList<ReadCommand>(1);
+    		ColumnParent cp = new ColumnParent();
+    		cp.setColumn_family(IntraService.determineCf(null, op, state));
+    		QueryPath qp = new QueryPath(cp);
+    		SliceByNamesReadCommand sr= new SliceByNamesReadCommand(IntraService.determineKs(null,op,state), rowkey, cp, columns);
+    		commands.add(sr);
+      		List<Row> results = null;
+      		try {
+      			results = StorageProxy.read(commands, state.consistency);
+      			ColumnFamily cf = results.get(0).cf;
+      			if (cf == null){ //cf= null is no data
+      			} else {
+      			  IntraService.readCf(cf, finalResults, state,op);
+      			}
+      			res.getOpsRes().put(i,finalResults);
+      		} catch (ReadTimeoutException | org.apache.cassandra.exceptions.UnavailableException
+                  | IsBootstrappingException | IOException e) {
+      		  res.setExceptionAndId(e.getMessage(), i);
+      			return;
+      		}
+      		res.getOpsRes().put(i, finalResults);
       }
     },
     SLICE {

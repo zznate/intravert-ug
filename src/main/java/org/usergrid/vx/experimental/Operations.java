@@ -111,10 +111,10 @@ public class Operations {
             .set(SIZE, size);
   }
 
-  public static IntraOp columnPredicateOp( Object rowkey, Object [] columnList){
+  public static IntraOp sliceByNames( Object rowkey, List columnList){
     Preconditions.checkArgument(columnList != null, "You much provide a columnList array");
- 		return new IntraOp(IntraOp.Type.COLUMNPREDICATE)
-             .set(WANTEDCOLS, columnList);
+ 		return new IntraOp(IntraOp.Type.SLICEBYNAMES)
+             .set(WANTEDCOLS, columnList).set("rowkey",rowkey);
  	}
 
   public static IntraOp forEachOp( int opRef, IntraOp action){
