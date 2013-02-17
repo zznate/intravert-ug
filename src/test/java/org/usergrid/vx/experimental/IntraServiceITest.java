@@ -825,4 +825,26 @@ public class IntraServiceITest {
 		IntraRes res = ic.sendBlocking(req);
 		Assert.assertEquals(null,res.getException());
 	}
+	
+	
+	@Test
+	@RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+	public void sliceNamesTest() throws Exception {
+		IntraReq req = new IntraReq();
+		req.add(
+				Operations.assumeOp("myks", "mycf", "value", "UTF-8")) 
+				.add(Operations.assumeOp("myks", "mycf", "column", "UTF-8"))
+				.add(Operations.setKeyspaceOp("myks"))
+				.add(Operations.setColumnFamilyOp("mycf"))
+				.add(Operations.setOp("slicename", "ed", "NY")) // 4
+				.add(Operations.setOp("slicename", "bob", "NY"))// 5
+				.add(Operations.setOp("slicename", "pete", "FL"))// 6
+				.add( Operations.sliceByNames("slicename", Arrays.asList(new Object [] { "ed","pete" })) );
+		IntraRes res = new IntraRes();
+		is.handleIntraReq(req, res, x);
+		List<Map> x = (List<Map>) res.getOpsRes().get(7);
+		Assert.assertEquals("ed", x.get(0).get("name"));
+		Assert.assertEquals("FL", x.get(1).get("value"));
+		
+	}
 }
