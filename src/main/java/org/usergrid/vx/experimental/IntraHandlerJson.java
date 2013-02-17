@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -46,44 +44,52 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
 	
 	@Override
 	public void handle(final HttpServerRequest request) {
-		final IntraRes res = new IntraRes();
 		request.bodyHandler( new Handler<Buffer>() {
 			public void handle(Buffer buffer) {
-			  
-				IntraReq req = null;
-				try {
-                                    req = mapper.readValue(buffer.getBytes(), IntraReq.class);
-                                    vertx.eventBus().send("request.json", req.toJson(), new Handler<Message<JsonObject>>() {
-                                        @Override
-                                        public void handle(Message<JsonObject> event) {
-                                            request.response.end(event.body.toString());
-                                        }
-                                    });
-				} catch (JsonParseException e) {
-					e.printStackTrace();
-				} catch (JsonMappingException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-				
-//				is.handleIntraReq(req,res,vertx);
-//
-//				String value=null;
-//				try {
-//					value = mapper.writeValueAsString(res);
-//				} catch (JsonGenerationException e1) {
-//					e1.printStackTrace();
-//				} catch (JsonMappingException e1) {
-//					e1.printStackTrace();
-//				} catch (IOException e1) {
-//					e1.printStackTrace();
-//				}
-				//System.out.println(value);
-//				request.response.end(value);
+                            boolean asyncRequestsEnabled = Boolean.valueOf(
+                                System.getProperty("async-requests-enabled", "false"));
+
+                            if (asyncRequestsEnabled) {
+                                handleRequestAsync(request, buffer);
+                            } else {
+                                handleRequest(request, buffer);
+                            }
 			}
 		});
 	}
+
+    private void handleRequest(HttpServerRequest request, Buffer buffer) {
+        IntraRes res = new IntraRes();
+        IntraReq req = null;
+        try {
+            req = mapper.readValue(buffer.getBytes(), IntraReq.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        is.handleIntraReq(req,res,vertx);
+        String value = null;
+        try {
+            value = mapper.writeValueAsString(res);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        request.response.end(value);
+    }
+
+    private void handleRequestAsync(final HttpServerRequest request, Buffer buffer) {
+        IntraReq req = null;
+        try {
+            req = mapper.readValue(buffer.getBytes(), IntraReq.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        vertx.eventBus().send("request.json", req.toJson(), new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> event) {
+                request.response.end(event.body.toString());
+            }
+        });
+    }
 
     private void registerRequestHandler() {
         vertx.eventBus().registerHandler("request.json", new Handler<Message<JsonObject>>() {
@@ -121,7 +127,7 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
             this.originalMessage = originalMessage;
 
             results = new JsonObject();
-            results.putObject("opRes", new JsonObject());
+            results.putObject("opsRes", new JsonObject());
             results.putString("exception", null);
             results.putString("exceptionId", null);
 
@@ -146,13 +152,13 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
             //
             // John Sanda
             if (opResult instanceof String) {
-                results.getObject("opRes").putString(opId.toString(), (String) opResult);
+                results.getObject("opsRes").putString(opId.toString(), (String) opResult);
             } else if (opResult instanceof Number) {
-                results.getObject("opRes").putNumber(opId.toString(), (Number) opResult);
+                results.getObject("opsRes").putNumber(opId.toString(), (Number) opResult);
             } else if (opResult instanceof JsonObject) {
-                results.getObject("opRes").putObject(opId.toString(), (JsonObject) opResult);
+                results.getObject("opsRes").putObject(opId.toString(), (JsonObject) opResult);
             } else if (opResult instanceof List) {
-                results.getObject("opRes").putArray(opId.toString(), new JsonArray((List) opResult));
+                results.getObject("opsRes").putArray(opId.toString(), new JsonArray((List) opResult));
             } else {
                 throw new IllegalArgumentException(opResult.getClass() + " is not a supported result type");
             }

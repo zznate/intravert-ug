@@ -384,10 +384,10 @@ public class RawJsonITest {
         String expectedResponse = new JsonObject()
             .putString("exception", null)
             .putString("exceptionId", null)
-            .putObject("opRes", new JsonObject((Map) ImmutableMap.of("0", "OK")))
+            .putObject("opsRes", new JsonObject((Map) ImmutableMap.of("0", "OK")))
             .toString();
 
-        assertJSONEquals("Failed to create keyspace", actualResponse, expectedResponse);
+        assertJSONEquals("Failed to create keyspace", expectedResponse, actualResponse);
     }
 
     @Test
@@ -426,7 +426,7 @@ public class RawJsonITest {
         String expectedResponse = new JsonObject()
             .putString("exception", null)
             .putString("exceptionId", null)
-            .putObject("opRes", new JsonObject((Map) ImmutableMap.of(
+            .putObject("opsRes", new JsonObject((Map) ImmutableMap.of(
                 "0", "OK",
                 "1", "OK",
                 "2", "OK"
@@ -476,7 +476,7 @@ public class RawJsonITest {
         String expectedResponse = new JsonObject()
             .putString("exception", null)
             .putString("exceptionId", null)
-            .putObject("opRes", new JsonObject()
+            .putObject("opsRes", new JsonObject()
                 .putString("0", "OK")
                 .putString("1", "OK")
                 .putArray("2", new JsonArray((List) asList("ks2", "myks", "ks1"))))

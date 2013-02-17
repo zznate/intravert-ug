@@ -15,7 +15,8 @@
             }
         },
         {
-            "type": "LISTKEYSPACES"
+            "type": "LISTKEYSPACES" ,
+            "op": {}
         }
     ]
 }
