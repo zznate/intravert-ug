@@ -111,6 +111,8 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
 
         private JsonObject results;
 
+        private JsonObject state;
+
         public OperationsRequestHandler(AtomicInteger idGenerator, JsonArray operations,
             Message<JsonObject> originalMessage) {
             this.idGenerator = idGenerator;
@@ -121,6 +123,8 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
             results.putObject("opRes", new JsonObject());
             results.putString("exception", null);
             results.putString("exceptionId", null);
+
+            state = new JsonObject();
         }
 
         @Override
@@ -153,7 +157,11 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
             if (idGenerator.get() < operations.size()) {
                 JsonObject operation = (JsonObject) operations.get(idGenerator.get());
                 operation.putNumber("id", idGenerator.get());
-                operation.putObject("state", event.body.getObject("state"));
+
+                if (event.body.getObject("state") != null) {
+                    state.mergeIn(event.body.getObject("state"));
+                }
+                operation.putObject("state", state.copy());
                 idGenerator.incrementAndGet();
                 vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation, this);
             } else {

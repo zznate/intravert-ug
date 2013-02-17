@@ -97,7 +97,6 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
                 int replication = params.getInteger("replication");
 
                 JsonObject response = new JsonObject();
-                response.putObject("state", state);
 
                 Collection<CFMetaData> cfDefs = new ArrayList<CFMetaData>(0);
                 KsDef def = new KsDef();
@@ -155,7 +154,6 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
                 JsonObject state = event.body.getObject("state");
 
                 JsonObject response = new JsonObject();
-                response.putObject("state", state);
 
                 String cf = params.getString("name");
                 CfDef def = new CfDef();
