@@ -18,11 +18,13 @@ package org.usergrid.vx.server;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.cassandra.config.CFMetaData;
 import org.apache.cassandra.config.KSMetaData;
+import org.apache.cassandra.config.Schema;
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.cassandra.service.CassandraDaemon;
 import org.apache.cassandra.service.MigrationManager;
@@ -40,6 +42,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 public class IntravertCassandraServer implements CassandraDaemon.Server {
@@ -149,8 +152,8 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
         vertx.eventBus().registerHandler("request.createcolumnfamily", new Handler<Message<JsonObject>>() {
             @Override
             public void handle(Message<JsonObject> event) {
-                Integer id = event.body.getInteger("id");
                 JsonObject params = event.body.getObject("op");
+                Integer id = event.body.getInteger("id");
                 JsonObject state = event.body.getObject("state");
 
                 JsonObject response = new JsonObject();
@@ -185,6 +188,22 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
                     return;
                 }
                 response.putString(id.toString(), "OK");
+                event.reply(response);
+            }
+        });
+
+        vertx.eventBus().registerHandler("request.listkeyspaces", new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> event) {
+                JsonObject params = event.body.getObject("op");
+                Integer id = event.body.getInteger("id");
+
+                JsonArray keyspaces = new JsonArray();
+                for (String ks : Schema.instance.getNonSystemTables()) {
+                    keyspaces.addString(ks);
+                }
+                JsonObject response = new JsonObject().putArray(id.toString(), new JsonArray((List)Schema.instance.getNonSystemTables()));
+
                 event.reply(response);
             }
         });

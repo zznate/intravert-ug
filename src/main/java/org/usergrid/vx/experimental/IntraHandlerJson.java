@@ -16,6 +16,7 @@
 package org.usergrid.vx.experimental;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -150,6 +151,8 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
                 results.getObject("opRes").putNumber(opId.toString(), (Number) opResult);
             } else if (opResult instanceof JsonObject) {
                 results.getObject("opRes").putObject(opId.toString(), (JsonObject) opResult);
+            } else if (opResult instanceof List) {
+                results.getObject("opRes").putArray(opId.toString(), new JsonArray((List) opResult));
             } else {
                 throw new IllegalArgumentException(opResult.getClass() + " is not a supported result type");
             }

@@ -1,0 +1,21 @@
+{
+    "e":[
+        {
+            "type": "CREATEKEYSPACE",
+            "op": {
+                "name": "ks1",
+                "replication": 1
+            }
+        },
+        {
+            "type": "CREATEKEYSPACE",
+            "op": {
+                "name": "ks2",
+                "replication": 1
+            }
+        },
+        {
+            "type": "LISTKEYSPACES"
+        }
+    ]
+}

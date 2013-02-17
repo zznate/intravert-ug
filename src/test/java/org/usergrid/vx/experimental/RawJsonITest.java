@@ -15,14 +15,18 @@
 */
 package org.usergrid.vx.experimental;
 
+import static java.util.Arrays.asList;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import com.google.common.collect.ImmutableMap;
 
 import org.apache.cassandra.config.Schema;
+import org.apache.cassandra.service.MigrationManager;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Assert;
@@ -38,6 +42,7 @@ import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpClientRequest;
 import org.vertx.java.core.http.HttpClientResponse;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 @RunWith(CassandraRunner.class)
@@ -428,6 +433,56 @@ public class RawJsonITest {
             ))).toString();
 
         assertJSONEquals("Failed to create column family", expectedResponse, actualResponse);
+    }
+
+    @Test
+    public void createAndListKeyspaces() throws Exception {
+        for (String ks :Schema.instance.getTables()) {
+            if (!ks.equals("myks") && !ks.equals("system")) {
+                MigrationManager.announceKeyspaceDrop(ks);
+            }
+        }
+
+        String listKeyspacesJSON = loadJSON("create_and_list_keyspaces.json");
+
+        final Buffer data = new Buffer();
+        final CountDownLatch doneSignal = new CountDownLatch(1);
+        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
+            @Override
+            public void handle(HttpClientResponse resp) {
+                resp.dataHandler(new Handler<Buffer>() {
+                    @Override
+                    public void handle(Buffer buffer) {
+                        data.appendBuffer(buffer);
+                    }
+                });
+
+                resp.endHandler(new SimpleHandler() {
+                    @Override
+                    protected void handle() {
+                        doneSignal.countDown();
+                    }
+                });
+            }
+        });
+
+        setReq.putHeader("content-length", listKeyspacesJSON.length());
+        setReq.write(listKeyspacesJSON);
+        setReq.end();
+        doneSignal.await();
+
+        String actualResponse = data.toString();
+
+        String expectedResponse = new JsonObject()
+            .putString("exception", null)
+            .putString("exceptionId", null)
+            .putObject("opRes", new JsonObject()
+                .putString("0", "OK")
+                .putString("1", "OK")
+                .putArray("2", new JsonArray((List) asList("ks2", "myks", "ks1"))))
+            .toString();
+
+        assertJSONEquals("Failed to get keyspaces", expectedResponse, actualResponse);
     }
 
     private String loadJSON(String file) throws Exception {
