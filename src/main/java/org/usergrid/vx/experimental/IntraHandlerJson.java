@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.vertx.java.core.Handler;
@@ -102,10 +103,30 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
                 operation.putObject("state", new JsonObject());
                 idGenerator.incrementAndGet();
 
+                OperationsRequestHandler operationsRequestHandler = new OperationsRequestHandler(idGenerator,
+                    operations, event);
+                TimeoutHandler timeoutHandler = new TimeoutHandler(operationsRequestHandler);
+                long timerId = vertx.setTimer(10000, timeoutHandler);
+                operationsRequestHandler.setTimerId(timerId);
+
                 vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation,
-                    new OperationsRequestHandler(idGenerator, operations, event));
+                    operationsRequestHandler);
             }
         });
+    }
+
+    private class TimeoutHandler implements Handler<Long> {
+
+        private OperationsRequestHandler operationsRequestHandler;
+
+        public TimeoutHandler(OperationsRequestHandler operationsRequestHandler) {
+            this.operationsRequestHandler = operationsRequestHandler;
+        }
+
+        @Override
+        public void handle(Long timerId) {
+            operationsRequestHandler.timeout();
+        }
     }
 
     private class OperationsRequestHandler implements Handler<Message<JsonObject>> {
@@ -119,6 +140,12 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
         private JsonObject results;
 
         private JsonObject state;
+
+        private boolean timedOut = false;
+
+        private ReentrantLock timeoutLock = new ReentrantLock();
+
+        private long timerId;
 
         public OperationsRequestHandler(AtomicInteger idGenerator, JsonArray operations,
             Message<JsonObject> originalMessage) {
@@ -134,8 +161,14 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
             state = new JsonObject();
         }
 
+        public void setTimerId(long timerId) {
+            this.timerId = timerId;
+        }
+
         @Override
         public void handle(Message<JsonObject> event) {
+            vertx.cancelTimer(timerId);
+
             Integer currentId = idGenerator.get();
             Integer opId = currentId - 1;
             Map<String, Object> map = event.body.toMap();
@@ -172,9 +205,30 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
                 }
                 operation.putObject("state", state.copy());
                 idGenerator.incrementAndGet();
+                TimeoutHandler timeoutHandler = new TimeoutHandler(this);
+                timerId = vertx.setTimer(10000, timeoutHandler);
                 vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation, this);
             } else {
+                try {
+                    timeoutLock.lock();
+                    if (!timedOut) {
+                        originalMessage.reply(results);
+                    }
+                } finally {
+                    timeoutLock.unlock();
+                }
+            }
+        }
+
+        public void timeout() {
+            try {
+                timeoutLock.lock();
+                timedOut = true;
+                results.putString("exception", "Operation timed out.");
+                results.putString("exceptionId", Integer.toString(idGenerator.get() - 1));
                 originalMessage.reply(results);
+            } finally {
+                timeoutLock.unlock();
             }
         }
     }

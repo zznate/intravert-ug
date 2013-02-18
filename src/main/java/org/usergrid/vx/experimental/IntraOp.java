@@ -586,7 +586,13 @@ public class IntraOp implements Serializable{
 			Set<String> parts = (Set<String>) op.getOp().get("components");
 			state.components = parts;
 		}
-    };
+    }, NOOP {
+          @Override
+          public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
+              // This operation is just here as a test hook. See RawJsonITest.timeOutLongRunningOperation
+              // for an example.
+          }
+      };
 
     public abstract void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is);
     

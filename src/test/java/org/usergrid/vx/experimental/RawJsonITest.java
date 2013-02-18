@@ -39,6 +39,7 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.SimpleHandler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpClientRequest;
 import org.vertx.java.core.http.HttpClientResponse;
@@ -483,6 +484,67 @@ public class RawJsonITest {
             .toString();
 
         assertJSONEquals("Failed to get keyspaces", expectedResponse, actualResponse);
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void timeOutLongRunningOperation() throws Exception {
+        vertx.eventBus().registerHandler("request.noop", new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> event) {
+                try {
+                    Thread.sleep(10050);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                Integer id = event.body.getInteger("id");
+                event.reply(new JsonObject((Map) ImmutableMap.of(id.toString(), "OK")));
+            }
+        });
+
+        JsonObject json = new JsonObject();
+        JsonArray operations = new JsonArray();
+        operations.addObject(new JsonObject((Map) ImmutableMap.of("type", "NOOP")));
+        json.putArray("e", operations);
+
+        String timeoutJSON = json.toString();
+
+        final Buffer data = new Buffer();
+        final CountDownLatch doneSignal = new CountDownLatch(1);
+        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
+            @Override
+            public void handle(HttpClientResponse resp) {
+                resp.dataHandler(new Handler<Buffer>() {
+                    @Override
+                    public void handle(Buffer buffer) {
+                        data.appendBuffer(buffer);
+                    }
+                });
+
+                resp.endHandler(new SimpleHandler() {
+                    @Override
+                    protected void handle() {
+                        doneSignal.countDown();
+                    }
+                });
+            }
+        });
+
+        setReq.putHeader("content-length", timeoutJSON.length());
+        setReq.write(timeoutJSON);
+        setReq.end();
+        doneSignal.await();
+
+        String actualResponse = data.toString();
+
+        String expectedResponse = new JsonObject()
+            .putString("exception", "Operation timed out.")
+            .putString("exceptionId", "0")
+            .putObject("opsRes", new JsonObject())
+            .toString();
+
+        assertJSONEquals("Failed to time out long running operation", expectedResponse, actualResponse);
     }
 
     private String loadJSON(String file) throws Exception {
