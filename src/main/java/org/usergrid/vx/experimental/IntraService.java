@@ -79,7 +79,8 @@ public class IntraService {
 	}
 	
 
-  static Object resolveObject(Object o, IntraReq req, IntraRes res,IntraState state, int i){
+    // TODO remove unused method params
+  public static Object resolveObject(Object o, IntraReq req, IntraRes res,IntraState state, int i){
 		if (o instanceof Object[]){
 		  return o;
 		} else if (o instanceof Integer){
@@ -111,7 +112,7 @@ public class IntraService {
         return typeAttr != null && typeAttr instanceof String && typeAttr.equals("GETREF");
     }
 
-    static ByteBuffer byteBufferForObject(Object o){
+    public static ByteBuffer byteBufferForObject(Object o){
 	  if (o instanceof Object[]){
 	    Object [] comp = (Object[]) o;
 	    List<byte[]> b = new ArrayList<byte[]>();

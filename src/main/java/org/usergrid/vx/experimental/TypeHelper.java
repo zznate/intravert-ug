@@ -16,7 +16,6 @@
 package org.usergrid.vx.experimental;
 
 import java.nio.ByteBuffer;
-import java.nio.charset.CharacterCodingException;
 import java.util.List;
 
 import org.apache.cassandra.db.marshal.Int32Type;
@@ -57,6 +56,36 @@ public class TypeHelper {
       throw new RuntimeException("Do not know what to do with "+s);
     }
   }
+
+    public static Object getTypedIfPossible(String type, ByteBuffer bb){
+
+        if (type == null){
+            return bb;
+        } else if (type.equals("UTF-8")){
+            try {
+                return ByteBufferUtil.string(bb);
+            } catch (Exception ex){ throw new RuntimeException(ex); }
+        } else if (type.equals("int32")) {
+            return ByteBufferUtil.toInt(bb);
+        } else if (type.startsWith("CompositeType")){
+            int start = type.indexOf("(");
+            int end = type.indexOf(")");
+            String list = type.substring(start+1,end);
+
+            String [] parts = list.split(",");
+            Object [] results = new Object[parts.length] ;
+            byte[] by = new byte[bb.remaining()];
+            bb.get(by);
+            List<byte[]> comp = CompositeTool.readComposite(by);
+            for (int i=0;i<parts.length;i++){
+                results[i]= getTyped(parts[i], ByteBuffer.wrap(comp.get(i)) );
+            }
+            return results;
+        } else {
+            throw new RuntimeException("Do not know what to do with " + type);
+        }
+    }
+
   public static Object getTyped(String type, ByteBuffer bb){
     if (type.equals("UTF-8")){
       try {

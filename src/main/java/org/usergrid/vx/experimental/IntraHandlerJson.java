@@ -100,7 +100,10 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
                 JsonArray operations = event.body.getArray("e");
                 JsonObject operation = (JsonObject) operations.get(idGenerator.get());
                 operation.putNumber("id", idGenerator.get());
-                operation.putObject("state", new JsonObject());
+                operation.putObject("state", new JsonObject()
+                    .putArray("components", new JsonArray()
+                        .add("name")
+                        .add("value")));
                 idGenerator.incrementAndGet();
 
                 OperationsRequestHandler operationsRequestHandler = new OperationsRequestHandler(idGenerator,

@@ -94,7 +94,7 @@ public class RawJsonITest {
         Assert.assertNotNull("Failed to find keyspace", Schema.instance.getTableDefinition("simple"));
     }
 
-    //@Test
+    @Test
     public void setAndGetColumn() throws Exception {
         String setColumnJSON = loadJSON("set_column.json");
 
@@ -354,33 +354,7 @@ public class RawJsonITest {
     public void createKeyspace() throws Exception {
         String createKeyspaceJson = loadJSON("create_keyspace.json");
 
-        final Buffer data = new Buffer();
-        final CountDownLatch doneSignal = new CountDownLatch(1);
-        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
-            @Override
-            public void handle(HttpClientResponse resp) {
-                resp.dataHandler(new Handler<Buffer>() {
-                    @Override
-                    public void handle(Buffer buffer) {
-                        data.appendBuffer(buffer);
-                    }
-                });
-
-                resp.endHandler(new SimpleHandler() {
-                    @Override
-                    protected void handle() {
-                        doneSignal.countDown();
-                    }
-                });
-            }
-        });
-
-        setReq.putHeader("content-length", createKeyspaceJson.length());
-        setReq.write(createKeyspaceJson);
-        setReq.end();
-        doneSignal.await();
-
-        String actualResponse = data.toString();
+        String actualResponse = submitRequest(createKeyspaceJson);
 
         String expectedResponse = new JsonObject()
             .putString("exception", null)
@@ -396,33 +370,7 @@ public class RawJsonITest {
     public void createColumnFamily() throws Exception {
         String createCFJson = loadJSON("create_cf.json");
 
-        final Buffer data = new Buffer();
-        final CountDownLatch doneSignal = new CountDownLatch(1);
-        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
-            @Override
-            public void handle(HttpClientResponse resp) {
-                resp.dataHandler(new Handler<Buffer>() {
-                    @Override
-                    public void handle(Buffer buffer) {
-                        data.appendBuffer(buffer);
-                    }
-                });
-
-                resp.endHandler(new SimpleHandler() {
-                    @Override
-                    protected void handle() {
-                        doneSignal.countDown();
-                    }
-                });
-            }
-        });
-
-        setReq.putHeader("content-length", createCFJson.length());
-        setReq.write(createCFJson);
-        setReq.end();
-        doneSignal.await();
-
-        String actualResponse = data.toString();
+        String actualResponse = submitRequest(createCFJson);
 
         String expectedResponse = new JsonObject()
             .putString("exception", null)
@@ -446,33 +394,7 @@ public class RawJsonITest {
 
         String listKeyspacesJSON = loadJSON("create_and_list_keyspaces.json");
 
-        final Buffer data = new Buffer();
-        final CountDownLatch doneSignal = new CountDownLatch(1);
-        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
-            @Override
-            public void handle(HttpClientResponse resp) {
-                resp.dataHandler(new Handler<Buffer>() {
-                    @Override
-                    public void handle(Buffer buffer) {
-                        data.appendBuffer(buffer);
-                    }
-                });
-
-                resp.endHandler(new SimpleHandler() {
-                    @Override
-                    protected void handle() {
-                        doneSignal.countDown();
-                    }
-                });
-            }
-        });
-
-        setReq.putHeader("content-length", listKeyspacesJSON.length());
-        setReq.write(listKeyspacesJSON);
-        setReq.end();
-        doneSignal.await();
-
-        String actualResponse = data.toString();
+        String actualResponse = submitRequest(listKeyspacesJSON);
 
         String expectedResponse = new JsonObject()
             .putString("exception", null)
@@ -486,9 +408,15 @@ public class RawJsonITest {
         assertJSONEquals("Failed to get keyspaces", expectedResponse, actualResponse);
     }
 
-    @Test
+    @Test()
     @SuppressWarnings("unchecked")
     public void timeOutLongRunningOperation() throws Exception {
+        // This test is specific to the async/timer version of timeouts so unless
+        // the async-requests-enabled is true, we return to avoid a false failure.
+        if (!Boolean.valueOf(System.getProperty("async-requests-enabled", "false"))) {
+            return;
+        }
+
         vertx.eventBus().registerHandler("request.noop", new Handler<Message<JsonObject>>() {
             @Override
             public void handle(Message<JsonObject> event) {
@@ -505,38 +433,14 @@ public class RawJsonITest {
 
         JsonObject json = new JsonObject();
         JsonArray operations = new JsonArray();
-        operations.addObject(new JsonObject((Map) ImmutableMap.of("type", "NOOP")));
+        operations.addObject(new JsonObject()
+            .putString("type", "NOOP")
+            .putObject("op", new JsonObject()));
         json.putArray("e", operations);
 
         String timeoutJSON = json.toString();
 
-        final Buffer data = new Buffer();
-        final CountDownLatch doneSignal = new CountDownLatch(1);
-        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
-            @Override
-            public void handle(HttpClientResponse resp) {
-                resp.dataHandler(new Handler<Buffer>() {
-                    @Override
-                    public void handle(Buffer buffer) {
-                        data.appendBuffer(buffer);
-                    }
-                });
-
-                resp.endHandler(new SimpleHandler() {
-                    @Override
-                    protected void handle() {
-                        doneSignal.countDown();
-                    }
-                });
-            }
-        });
-
-        setReq.putHeader("content-length", timeoutJSON.length());
-        setReq.write(timeoutJSON);
-        setReq.end();
-        doneSignal.await();
-
-        String actualResponse = data.toString();
+        String actualResponse = submitRequest(timeoutJSON);
 
         String expectedResponse = new JsonObject()
             .putString("exception", "Operation timed out.")
@@ -563,6 +467,44 @@ public class RawJsonITest {
 
             return new String(output.toByteArray());
         }
+    }
+
+    /**
+     * Submits an HTTP request with <code>json</code> as the request body. This method will
+     * block until the request has been fully processed and the response is received.
+     *
+     * @param json The request body
+     * @return The results of the operations specified by the json argument
+     * @throws InterruptedException
+     */
+    private String submitRequest(String json) throws InterruptedException {
+        final Buffer data = new Buffer();
+        final CountDownLatch doneSignal = new CountDownLatch(1);
+        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
+            @Override
+            public void handle(HttpClientResponse resp) {
+                resp.dataHandler(new Handler<Buffer>() {
+                    @Override
+                    public void handle(Buffer buffer) {
+                        data.appendBuffer(buffer);
+                    }
+                });
+
+                resp.endHandler(new SimpleHandler() {
+                    @Override
+                    protected void handle() {
+                        doneSignal.countDown();
+                    }
+                });
+            }
+        });
+
+        setReq.putHeader("content-length", json.length());
+        setReq.write(json);
+        setReq.end();
+        doneSignal.await();
+
+        return data.toString();
     }
 
     private void assertJSONEquals(String msg, String expected, String actual) throws Exception {
