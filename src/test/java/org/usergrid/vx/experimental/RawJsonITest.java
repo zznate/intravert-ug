@@ -146,7 +146,7 @@ public class RawJsonITest {
         assertJSONEquals("The response was incorrect", expectedResponse, data.toString());
     }
 
-    //@Test
+    @Test
     public void executeColumnSliceQuery() throws Exception {
         String insertBeersJSON = loadJSON("insert_beers.json");
         final CountDownLatch doneSignal = new CountDownLatch(1);
