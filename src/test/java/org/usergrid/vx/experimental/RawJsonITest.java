@@ -65,30 +65,7 @@ public class RawJsonITest {
     @Test
     public void createKeyspaceViaCQL() throws Exception {
         String json = loadJSON("create_keyspace_cql.json");
-        System.out.println("posting " + json);
-        final CountDownLatch doneSignal = new CountDownLatch(1);
-        HttpClientRequest req = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
-            @Override
-            public void handle(HttpClientResponse resp) {
-                resp.dataHandler(new Handler<Buffer>() {
-                    @Override
-                    public void handle(Buffer arg0) {
-                        System.out.println(new String(arg0.getBytes()));
-                    }
-                });
-
-                resp.endHandler(new SimpleHandler() {
-                    @Override
-                    protected void handle() {
-                        doneSignal.countDown();
-                    }
-                });
-            }
-        });
-        req.putHeader("content-length", json.length());
-        req.write(json);
-        req.end();
-        doneSignal.await();
+        submitRequest(json);
 
         Assert.assertNotNull(Schema.instance.getKSMetaData("simple"));
         Assert.assertNotNull("Failed to find keyspace", Schema.instance.getTableDefinition("simple"));
@@ -97,101 +74,22 @@ public class RawJsonITest {
     @Test
     public void setAndGetColumn() throws Exception {
         String setColumnJSON = loadJSON("set_column.json");
+        submitRequest(setColumnJSON);
 
-        final CountDownLatch doneSignal = new CountDownLatch(1);
-        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
-            @Override
-            public void handle(HttpClientResponse resp) {
-                resp.endHandler(new SimpleHandler() {
-                    @Override
-                    protected void handle() {
-                    }
-                });
-            }
-        });
-
-        setReq.putHeader("content-length", setColumnJSON.length());
-        setReq.write(setColumnJSON);
-        setReq.end();
-
-        final String getColumnJSON = loadJSON("get_column.json");
-
-        final Buffer data = new Buffer(0);
-        final HttpClientRequest getReq = httpClient.request("POST", "/:appid/intrareq-json",
-            new Handler<HttpClientResponse>() {
-                @Override
-                public void handle(HttpClientResponse resp) {
-                    resp.dataHandler(new Handler<Buffer>() {
-                        @Override
-                        public void handle(Buffer buffer) {
-                            data.appendBuffer(buffer);
-                        }
-                    });
-
-                    resp.endHandler(new SimpleHandler() {
-                        @Override
-                        protected void handle() {
-                            doneSignal.countDown();
-                        }
-                    });
-                }
-            });
-        getReq.putHeader("content-length", getColumnJSON.length());
-        getReq.write(getColumnJSON);
-        getReq.end();
-        doneSignal.await();
-
+        String getColumnJSON = loadJSON("get_column.json");
+        String actualResponse = submitRequest(getColumnJSON);
         String expectedResponse = loadJSON("get_column_response.json");
 
-        assertJSONEquals("The response was incorrect", expectedResponse, data.toString());
+        assertJSONEquals("The response was incorrect", expectedResponse, actualResponse);
     }
 
     @Test
     public void executeColumnSliceQuery() throws Exception {
         String insertBeersJSON = loadJSON("insert_beers.json");
-        final CountDownLatch doneSignal = new CountDownLatch(1);
-        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
-            @Override
-            public void handle(HttpClientResponse resp) {
-                resp.endHandler(new SimpleHandler() {
-                    @Override
-                    protected void handle() {
-                    }
-                });
-            }
-        });
+        submitRequest(insertBeersJSON);
 
-        setReq.putHeader("content-length", insertBeersJSON.length());
-        setReq.write(insertBeersJSON);
-        setReq.end();
-
-        final String getBeersJSON = loadJSON("get_beers.json");
-        final Buffer data = new Buffer(0);
-        final HttpClientRequest getReq = httpClient.request("POST", "/:appid/intrareq-json",
-            new Handler<HttpClientResponse>() {
-                @Override
-                public void handle(HttpClientResponse resp) {
-                    resp.dataHandler(new Handler<Buffer>() {
-                        @Override
-                        public void handle(Buffer buffer) {
-                            data.appendBuffer(buffer);
-                        }
-                    });
-
-                    resp.endHandler(new SimpleHandler() {
-                        @Override
-                        protected void handle() {
-                            doneSignal.countDown();
-                        }
-                    });
-                }
-            });
-        getReq.putHeader("content-length", getBeersJSON.length());
-        getReq.write(getBeersJSON);
-        getReq.end();
-        doneSignal.await();
-
-        String actualResponse = data.toString();
+        String getBeersJSON = loadJSON("get_beers.json");
+        String actualResponse = submitRequest(getBeersJSON);
         String expectedResponse = loadJSON("beers_slice_response.json");
 
         assertJSONEquals("The response for the slice query was incorrect", expectedResponse, actualResponse);
