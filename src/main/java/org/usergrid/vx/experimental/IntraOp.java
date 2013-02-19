@@ -212,12 +212,13 @@ public class IntraOp implements Serializable{
     		SliceByNamesReadCommand sr= new SliceByNamesReadCommand(IntraService.determineKs(null,op,state), rowkey, cp, columns);
     		commands.add(sr);
       		List<Row> results = null;
+      		NonAtomicReference lastSeen = new NonAtomicReference();
       		try {
       			results = StorageProxy.read(commands, state.consistency);
       			ColumnFamily cf = results.get(0).cf;
       			if (cf == null){ //cf= null is no data
       			} else {
-      			  IntraService.readCf(cf, finalResults, state,op);
+      			  IntraService.readCf(cf, finalResults, state, op, lastSeen);
       			}
       			res.getOpsRes().put(i,finalResults);
       		} catch (ReadTimeoutException | org.apache.cassandra.exceptions.UnavailableException
@@ -238,26 +239,33 @@ public class IntraOp implements Serializable{
       		ByteBuffer end = IntraService.byteBufferForObject(IntraService.resolveObject(op.getOp().get("end"), req, res, state, i));
       		List<ReadCommand> commands = new ArrayList<ReadCommand>(1);
       		ColumnPath cp = new ColumnPath();
-      		cp.setColumn_family(state.currentColumnFamily);
+      		cp.setColumn_family(IntraService.determineCf(null, op, state));
       		QueryPath qp = new QueryPath(cp);
-      		SliceFromReadCommand sr = new SliceFromReadCommand(state.currentKeyspace, rowkey, qp, start, end, false, 100);
+      		SliceFromReadCommand sr = new SliceFromReadCommand(IntraService.determineKs(null, op, state), rowkey, qp, start, end, false, 100);
       		commands.add(sr);
 
       		List<Row> results = null;
+      		NonAtomicReference lastSeen = new NonAtomicReference();
       		try {
       			results = StorageProxy.read(commands, state.consistency);
       			ColumnFamily cf = results.get(0).cf;
       			if (cf == null){ //cf= null is no data
       			} else {
-      			  IntraService.readCf(cf, finalResults, state,op);
+      			  IntraService.readCf(cf, finalResults, state, op, lastSeen);
       			}
-      			res.getOpsRes().put(i,finalResults);
       		} catch (ReadTimeoutException | org.apache.cassandra.exceptions.UnavailableException
                   | IsBootstrappingException | IOException e) {
       		  res.setExceptionAndId(e.getMessage(), i);
       			return;
       		}
-      		res.getOpsRes().put(i, finalResults);
+      		if (op.getOp().containsKey("extendedresults")){
+      			Map extended = new HashMap();
+      			extended.put("results", finalResults);
+      			extended.put("lastname", lastSeen.something);
+      			res.getOpsRes().put(i, extended);
+      		} else {
+      			res.getOpsRes().put(i, finalResults);
+      		}
       }
     },
     GET {
@@ -276,12 +284,13 @@ public class IntraOp implements Serializable{
             rowkey, path, nameAsList);
         List<Row> rows = null;
 
+        NonAtomicReference lastSeen = new NonAtomicReference();
         try {
           rows = StorageProxy.read(Arrays.asList(command), state.consistency);
           ColumnFamily cf1 = rows.get(0).cf;
           if (cf1 == null) { // cf= null is no data
           } else {
-            IntraService.readCf(cf1, finalResults, state, op);
+            IntraService.readCf(cf1, finalResults, state, op , lastSeen);
           }
           res.getOpsRes().put(i, finalResults);
         } catch (ReadTimeoutException | org.apache.cassandra.exceptions.UnavailableException

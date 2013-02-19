@@ -177,12 +177,12 @@ public class IntraService {
 
 
    
-  static void readCf(ColumnFamily cf , List<Map> finalResults, IntraState state, IntraOp op){
+  static void readCf(ColumnFamily cf , List<Map> finalResults, IntraState state, IntraOp op, NonAtomicReference lastColumn){
     Iterator<IColumn> it = cf.iterator();
     while (it.hasNext()) {
       IColumn ic = it.next();
       if (ic.isLive()){
-	      HashMap m = new HashMap();
+	      HashMap m = new HashMap(5);
 	      if (state.components.contains("name")){
 	    	  m.put("name", TypeHelper.getTypedIfPossible(state, "column", ic.name(), op));
 	      }
@@ -203,6 +203,7 @@ public class IntraService {
               } else {
                   finalResults.add(m);
               }
+              lastColumn.something = m.get("name");
       }
     }
   }
