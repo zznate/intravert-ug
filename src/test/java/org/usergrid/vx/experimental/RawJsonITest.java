@@ -62,7 +62,7 @@ public class RawJsonITest {
             .setPort(8080).setMaxPoolSize(1).setKeepAlive(true);
     }
 
-    //@Test
+    @Test
     public void createKeyspaceViaCQL() throws Exception {
         String json = loadJSON("create_keyspace_cql.json");
         System.out.println("posting " + json);
