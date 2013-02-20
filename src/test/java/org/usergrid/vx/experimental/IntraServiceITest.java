@@ -128,29 +128,45 @@ public class IntraServiceITest {
 	    Assert.assertEquals( "wow",  x.get(0).get("value") );
 	  }
 	
-	 @Test
-	 public void filterTest() throws CharacterCodingException{
-	   IntraReq req = new IntraReq();
-     req.add( Operations.setKeyspaceOp("filterks") ); //0
-     req.add( Operations.createKsOp("filterks", 1)); //1
-     req.add( Operations.createCfOp("filtercf")); //2
-     req.add( Operations.setColumnFamilyOp("filtercf") ); //3
-     req.add( Operations.setAutotimestampOp() ); //4
-     req.add( Operations.assumeOp("filterks", "filtercf", "value", "UTF-8"));//5
-     req.add( Operations.setOp("rowa", "col1", "20")); //6
-     req.add( Operations.setOp("rowa", "col2", "22")); //7
-     req.add( Operations.createFilterOp("over21", "groovy",
-         "{ row -> if (row['value'].toInteger() > 21) return row else return null }")); // 8
-     req.add( Operations.filterModeOp("over21", true)); //9
-     req.add( Operations.sliceOp("rowa", "col1", "col3", 10)); //10
-     IntraRes res = new IntraRes();
-     is.handleIntraReq(req, res, x);
-     System.out.println ( res.getException() );
-     List<Map> results = (List<Map>) res.getOpsRes().get(10);
-     Assert.assertEquals( "22", results.get(0).get("value") );
-     Assert.assertEquals(1, results.size());
-     
-	 }
+	@Test
+	public void filterTest() throws CharacterCodingException {
+		IntraReq req = new IntraReq();
+		req.add(Operations.setKeyspaceOp("filterks")); // 0
+		req.add(Operations.createKsOp("filterks", 1)); // 1
+		req.add(Operations.createCfOp("filtercf")); // 2
+		req.add(Operations.setColumnFamilyOp("filtercf")); // 3
+		req.add(Operations.setAutotimestampOp()); // 4
+		req.add(Operations.assumeOp("filterks", "filtercf", "value", "UTF-8"));// 5
+		req.add(Operations.setOp("rowa", "col1", "20")); // 6
+		req.add(Operations.setOp("rowa", "col2", "22")); // 7
+		req.add(Operations
+				.createFilterOp("over21", "groovy",
+						"{ row -> if (row['value'].toInteger() > 21) return row else return null }")); // 8
+		req.add(Operations.filterModeOp("over21", true)); // 9
+		req.add(Operations.sliceOp("rowa", "col1", "col3", 10)); // 10
+		IntraRes res = new IntraRes();
+		is.handleIntraReq(req, res, x);
+		System.out.println(res.getException());
+		List<Map> results = (List<Map>) res.getOpsRes().get(10);
+		Assert.assertEquals("22", results.get(0).get("value"));
+		Assert.assertEquals(1, results.size());
+
+		IntraReq req2 = new IntraReq();
+		req2.add(Operations.assumeOp("filterks", "filtercf", "value", "UTF-8"));// 0
+		req2.add(Operations.filterModeOp("over21", true)); // 1
+		req2.add( Operations.sliceOp("rowa", "col1", "col3", 10) //2
+				.set("keyspace", "filterks")
+				.set("columnfamily", "filtercf")
+				.set("extendedresults", true) );
+		IntraRes res2 = new IntraRes();
+		is.handleIntraReq(req2, res2, x);
+		Map extendedMap = (Map) res2.getOpsRes().get(2);
+		results = (List<Map>) extendedMap.get("results");
+		Assert.assertEquals("22", results.get(0).get("value"));
+		Assert.assertEquals("col2", ByteBufferUtil.string((ByteBuffer) extendedMap.get("lastname")));
+		
+		
+	}
 
     @Test
     public void executeJavaScriptFilter() throws CharacterCodingException {
