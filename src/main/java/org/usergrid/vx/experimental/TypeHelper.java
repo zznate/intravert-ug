@@ -35,6 +35,8 @@ public class TypeHelper {
       } catch (Exception ex){ throw new RuntimeException(ex); }
     } else if (s.equals("int32")) {
       return ByteBufferUtil.toInt(bb);
+    } else if ( s.equals("long") ) {
+      return ByteBufferUtil.toLong(bb);
     } else if (s.startsWith("CompositeType")){
       int start = s.indexOf("(");
       int end = s.indexOf(")");

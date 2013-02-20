@@ -117,6 +117,15 @@ public class Operations {
              .set(WANTEDCOLS, columnList).set("rowkey",rowkey);
  	}
 
+  public static IntraOp counter( Object rowkey, Object columnName, long value) {
+    Preconditions.checkArgument(rowkey != null,"A row key is required for {}", IntraOp.Type.COUNTER);
+    Preconditions.checkArgument(columnName != null,"A column name is required for {}", IntraOp.Type.COUNTER);
+    return new IntraOp(IntraOp.Type.COUNTER)
+            .set(ROWKEY, rowkey)
+            .set(NAME, columnName)
+            .set(VALUE, value);
+  }
+
   public static IntraOp forEachOp( int opRef, IntraOp action){
     Preconditions.checkArgument(action != null, "The IntraOp action cannot be null");
     return new IntraOp(IntraOp.Type.FOREACH)

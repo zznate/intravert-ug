@@ -31,6 +31,7 @@ import java.util.Set;
 import com.google.common.collect.ImmutableMap;
 
 import org.apache.cassandra.cql3.QueryProcessor;
+import org.apache.cassandra.db.ColumnFamilyType;
 import org.apache.cassandra.db.ConsistencyLevel;
 import org.apache.cassandra.db.marshal.Int32Type;
 import org.apache.cassandra.thrift.Column;
@@ -141,7 +142,7 @@ public class IntraServiceITest {
 		req.add(Operations.setOp("rowa", "col2", "22")); // 7
 		req.add(Operations
 				.createFilterOp("over21", "groovy",
-						"{ row -> if (row['value'].toInteger() > 21) return row else return null }")); // 8
+                "{ row -> if (row['value'].toInteger() > 21) return row else return null }")); // 8
 		req.add(Operations.filterModeOp("over21", true)); // 9
 		req.add(Operations.sliceOp("rowa", "col1", "col3", 10)); // 10
 		IntraRes res = new IntraRes();
@@ -863,4 +864,26 @@ public class IntraServiceITest {
 		Assert.assertEquals("FL", x.get(1).get("value"));
 		
 	}
+
+  @Test
+  @RequiresColumnFamily(ksName = "myks", cfName = "mycountercf", isCounter = true)
+  public void counterNoodling() throws Exception {
+    IntraReq req = new IntraReq();
+    req.add(
+            Operations.assumeOp("myks", "mycountercf", "value", "long"))
+            .add(Operations.assumeOp("myks", "mycountercf", "column", "UTF-8"))
+            .add(Operations.setKeyspaceOp("myks"))
+            .add(Operations.setColumnFamilyOp("mycountercf"))
+            .add(Operations.counter("counter_key", "counter_name_1", 1)) // 4
+            .add(Operations.getOp("counter_key", "counter_name_1"))
+            .add(Operations.counter("counter_key", "counter_name_1", 4))
+            .add(Operations.getOp("counter_key", "counter_name_1"));
+
+    IntraRes res = new IntraRes();
+    is.handleIntraReq(req, res, x);
+    List<Map> results = (List<Map>) res.getOpsRes().get(5);
+    Assert.assertEquals(1, results.get(0).get("value"));
+    results = (List<Map>) res.getOpsRes().get(7);
+    Assert.assertEquals(5, results.get(0).get("value"));
+  }
 }
