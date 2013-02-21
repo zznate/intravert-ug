@@ -21,7 +21,6 @@ import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.db.marshal.TypeParser;
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.cassandra.exceptions.SyntaxException;
-import org.apache.cassandra.utils.ByteBufferUtil;
 
 public class TypeHelper {
   public static Object getTypedIfPossible(IntraState state, String type, ByteBuffer bb, IntraOp op){
@@ -34,17 +33,9 @@ public class TypeHelper {
       return compose(bb, s);
   }
 
-    public static Object getTyped(String type, ByteBuffer bb){
-    if (type.equals("UTF-8")){
-      try {
-        return ByteBufferUtil.string(bb);
-      } catch (Exception ex){ throw new RuntimeException(ex); }
-    } else if (type.equals("int32")) {
-      return ByteBufferUtil.toInt(bb);
-    } else {
-      return bb;
+    public static Object getTyped(String type, ByteBuffer bb) {
+        return compose(bb, type);
     }
-  }
 
     public static Object getCqlTyped(String type, ByteBuffer bb) {
         if (bb == null) {
