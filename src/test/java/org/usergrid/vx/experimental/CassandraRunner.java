@@ -159,7 +159,7 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
       if ( rcf.isCounter() ) {
         cfMetaData = new CFMetaData(rcf.ksName(), rcf.cfName(),
                       ColumnFamilyType.Standard, TypeParser.parse(rcf.comparator()), null)
-                .defaultValidator(CounterColumnType.instance);
+                .replicateOnWrite(false).defaultValidator(CounterColumnType.instance);
       } else {
         cfMetaData = new CFMetaData(rcf.ksName(), rcf.cfName(),
                       ColumnFamilyType.Standard, TypeParser.parse(rcf.comparator()), null);

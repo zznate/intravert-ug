@@ -28,6 +28,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.cassandra.db.ColumnFamily;
+import org.apache.cassandra.db.CounterColumn;
 import org.apache.cassandra.db.IColumn;
 import org.apache.cassandra.db.marshal.Int32Type;
 import org.apache.cassandra.utils.ByteBufferUtil;
@@ -187,7 +188,11 @@ public class IntraService {
 	    	  m.put("name", TypeHelper.getTypedIfPossible(state, "column", ic.name(), op));
 	      }
 	      if (state.components.contains("value")){
-	    	  m.put("value", TypeHelper.getTypedIfPossible(state, "value", ic.value(), op));
+          if ( ic instanceof CounterColumn ) {
+            m.put("value", ((CounterColumn)ic).total());
+          } else {
+            m.put("value", TypeHelper.getTypedIfPossible(state, "value", ic.value(), op));
+          }
 	      }
 	      if (state.components.contains("timestamp")){
 	    	  m.put("timestamp",ic.timestamp());

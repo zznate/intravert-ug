@@ -44,12 +44,16 @@ import org.apache.cassandra.utils.ByteBufferUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Vertx;
 
 @RunWith(CassandraRunner.class)
 @RequiresKeyspace(ksName = "myks")
 @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
 public class IntraServiceITest {
+
+  private Logger logger = LoggerFactory.getLogger(IntraServiceITest.class);
 
   IntraService is = new IntraService();
   Vertx x = Vertx.newVertx();
@@ -883,20 +887,21 @@ public class IntraServiceITest {
   public void counterNoodling() throws Exception {
     IntraReq req = new IntraReq();
     req.add(
-            Operations.assumeOp("myks", "mycountercf", "value", "long"))
-            .add(Operations.assumeOp("myks", "mycountercf", "column", "UTF-8"))
+            Operations.assumeOp("myks", "mycountercf", "value", "LongType"))
+            .add(Operations.assumeOp("myks", "mycountercf", "column", "UTF8Type"))
             .add(Operations.setKeyspaceOp("myks"))
             .add(Operations.setColumnFamilyOp("mycountercf"))
-            .add(Operations.counter("counter_key", "counter_name_1", 1)) // 4
+            .add(Operations.counter("counter_key", "counter_name_1", 1).set("timeout", 30000)) // 4
             .add(Operations.getOp("counter_key", "counter_name_1"))
-            .add(Operations.counter("counter_key", "counter_name_1", 4))
+            .add(Operations.counter("counter_key", "counter_name_1", 4).set("timeout", 30000))
             .add(Operations.getOp("counter_key", "counter_name_1"));
 
     IntraRes res = new IntraRes();
     is.handleIntraReq(req, res, x);
     List<Map> results = (List<Map>) res.getOpsRes().get(5);
-    Assert.assertEquals(1, results.get(0).get("value"));
+    logger.info("has results {}",results);
+    Assert.assertEquals(1L, results.get(0).get("value"));
     results = (List<Map>) res.getOpsRes().get(7);
-    Assert.assertEquals(5, results.get(0).get("value"));
+    Assert.assertEquals(5L, results.get(0).get("value"));
   }
 }
