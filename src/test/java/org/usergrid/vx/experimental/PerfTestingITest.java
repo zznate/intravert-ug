@@ -26,6 +26,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.usergrid.vx.experimental.IntraClient2.Transport;
 import org.vertx.java.core.Vertx;
 
 /* unless testing performance chances this should like be ignored */
@@ -61,6 +62,36 @@ public class PerfTestingITest {
 		final int ops = 25000;
 		long start = System.currentTimeMillis();
 		IntraClient2 ic = new IntraClient2("localhost", 8080);
+		String ks = "myks";
+		String cf = "mycf";
+		String keyspace = "keyspace";
+		String columnFamily = "columnfamily";
+		String rk="rowzz";
+		String col="col1";
+		String value="7";
+		for (int i = 0; i < ops; ++i) {
+			IntraReq req = new IntraReq();
+			req.add(Operations.setOp(rk, col, value ).set(keyspace, ks)
+					.set(columnFamily, cf)); // 1
+			IntraRes res = null;
+			res = ic.sendBlocking(req);
+			if (i % 1000 == 0) {
+				System.out.println(i);
+			}
+		}
+		long end = System.currentTimeMillis();
+		System.out.println(end - start);
+	}
+	
+	
+	
+	@Test
+	@RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+	public void blockingIc2SmileTest() throws Exception {
+		final int ops = 25000;
+		long start = System.currentTimeMillis();
+		IntraClient2 ic = new IntraClient2("localhost", 8080);
+		ic.setTransport(Transport.SMILE);
 		String ks = "myks";
 		String cf = "mycf";
 		String keyspace = "keyspace";
