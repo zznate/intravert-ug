@@ -1,0 +1,16 @@
+{"opsRes":{
+    "0":"OK",
+    "1":[],
+    "2":[],
+    "3":[
+        {
+            "lname":"Smith",
+            "username":"jsmith",
+            "age":30,
+            "fname":"John"
+        }
+    ]
+},
+    "exception":null,
+    "exceptionId":null
+}

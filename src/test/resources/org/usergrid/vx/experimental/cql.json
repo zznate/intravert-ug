@@ -1,0 +1,30 @@
+{"e":[
+    {
+        "type": "SETKEYSPACE",
+        "op": {
+            "keyspace": "system"
+        }
+    },
+    {
+        "type":"CQLQUERY",
+        "op": {
+            "version": "3.0.0",
+            "query": "CREATE TABLE myks.users (username text PRIMARY KEY, fname text, lname text, age int)"
+        }
+    },
+    {
+        "type":"CQLQUERY",
+        "op": {
+            "version": "3.0.0",
+            "query": "INSERT INTO myks.users (username, fname, lname, age) VALUES ('jsmith', 'John', 'Smith', 30)"
+        }
+    },
+    {
+        "type":"CQLQUERY",
+        "op": {
+            "version": "3.0.0",
+            "convert": "true",
+            "query": "SELECT * FROM myks.users"
+        }
+    }
+]}

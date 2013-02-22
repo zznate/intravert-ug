@@ -26,15 +26,13 @@ public class SetHandler implements Handler<Message<JsonObject>> {
         String ks = null;
         String cf = null;
 
-        if (params.getString("keyspace") != null) {
-            ks = params.getString("keyspace");
-        } else {
+        ks = params.getString("keyspace");
+        if (ks == null) {
             ks = state.getString("currentKeyspace");
         }
 
-        if (params.getString("columnfamily") != null) {
-            cf = params.getString("columnfamily");
-        } else {
+        cf = params.getString("columnfamily");
+        if (cf == null) {
             cf = state.getString("currentColumnFamily");
         }
 

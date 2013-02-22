@@ -62,13 +62,22 @@ public class RawJsonITest {
             .setPort(8080).setMaxPoolSize(1).setKeepAlive(true);
     }
 
-    @Test
+    //@Test
     public void createKeyspaceViaCQL() throws Exception {
         String json = loadJSON("create_keyspace_cql.json");
         submitRequest(json);
 
         Assert.assertNotNull(Schema.instance.getKSMetaData("simple"));
         Assert.assertNotNull("Failed to find keyspace", Schema.instance.getTableDefinition("simple"));
+    }
+
+    @Test
+    public void executeCQL() throws Exception {
+        String json = loadJSON("cql.json");
+        String actualResponse = submitRequest(json);
+        String expectedResponse = loadJSON("cql_response.json");
+
+        assertJSONEquals("Failed to execute CQL commands", expectedResponse, actualResponse);
     }
 
     @Test
