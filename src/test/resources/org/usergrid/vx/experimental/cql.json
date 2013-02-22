@@ -23,6 +23,20 @@
         "type":"CQLQUERY",
         "op": {
             "version": "3.0.0",
+            "query": "INSERT INTO myks.users (username, fname, lname, age) VALUES ('jdoe', 'John', 'Doe', 40)"
+        }
+    },
+    {
+        "type":"CQLQUERY",
+        "op": {
+            "version": "3.0.0",
+            "query": "INSERT INTO myks.users (username, fname, lname, age) VALUES ('bwilson', 'Bob', 'Wilson', 25)"
+        }
+    },
+    {
+        "type":"CQLQUERY",
+        "op": {
+            "version": "3.0.0",
             "convert": "true",
             "query": "SELECT * FROM myks.users"
         }

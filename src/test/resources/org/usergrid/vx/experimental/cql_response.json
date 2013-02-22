@@ -2,7 +2,21 @@
     "0":"OK",
     "1":[],
     "2":[],
-    "3":[
+    "3":[],
+    "4":[],
+    "5":[
+        {
+            "lname":"Doe",
+            "username":"jdoe",
+            "age":40,
+            "fname":"John"
+        },
+        {
+            "lname":"Wilson",
+            "username":"bwilson",
+            "age":25,
+            "fname":"Bob"
+        },
         {
             "lname":"Smith",
             "username":"jsmith",
@@ -10,7 +24,4 @@
             "fname":"John"
         }
     ]
-},
-    "exception":null,
-    "exceptionId":null
-}
+}, "exception":null, "exceptionId":null}
