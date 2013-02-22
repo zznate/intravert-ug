@@ -15,6 +15,7 @@
 */
 package org.usergrid.vx.experimental;
 
+import org.apache.cassandra.db.ColumnFamilyType;
 import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.db.marshal.UTF8Type;
 
@@ -33,6 +34,7 @@ import java.lang.annotation.Target;
 public @interface RequiresColumnFamily {
   String ksName();
   String cfName();
+  boolean isCounter() default false;
   String comparator() default "UTF8Type";
   String defaultValidator() default "UTF8Type";
 
