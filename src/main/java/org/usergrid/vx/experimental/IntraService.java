@@ -97,6 +97,9 @@ public class IntraService {
                         List referencedResult = (List) res.getOpsRes().get(resultRef);
                         Map result = (Map) referencedResult.get(0);
                         return result.get(wanted);
+                    }  else if ( isBind(typeAttr) ){
+                    	Integer mark = (Integer) map.get("mark");
+                    	return state.bindParams.get(mark);
                     } else {
                         throw new IllegalArgumentException("Do not know what to do with " + o);
                     }
@@ -111,6 +114,11 @@ public class IntraService {
     private static boolean isGetRef(Object typeAttr) {
         return typeAttr != null && typeAttr instanceof String && typeAttr.equals("GETREF");
     }
+    
+	private static boolean isBind(Object typeAttr) {
+		return typeAttr != null && typeAttr instanceof String && typeAttr.equals("BINDMARKER");
+	}
+
 
     public static ByteBuffer byteBufferForObject(Object o){
 	  if (o instanceof Object[]){
@@ -170,12 +178,12 @@ public class IntraService {
 
 
    
-  static void readCf(ColumnFamily cf , List<Map> finalResults, IntraState state, IntraOp op){
+  static void readCf(ColumnFamily cf , List<Map> finalResults, IntraState state, IntraOp op, NonAtomicReference lastColumn){
     Iterator<IColumn> it = cf.iterator();
     while (it.hasNext()) {
       IColumn ic = it.next();
       if (ic.isLive()){
-	      HashMap m = new HashMap();
+	      HashMap m = new HashMap(5);
 	      if (state.components.contains("name")){
 	    	  m.put("name", TypeHelper.getTypedIfPossible(state, "column", ic.name(), op));
 	      }
@@ -196,6 +204,7 @@ public class IntraService {
               } else {
                   finalResults.add(m);
               }
+              lastColumn.something = m.get("name");
       }
     }
   }

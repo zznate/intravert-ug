@@ -15,11 +15,13 @@
 */
 package org.usergrid.vx.experimental;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
 
 import org.apache.cassandra.db.ConsistencyLevel;
 
@@ -109,10 +111,10 @@ public class Operations {
             .set(SIZE, size);
   }
 
-  public static IntraOp columnPredicateOp( Object rowkey, Object [] columnList){
+  public static IntraOp sliceByNames( Object rowkey, List columnList){
     Preconditions.checkArgument(columnList != null, "You much provide a columnList array");
- 		return new IntraOp(IntraOp.Type.COLUMNPREDICATE)
-             .set(WANTEDCOLS, columnList);
+ 		return new IntraOp(IntraOp.Type.SLICEBYNAMES)
+             .set(WANTEDCOLS, columnList).set("rowkey",rowkey);
  	}
 
   public static IntraOp forEachOp( int opRef, IntraOp action){
@@ -240,7 +242,35 @@ public class Operations {
 	public static IntraOp componentSelect(Set<String> components){
 		return new IntraOp(IntraOp.Type.COMPONENTSELECT).set("components", components);
 	}
+	
+	public static IntraOp prepare() {
+		return new IntraOp(IntraOp.Type.PREPARE);
+	}
 
+	public static Map bindMarker(int mark) {
+		Map m = new HashMap();
+		m.put("type","BINDMARKER");
+		m.put("mark", mark);
+		return m;
+	}
+	
+	public static Map ref(Integer opId, String wanted) {
+		return ImmutableMap.of("type", "GETREF", "op",
+				ImmutableMap.of("resultref", opId, "wanted", wanted));
+	}
+	
+	public static IntraOp executePrepared(int pid, Map bindVars){
+		IntraOp i = new IntraOp(IntraOp.Type.EXECUTEPREPARED);
+		i.set("pid", pid);
+		i.set("bind", bindVars);
+		return i;
+	}
+	
+	 public static IntraOp createScanFilter(String name, String spec, String value) {
+		 return new IntraOp(IntraOp.Type.CREATESCANFILTER).set(NAME, name)
+		 .set(SPEC, spec).set(VALUE, value);
+		 }
+	
   private static void checkForBlankStr(String arg, String msg, IntraOp.Type type) {
     Preconditions.checkArgument(arg != null && arg.length() > 0,
             "A non-blank '{}' is required for {}", new Object[]{msg, type});

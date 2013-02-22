@@ -28,11 +28,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.ImmutableMap;
-
 import org.apache.cassandra.cql3.QueryProcessor;
 import org.apache.cassandra.db.ConsistencyLevel;
+import org.apache.cassandra.db.marshal.AbstractCompositeType;
+import org.apache.cassandra.db.marshal.AbstractType;
+import org.apache.cassandra.db.marshal.CompositeType;
 import org.apache.cassandra.db.marshal.Int32Type;
+import org.apache.cassandra.db.marshal.UTF8Type;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.CqlResult;
 import org.apache.cassandra.thrift.ThriftClientState;
@@ -62,10 +64,7 @@ public class IntraServiceITest {
 		req.add( Operations.sliceOp("rowa", "col1", "z", 4)); //4
 		req.add( Operations.getOp("rowa", "col1")); //5
 		//create a rowkey "rowb" with a column "col2" and a value of the result of operation 7
-                req.add( Operations.setOp("rowb", "col2", ImmutableMap.of(
-                    "type", "GETREF",
-                    "op", ImmutableMap.of("resultref", 5, "wanted", "value")
-                ))); //6
+                req.add( Operations.setOp("rowb", "col2", Operations.ref(5, "value"))); //6
 		//Read this row back 
 		req.add( Operations.getOp("rowb", "col2"));//7
 		
@@ -122,7 +121,7 @@ public class IntraServiceITest {
 	    req.add( Operations.createCfOp("asscf")); //2
 	    req.add( Operations.setColumnFamilyOp("asscf") ); //3
 	    req.add( Operations.setAutotimestampOp() ); //4
-	    req.add( Operations.assumeOp("assks", "asscf", "value", "UTF-8"));//5
+	    req.add( Operations.assumeOp("assks", "asscf", "value", "UTF8Type"));//5
 	    req.add( Operations.setOp("rowa", "col1", "wow")); //6
 	    req.add( Operations.getOp("rowa", "col1")); //7
 	    IntraRes res = new IntraRes();
@@ -131,29 +130,45 @@ public class IntraServiceITest {
 	    Assert.assertEquals( "wow",  x.get(0).get("value") );
 	  }
 	
-	 @Test
-	 public void filterTest() throws CharacterCodingException{
-	   IntraReq req = new IntraReq();
-     req.add( Operations.setKeyspaceOp("filterks") ); //0
-     req.add( Operations.createKsOp("filterks", 1)); //1
-     req.add( Operations.createCfOp("filtercf")); //2
-     req.add( Operations.setColumnFamilyOp("filtercf") ); //3
-     req.add( Operations.setAutotimestampOp() ); //4
-     req.add( Operations.assumeOp("filterks", "filtercf", "value", "UTF-8"));//5
-     req.add( Operations.setOp("rowa", "col1", "20")); //6
-     req.add( Operations.setOp("rowa", "col2", "22")); //7
-     req.add( Operations.createFilterOp("over21", "groovy",
-         "{ row -> if (row['value'].toInteger() > 21) return row else return null }")); // 8
-     req.add( Operations.filterModeOp("over21", true)); //9
-     req.add( Operations.sliceOp("rowa", "col1", "col3", 10)); //10
-     IntraRes res = new IntraRes();
-     is.handleIntraReq(req, res, x);
-     System.out.println ( res.getException() );
-     List<Map> results = (List<Map>) res.getOpsRes().get(10);
-     Assert.assertEquals( "22", results.get(0).get("value") );
-     Assert.assertEquals(1, results.size());
-     
-	 }
+	@Test
+	public void filterTest() throws CharacterCodingException {
+		IntraReq req = new IntraReq();
+		req.add(Operations.setKeyspaceOp("filterks")); // 0
+		req.add(Operations.createKsOp("filterks", 1)); // 1
+		req.add(Operations.createCfOp("filtercf")); // 2
+		req.add(Operations.setColumnFamilyOp("filtercf")); // 3
+		req.add(Operations.setAutotimestampOp()); // 4
+		req.add(Operations.assumeOp("filterks", "filtercf", "value", "UTF8Type"));// 5
+		req.add(Operations.setOp("rowa", "col1", "20")); // 6
+		req.add(Operations.setOp("rowa", "col2", "22")); // 7
+		req.add(Operations
+				.createFilterOp("over21", "groovy",
+						"{ row -> if (row['value'].toInteger() > 21) return row else return null }")); // 8
+		req.add(Operations.filterModeOp("over21", true)); // 9
+		req.add(Operations.sliceOp("rowa", "col1", "col3", 10)); // 10
+		IntraRes res = new IntraRes();
+		is.handleIntraReq(req, res, x);
+		System.out.println(res.getException());
+		List<Map> results = (List<Map>) res.getOpsRes().get(10);
+		Assert.assertEquals("22", results.get(0).get("value"));
+		Assert.assertEquals(1, results.size());
+
+		IntraReq req2 = new IntraReq();
+		req2.add(Operations.assumeOp("filterks", "filtercf", "value", "UTF8Type"));// 0
+		req2.add(Operations.filterModeOp("over21", true)); // 1
+		req2.add( Operations.sliceOp("rowa", "col1", "col3", 10) //2
+				.set("keyspace", "filterks")
+				.set("columnfamily", "filtercf")
+				.set("extendedresults", true) );
+		IntraRes res2 = new IntraRes();
+		is.handleIntraReq(req2, res2, x);
+		Map extendedMap = (Map) res2.getOpsRes().get(2);
+		results = (List<Map>) extendedMap.get("results");
+		Assert.assertEquals("22", results.get(0).get("value"));
+		Assert.assertEquals("col2", ByteBufferUtil.string((ByteBuffer) extendedMap.get("lastname")));
+		
+		
+	}
 
     @Test
     public void executeJavaScriptFilter() throws CharacterCodingException {
@@ -163,7 +178,7 @@ public class IntraServiceITest {
         req.add(Operations.createCfOp("filtercf")); //2
         req.add(Operations.setColumnFamilyOp("filtercf")); //3
         req.add(Operations.setAutotimestampOp()); //4
-        req.add(Operations.assumeOp("jsFilterks", "filtercf", "value", "UTF-8"));//5
+        req.add(Operations.assumeOp("jsFilterks", "filtercf", "value", "UTF8Type"));//5
         req.add(Operations.setOp("rowa", "col1", "20")); //6
         req.add(Operations.setOp("rowa", "col2", "22")); //7
         req.add(Operations.createFilterOp("over21", "javascript",
@@ -187,7 +202,7 @@ public class IntraServiceITest {
      req.add( Operations.createCfOp("proccf")); //2
      req.add( Operations.setColumnFamilyOp("proccf") ); //3
      req.add( Operations.setAutotimestampOp() ); //4
-     req.add( Operations.assumeOp("procks", "proccf", "value", "UTF-8"));//5
+     req.add( Operations.assumeOp("procks", "proccf", "value", "UTF8Type"));//5
      req.add( Operations.setOp("rowa", "col1", "wow")); //6
      req.add( Operations.getOp("rowa", "col1")); //7
      req.add( Operations.createProcessorOp("capitalize", "groovy", 
@@ -224,8 +239,8 @@ public class IntraServiceITest {
      req.add( Operations.createCfOp("intcf")); //2
      req.add( Operations.setColumnFamilyOp("intcf") ); //3
      req.add( Operations.setAutotimestampOp() ); //4
-     req.add( Operations.assumeOp("intks", "intcf", "value", "UTF-8"));//5
-     req.add( Operations.assumeOp("intks", "intcf", "column", "int32"));//6
+     req.add( Operations.assumeOp("intks", "intcf", "value", "UTF8Type"));//5
+     req.add( Operations.assumeOp("intks", "intcf", "column", "Int32Type"));//6
      req.add( Operations.setOp("rowa", 1, "wow")); //7
      req.add( Operations.getOp("rowa", 1)); //8
      
@@ -244,8 +259,8 @@ public class IntraServiceITest {
 	     req.add( Operations.createCfOp("ttlcf")); //2
 	     req.add( Operations.setColumnFamilyOp("ttlcf") ); //3
 	     req.add( Operations.setAutotimestampOp() ); //4
-	     req.add( Operations.assumeOp("ttlks", "ttlcf", "value", "UTF-8"));//5
-	     req.add( Operations.assumeOp("ttlks", "ttlcf", "column", "int32"));//6
+	     req.add( Operations.assumeOp("ttlks", "ttlcf", "value", "UTF8Type"));//5
+	     req.add( Operations.assumeOp("ttlks", "ttlcf", "column", "Int32Type"));//6
 	     req.add( Operations.setOp("rowa", 1, "wow")); //7
 	     req.add( Operations.setOp("rowa", 2, "wow").set("ttl", 1)); //8
 	     //req.add( Operations.sliceOp("rowa", 1, 5, 4) ); //9
@@ -261,8 +276,8 @@ public class IntraServiceITest {
 	    IntraReq r = new IntraReq();
 	    r.add( Operations.setKeyspaceOp("ttlks") ); //0
 	    r.add( Operations.setColumnFamilyOp("ttlcf") ); //1
-	     r.add( Operations.assumeOp("ttlks", "ttlcf", "value", "UTF-8"));//2
-	     r.add( Operations.assumeOp("ttlks", "ttlcf", "column", "int32"));//3
+	     r.add( Operations.assumeOp("ttlks", "ttlcf", "value", "UTF8Type"));//2
+	     r.add( Operations.assumeOp("ttlks", "ttlcf", "column", "Int32Type"));//3
 	    r.add( Operations.sliceOp("rowa", 1, 5, 4) ); //4
 	    IntraRes rs = new IntraRes();
 	    
@@ -273,27 +288,38 @@ public class IntraServiceITest {
 	    Assert.assertEquals(1, x.size());
 	    
 	 }
-	 
-	 @Test
-   public void compositeTest() throws CharacterCodingException{ 
-     IntraReq req = new IntraReq();
-     req.add( Operations.setKeyspaceOp("compks") ); //0
-     req.add( Operations.createKsOp("compks", 1)); //1
-     req.add( Operations.createCfOp("compcf")); //2
-     req.add( Operations.setColumnFamilyOp("compcf") ); //3
-     req.add( Operations.setAutotimestampOp() ); //4
-     req.add( Operations.assumeOp("compks", "compcf", "value", "CompositeType(UTF-8,int32)"));//5
-     req.add( Operations.assumeOp("compks", "compcf", "column", "int32"));//6
-     req.add( Operations.setOp("rowa", 1, new Object[] {"yo",0, 2,0})); //7
-     req.add( Operations.getOp("rowa", 1)); //8
-      
-     IntraRes res = new IntraRes();
-     is.handleIntraReq(req, res, x);
-     List<Map> x = (List<Map>) res.getOpsRes().get(8);
-     Assert.assertEquals( 1,  x.get(0).get("name") );
-     Assert.assertEquals( "yo",  ((Object [])x.get(0).get("value"))[0] );
-     Assert.assertEquals( 2,  ((Object [])x.get(0).get("value"))[1] );
-   }
+
+    @Test
+    public void compositeTest() throws CharacterCodingException {
+        IntraReq req = new IntraReq();
+        req.add(Operations.setKeyspaceOp("compks")); //0
+        req.add(Operations.createKsOp("compks", 1)); //1
+        req.add(Operations.createCfOp("compcf")); //2
+        req.add(Operations.setColumnFamilyOp("compcf")); //3
+        req.add(Operations.setAutotimestampOp()); //4
+        req.add(Operations.assumeOp("compks", "compcf", "value", "CompositeType(UTF8Type,Int32Type)"));//5
+        req.add(Operations.assumeOp("compks", "compcf", "column", "Int32Type"));//6
+        req.add(Operations.setOp("rowa", 1, new Object[]{"yo", 0, 2, 0})); //7
+        req.add(Operations.getOp("rowa", 1)); //8
+
+        IntraRes res = new IntraRes();
+        is.handleIntraReq(req, res, x);
+        List<Map> x = (List<Map>) res.getOpsRes().get(8);
+        Assert.assertEquals(1, x.get(0).get("name"));
+
+        ByteBuffer bytes = (ByteBuffer) x.get(0).get("value");
+        List<AbstractType<?>> comparators = new ArrayList<>();
+        comparators.add(UTF8Type.instance);
+        comparators.add(Int32Type.instance);
+        CompositeType comparator = CompositeType.getInstance(comparators);
+
+        List<AbstractCompositeType.CompositeComponent> components = comparator.deconstruct(bytes);
+        AbstractCompositeType.CompositeComponent c1 = components.get(0);
+        AbstractCompositeType.CompositeComponent c2 = components.get(1);
+
+        Assert.assertEquals("yo", c1.comparator.compose(c1.value));
+        Assert.assertEquals(2, c2.comparator.compose(c2.value));
+    }
 	    
 	 
 	 @Test
@@ -304,8 +330,8 @@ public class IntraServiceITest {
      req.add( Operations.createCfOp("cqlcf")); //2
      req.add( Operations.setColumnFamilyOp("cqlcf") ); //3
      req.add( Operations.setAutotimestampOp() ); //4
-     req.add( Operations.assumeOp("cqlks", "cqlcf", "value", "int32"));//5
-     req.add( Operations.assumeOp("cqlks", "cqlcf", "column", "int32"));//6
+     req.add( Operations.assumeOp("cqlks", "cqlcf", "value", "Int32Type"));//5
+     req.add( Operations.assumeOp("cqlks", "cqlcf", "column", "Int32Type"));//6
      req.add( Operations.setOp("rowa", 1, 2)); //7
      req.add( Operations.getOp("rowa", 1)); //8
      req.add( Operations.cqlQuery("select * from cqlcf", "3.0.0"));//9
@@ -344,7 +370,7 @@ public class IntraServiceITest {
      req.add( Operations.createCfOp("clearcf")); //2
      req.add( Operations.setColumnFamilyOp("clearcf") ); //3
      req.add( Operations.setAutotimestampOp() ); //4
-     req.add( Operations.assumeOp("clearks", "clearcf", "value", "UTF-8")); //5
+     req.add( Operations.assumeOp("clearks", "clearcf", "value", "UTF8Type")); //5
      req.add( Operations.setOp("rowa", 1, "wow")); //6
      req.add( Operations.getOp("rowa", 1)); //7
      req.add( Operations.getOp("rowa", 1)); //8
@@ -393,7 +419,7 @@ public class IntraServiceITest {
     req.add( Operations.setKeyspaceOp("myks") ); //0
     req.add( Operations.setColumnFamilyOp("mycf") ); //1
     req.add(Operations.setAutotimestampOp()); //2
-    req.add(Operations.assumeOp("myks", "mycf", "value", "UTF-8")); //3
+    req.add(Operations.assumeOp("myks", "mycf", "value", "UTF8Type")); //3
     req.add(Operations.setOp("rowzz", "col1", "7")); //4
     req.add(Operations.setOp("rowzz", "col2", "8")); //5
     req.add( Operations.setOp("rowyy", "col4", "9")); //6
@@ -444,8 +470,8 @@ public class IntraServiceITest {
     req.add( Operations.setKeyspaceOp("myks") ); //0
     req.add( Operations.setColumnFamilyOp("mycf") ); //1
     req.add( Operations.setAutotimestampOp() ); //2
-    req.add( Operations.assumeOp("myks", "mycf", "value", "UTF-8")); //3
-    req.add( Operations.assumeOp("myks", "mycf", "column", "UTF-8")); //4
+    req.add( Operations.assumeOp("myks", "mycf", "value", "UTF8Type")); //3
+    req.add( Operations.assumeOp("myks", "mycf", "column", "UTF8Type")); //4
     Map row1 = new HashMap();
     row1.put("rowkey", "batchkeya");
     row1.put("name", "col1");
@@ -507,8 +533,8 @@ public class IntraServiceITest {
     req.add( Operations.setKeyspaceOp("myks") ); //0
     req.add( Operations.setColumnFamilyOp("mycf") ); //1
     req.add( Operations.setAutotimestampOp() ); //2
-    req.add( Operations.assumeOp("myks", "mycf", "value", "UTF-8")); //3
-    req.add( Operations.assumeOp("myks", "mycf", "column", "UTF-8")); //4
+    req.add( Operations.assumeOp("myks", "mycf", "value", "UTF8Type")); //3
+    req.add( Operations.assumeOp("myks", "mycf", "column", "UTF8Type")); //4
     Map row1 = new HashMap();
     row1.put("rowkey", "jsonkey");
     row1.put("name", "data");
@@ -559,7 +585,7 @@ public class IntraServiceITest {
     r.add( Operations.setColumnFamilyOp("mycf")); //1
     r.add( Operations.setAutotimestampOp() ); //2
     r.add( Operations.setOp("a", "b", "c") ); //3
-    r.add( Operations.assumeOp("myks", "mycf", "value", "UTF-8") );//4
+    r.add( Operations.assumeOp("myks", "mycf", "value", "UTF8Type") );//4
     r.add( Operations.saveState() );//5
     
     IntraRes res = new IntraRes();
@@ -618,8 +644,8 @@ public class IntraServiceITest {
 	     IntraReq req = new IntraReq();
 	    
 	     req.add( Operations.setAutotimestampOp() ); //0
-	     req.add( Operations.assumeOp("myks", "mycf", "value", "UTF-8"));//1
-	     req.add( Operations.assumeOp("myks", "mycf", "column", "int32"));//2
+	     req.add( Operations.assumeOp("myks", "mycf", "value", "UTF8Type"));//1
+	     req.add( Operations.assumeOp("myks", "mycf", "column", "Int32Type"));//2
 	     IntraOp setOp = Operations.setOp("optional", 1, "wow"); //3
 	     setOp.set("keyspace", "myks");
 	     setOp.set("columnfamily", "mycf");
@@ -642,8 +668,8 @@ public class IntraServiceITest {
 	public void componentTest() {
 		IntraReq req = new IntraReq();
 		req.add(Operations.setAutotimestampOp()); // 0
-		req.add(Operations.assumeOp("myks", "mycf", "value", "UTF-8"));// 1
-		req.add(Operations.assumeOp("myks", "mycf", "column", "int32"));// 2
+		req.add(Operations.assumeOp("myks", "mycf", "value", "UTF8Type"));// 1
+		req.add(Operations.assumeOp("myks", "mycf", "column", "Int32Type"));// 2
 		IntraOp setOp = Operations.setOp("optional", 1, "wow"); // 3
 		setOp.set("keyspace", "myks");
 		setOp.set("columnfamily", "mycf");
@@ -707,7 +733,7 @@ public class IntraServiceITest {
 		req.add(Operations.createCfOp("timeoutcf")); // 2
 		req.add(Operations.setColumnFamilyOp("timeoutcf")); // 3
 		req.add(Operations.setAutotimestampOp()); // 4
-		req.add(Operations.assumeOp("timeoutks", "timeoutcf", "value", "UTF-8"));// 5
+		req.add(Operations.assumeOp("timeoutks", "timeoutcf", "value", "UTF8Type"));// 5
 		req.add(Operations.setOp("rowa", "col1", "20")); // 6
 		req.add(Operations.setOp("rowa", "col2", "22")); // 7
                 req.add(Operations.createFilterOp("ALongOne", "groovy", "{ row -> Thread.sleep(5000) }")); // 8
@@ -746,8 +772,8 @@ public class IntraServiceITest {
 			.add( Operations.setKeyspaceOp("ks2"))
 			.add( Operations.createCfOp("cf2"))
 			.add( Operations.batchSetOp(batch).set("timeout", 1000000))
-			.add( Operations.assumeOp("ks1", "cf1", "value", "UTF-8"))
-			.add( Operations.assumeOp("ks2", "cf2", "value", "UTF-8"))
+			.add( Operations.assumeOp("ks1", "cf1", "value", "UTF8Type"))
+			.add( Operations.assumeOp("ks2", "cf2", "value", "UTF8Type"))
 			.add( Operations.getOp("mykey", "mycol")
 					.set("keyspace", "ks1")
 					.set("columnfamily", "cf1"));
@@ -758,6 +784,96 @@ public class IntraServiceITest {
 		System.out.println(res.getExceptionId());
 		List<Map> x = (List<Map>) res.getOpsRes().get(10);
 		Assert.assertEquals("myvalue", x.get(0).get("value") );
+		
+	}
+	
+	@Test
+	@RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+	public void preparedStatementTest() throws CharacterCodingException {
+		IntraReq req = new IntraReq();
+		req.add(Operations.setAutotimestampOp())
+				.add(Operations
+						.setOp("preparedrow1", "preparedcol1", "preparedvalue1")
+						.set("keyspace", "myks").set("columnfamily", "mycf"));
+		IntraRes res = new IntraRes();
+		is.handleIntraReq(req, res, x);
+		Assert.assertEquals("OK", res.getOpsRes().get(1));
+
+		IntraReq r2 = new IntraReq();
+		r2.add(Operations.prepare()); // must be the first op
+		r2.add(Operations.getOp(Operations.bindMarker(1), "preparedcol1")
+				.set("keyspace", "myks").set("columnfamily", "mycf"));
+		IntraRes res2 = new IntraRes();
+		is.handleIntraReq(r2, res2, x);
+		//Assert.assertEquals(0, res2.getOpsRes().get(0));
+		Assert.assertEquals(1, res2.getOpsRes().size());
+		Integer preparedId = (Integer) res2.getOpsRes().get(0);
+
+		IntraReq req3 = new IntraReq();
+		Map m = new HashMap();
+		m.put(new Integer(1),"preparedrow1");
+		req3.add( Operations.executePrepared(preparedId, m));
+		IntraRes res3 = new IntraRes();
+		is.handleIntraReq(req3, res3, x);
+		List<Map> x = (List<Map>) res3.getOpsRes().get(0);
+		Assert.assertEquals("preparedvalue1", ByteBufferUtil.string( (ByteBuffer) x.get(0).get("value")));
+		
+
+	}
+	
+	@Test
+	@RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+	public void scannerTest() throws Exception {
+		IntraReq req = new IntraReq();
+		req.add(Operations.createScanFilter("peoplefromny", "groovy",
+				"import org.usergrid.vx.experimental.* \n"
+						+ "import org.usergrid.vx.experimental.scan.* \n"
+						+ "public class MyScanner extends PeopleFromNY { \n"
+						+ " public MyScanner() { super(); } \n" + "} \n"))
+				.add(Operations.assumeOp("myks", "mycf", "value", "UTF8Type"))
+				.add(Operations.assumeOp("myks", "mycf", "column", "UTF8Type"))
+				.add(Operations.setKeyspaceOp("myks"))
+				.add(Operations.setColumnFamilyOp("mycf"))
+				.add(Operations.setOp("scannerrow", "ed", "NY")) // 3
+				.add(Operations.setOp("scannerrow", "bob", "NY"))// 4
+				.add(Operations.setOp("scannerrow", "pete", "FL"))// 5
+				.add(Operations.setOp("scannerrow", "john", "TX"))// 6
+				.add(Operations.setOp("scannerrow", "sara", "??"))// 7
+				.add(Operations.setOp("scannerrow", "stacey", "NY"))// 8
+				.add(Operations.setOp("scannerrow", "paul", "YO"))//9
+				.add(Operations.setOp("scannerrow2", "ed", "NY")) // 10
+				.add(Operations.setOp("scannerrow2", "bob", "NY"))// 11
+				.add(Operations.setOp("scannerrow2", "pete", "FL"))// 12
+				.add(Operations.setOp("scannerrow2", "john", "TX"))// 13
+				.add(Operations.setOp("scannerrow2", "sara", "??"))// 14
+				.add(Operations.setOp("scannerrow2", "stacey", "NY"))// 15
+				.add(Operations.setOp("scannerrow2", "paul", "YO"));// 16
+		
+		IntraClient ic = new IntraClient();
+		ic.setPayload("json");
+		IntraRes res = ic.sendBlocking(req);
+		Assert.assertEquals(null,res.getException());
+	}
+	
+	
+	@Test
+	@RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+	public void sliceNamesTest() throws Exception {
+		IntraReq req = new IntraReq();
+		req.add(
+				Operations.assumeOp("myks", "mycf", "value", "UTF8Type")) 
+				.add(Operations.assumeOp("myks", "mycf", "column", "UTF8Type"))
+				.add(Operations.setKeyspaceOp("myks"))
+				.add(Operations.setColumnFamilyOp("mycf"))
+				.add(Operations.setOp("slicename", "ed", "NY")) // 4
+				.add(Operations.setOp("slicename", "bob", "NY"))// 5
+				.add(Operations.setOp("slicename", "pete", "FL"))// 6
+				.add( Operations.sliceByNames("slicename", Arrays.asList(new Object [] { "ed","pete" })) );
+		IntraRes res = new IntraRes();
+		is.handleIntraReq(req, res, x);
+		List<Map> x = (List<Map>) res.getOpsRes().get(7);
+		Assert.assertEquals("ed", x.get(0).get("name"));
+		Assert.assertEquals("FL", x.get(1).get("value"));
 		
 	}
 }

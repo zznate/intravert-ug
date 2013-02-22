@@ -15,20 +15,22 @@
 */
 package org.usergrid.vx.experimental;
 
+import java.io.File;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.cassandra.config.CFMetaData;
 import org.apache.cassandra.config.KSMetaData;
 import org.apache.cassandra.db.ColumnFamilyType;
-import org.apache.cassandra.db.commitlog.CommitLog;
-import org.apache.cassandra.db.marshal.AbstractType;
-import org.apache.cassandra.db.marshal.BytesType;
 import org.apache.cassandra.db.marshal.TypeParser;
 import org.apache.cassandra.exceptions.AlreadyExistsException;
-import org.apache.cassandra.gms.Gossiper;
 import org.apache.cassandra.service.MigrationManager;
 import org.apache.cassandra.service.StorageProxy;
 import org.apache.cassandra.service.StorageService;
-import org.junit.Ignore;
-import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -36,16 +38,6 @@ import org.junit.runners.model.InitializationError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.usergrid.vx.server.IntravertDeamon;
-
-import java.io.File;
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A custom JUnit runner which uses the Intravert testing annotations
@@ -185,8 +177,8 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
     System.setProperty("log4j.defaultInitOverride","true");
     System.setProperty("log4j.configuration", "log4j.properties");
     System.setProperty("cassandra.ring_delay_ms","1000");
-    System.setProperty("cassandra.start_rpc","false");
-    System.setProperty("cassandra.start_native_transport","false");
+    System.setProperty("cassandra.start_rpc","true");
+    System.setProperty("cassandra.start_native_transport","true");
 
     executor.execute(new Runnable() {
       public void run() {

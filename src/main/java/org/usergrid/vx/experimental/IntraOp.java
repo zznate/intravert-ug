@@ -53,6 +53,7 @@ import org.apache.cassandra.service.MigrationManager;
 import org.apache.cassandra.service.QueryState;
 import org.apache.cassandra.service.StorageProxy;
 import org.apache.cassandra.thrift.CfDef;
+import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.CqlResult;
 import org.apache.cassandra.thrift.CqlRow;
@@ -61,6 +62,7 @@ import org.apache.cassandra.transport.messages.ResultMessage;
 import org.apache.cassandra.transport.messages.ResultMessage.Kind;
 import org.usergrid.vx.experimental.filter.FactoryProvider;
 import org.usergrid.vx.experimental.filter.FilterFactory;
+import org.usergrid.vx.experimental.scan.ScanFilter;
 import org.vertx.java.core.Vertx;
 
 import groovy.lang.GroovyClassLoader;
@@ -76,7 +78,9 @@ public class IntraOp implements Serializable{
 	private Map<String,Object> op;
 
   protected IntraOp() {}
-
+  	public String toString(){
+  		return this.type + " "+this.op;
+  	}
 	IntraOp(Type type){
     this.type = type;
 		op = new TreeMap<String,Object>();
@@ -190,10 +194,39 @@ public class IntraOp implements Serializable{
 
       }
     },
-    COLUMNPREDICATE {
+    SLICEBYNAMES {
       @Override
       public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
-
+    	  IntraOp op = req.getE().get(i);
+    	  List<Map> finalResults = new ArrayList<Map>();
+    	  ByteBuffer rowkey = IntraService.byteBufferForObject(IntraService.resolveObject(op.getOp().get("rowkey"), req, res, state, i));
+    	  List l = (List) op.getOp().get("wantedcols");
+    	  List<ByteBuffer> columns = new ArrayList<ByteBuffer>(); 
+    	  for (Object o: l){
+    		  columns.add(IntraService.byteBufferForObject(IntraService.resolveObject(o, req, res, state, i)));
+    	  }
+    	  List<ReadCommand> commands = new ArrayList<ReadCommand>(1);
+    		ColumnParent cp = new ColumnParent();
+    		cp.setColumn_family(IntraService.determineCf(null, op, state));
+    		QueryPath qp = new QueryPath(cp);
+    		SliceByNamesReadCommand sr= new SliceByNamesReadCommand(IntraService.determineKs(null,op,state), rowkey, cp, columns);
+    		commands.add(sr);
+      		List<Row> results = null;
+      		NonAtomicReference lastSeen = new NonAtomicReference();
+      		try {
+      			results = StorageProxy.read(commands, state.consistency);
+      			ColumnFamily cf = results.get(0).cf;
+      			if (cf == null){ //cf= null is no data
+      			} else {
+      			  IntraService.readCf(cf, finalResults, state, op, lastSeen);
+      			}
+      			res.getOpsRes().put(i,finalResults);
+      		} catch (ReadTimeoutException | org.apache.cassandra.exceptions.UnavailableException
+                  | IsBootstrappingException | IOException e) {
+      		  res.setExceptionAndId(e.getMessage(), i);
+      			return;
+      		}
+      		res.getOpsRes().put(i, finalResults);
       }
     },
     SLICE {
@@ -206,26 +239,33 @@ public class IntraOp implements Serializable{
       		ByteBuffer end = IntraService.byteBufferForObject(IntraService.resolveObject(op.getOp().get("end"), req, res, state, i));
       		List<ReadCommand> commands = new ArrayList<ReadCommand>(1);
       		ColumnPath cp = new ColumnPath();
-      		cp.setColumn_family(state.currentColumnFamily);
+      		cp.setColumn_family(IntraService.determineCf(null, op, state));
       		QueryPath qp = new QueryPath(cp);
-      		SliceFromReadCommand sr = new SliceFromReadCommand(state.currentKeyspace, rowkey, qp, start, end, false, 100);
+      		SliceFromReadCommand sr = new SliceFromReadCommand(IntraService.determineKs(null, op, state), rowkey, qp, start, end, false, 100);
       		commands.add(sr);
 
       		List<Row> results = null;
+      		NonAtomicReference lastSeen = new NonAtomicReference();
       		try {
       			results = StorageProxy.read(commands, state.consistency);
       			ColumnFamily cf = results.get(0).cf;
       			if (cf == null){ //cf= null is no data
       			} else {
-      			  IntraService.readCf(cf, finalResults, state,op);
+      			  IntraService.readCf(cf, finalResults, state, op, lastSeen);
       			}
-      			res.getOpsRes().put(i,finalResults);
       		} catch (ReadTimeoutException | org.apache.cassandra.exceptions.UnavailableException
                   | IsBootstrappingException | IOException e) {
       		  res.setExceptionAndId(e.getMessage(), i);
       			return;
       		}
-      		res.getOpsRes().put(i, finalResults);
+      		if (op.getOp().containsKey("extendedresults")){
+      			Map extended = new HashMap();
+      			extended.put("results", finalResults);
+      			extended.put("lastname", lastSeen.something);
+      			res.getOpsRes().put(i, extended);
+      		} else {
+      			res.getOpsRes().put(i, finalResults);
+      		}
       }
     },
     GET {
@@ -244,12 +284,13 @@ public class IntraOp implements Serializable{
             rowkey, path, nameAsList);
         List<Row> rows = null;
 
+        NonAtomicReference lastSeen = new NonAtomicReference();
         try {
           rows = StorageProxy.read(Arrays.asList(command), state.consistency);
           ColumnFamily cf1 = rows.get(0).cf;
           if (cf1 == null) { // cf= null is no data
           } else {
-            IntraService.readCf(cf1, finalResults, state, op);
+            IntraService.readCf(cf1, finalResults, state, op , lastSeen);
           }
           res.getOpsRes().put(i, finalResults);
         } catch (ReadTimeoutException | org.apache.cassandra.exceptions.UnavailableException
@@ -296,7 +337,6 @@ public class IntraOp implements Serializable{
 					(Long) (state.autoTimestamp ? state.nanotime : op
 							.getOp().get("timestamp"))); 
 			} else {
-				System.out.println("We have a ttl");
 				int ttl = (Integer) op.getOp().get("ttl");
 				rm.add(qp, IntraService.byteBufferForObject(IntraService
 						.resolveObject(val, req, res, state, i)),
@@ -586,15 +626,67 @@ public class IntraOp implements Serializable{
 			Set<String> parts = (Set<String>) op.getOp().get("components");
 			state.components = parts;
 		}
-    }, NOOP {
+		},
+		PREPARE {
+			@Override
+			public void execute(IntraReq req, IntraRes res, IntraState state,
+					int i, Vertx vertx, IntraService is) {
+				IntraOp op = req.getE().get(i);
+				req.getE().remove(i);
+				int pid = state.prepareStatement(req);
+				IntraReq r = new IntraReq();
+				r.add(op);
+				req = r;
+				res.getOpsRes().put(0, pid);
+			}
+		},
+		EXECUTEPREPARED {
+			public void execute(IntraReq req, IntraRes res, IntraState state,
+					int i, Vertx vertx, IntraService is) {
+				IntraOp op = req.getE().get(i);
+				Integer id = (Integer) op.getOp().get("pid");
+				IntraReq preparedReq = IntraState.preparedStatements.get(id);
+				if (preparedReq==null){
+					res.setExceptionAndId( new RuntimeException("ps was null"), id);
+				}
+				Map bind = (Map) op.getOp().get("bind");
+				state.bindParams = bind;
+				IntraRes preparedRes = new IntraRes();
+				is.executeReq(preparedReq, preparedRes, state, vertx);
+				if (preparedRes.getException() != null) {
+					res.setExceptionAndId(preparedRes.getException(), preparedRes.getExceptionId());
+				}
+				res.getOpsRes().putAll(preparedRes.getOpsRes());
+			}
+		},  CREATESCANFILTER{
+			@Override
+			public void execute(IntraReq req, IntraRes res, IntraState state,
+					int i, Vertx vertx, IntraService is) {
+				IntraOp op = req.getE().get(i);
+
+				String name = (String) op.getOp().get("name");
+				GroovyClassLoader gc = new GroovyClassLoader();
+				Class c = gc.parseClass((String) op.getOp().get("value"));
+				ScanFilter sf = null;
+				try {
+					sf = (ScanFilter) c.newInstance();
+				} catch (InstantiationException | IllegalAccessException e) {
+					res.setExceptionAndId(e, i);
+					return;
+				}
+				IntraState.scanFilters.put(name, sf);
+				res.getOpsRes().put(i, "OK");
+			}	
+	    },
+      NOOP {
           @Override
           public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
-              // This operation is just here as a test hook. See RawJsonITest.timeOutLongRunningOperation
-              // for an example.
+
           }
       };
 
     public abstract void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is);
+    
     
   }
 	

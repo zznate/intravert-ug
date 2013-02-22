@@ -87,11 +87,11 @@ public class SliceHandler implements Handler<Message<JsonObject>> {
 
                 if (components.contains("name")) {
                     String clazz = state.getObject("meta").getObject("column").getString("clazz");
-                    m.put("name", TypeHelper.getTypedIfPossible(clazz, ic.name()));
+                    m.put("name", TypeHelper.getTyped(clazz, ic.name()));
                 }
                 if (components.contains("value")) {
                     String clazz = state.getObject("meta").getObject("value").getString("clazz");
-                    m.put("value", TypeHelper.getTypedIfPossible(clazz, ic.value()));
+                    m.put("value", TypeHelper.getTyped(clazz, ic.value()));
                 }
                 if (components.contains("timestamp")) {
                     m.put("timestamp", ic.timestamp());
