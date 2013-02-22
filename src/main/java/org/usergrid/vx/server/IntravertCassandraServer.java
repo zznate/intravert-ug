@@ -50,7 +50,7 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
 		rm.post("/:appid/thriftjson", new ThriftHandler());
 		rm.post("/:appid/intrareq-xml", new IntraHandlerXml(vertx));
 		rm.post("/:appid/intrareq-json", new IntraHandlerJson(vertx));
-		rm.post("/:appid/intrareq-jsonsmile", new IntraHandlerJsonSmile(vertx));
+		rm.post("/:appid/intrareq-smile", new IntraHandlerJsonSmile(vertx));
 		rm.noMatch(new NoMatchHandler() );
 		vertx.createHttpServer().requestHandler(rm).listen(8080);
 		logger.info("IntravertCassandraServer started.");
