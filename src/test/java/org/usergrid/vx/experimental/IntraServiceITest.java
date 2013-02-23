@@ -42,6 +42,7 @@ import org.apache.cassandra.thrift.ThriftClientState;
 import org.apache.cassandra.transport.messages.ResultMessage;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -827,6 +828,7 @@ public class IntraServiceITest {
 	}
 	
 	@Test
+  @Ignore
 	@RequiresColumnFamily(ksName = "myks", cfName = "mycf")
 	public void scannerTest() throws Exception {
 		IntraReq req = new IntraReq();

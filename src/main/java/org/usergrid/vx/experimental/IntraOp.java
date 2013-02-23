@@ -266,22 +266,9 @@ public class IntraOp implements Serializable{
       @Override
       public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
-        RowMutation rm = null;
-        String ks = null;
-        String cf = null;
-
-        if (op.getOp().containsKey("keyspace")) {
-          ks = (String) op.getOp().get("keyspace");
-        } else {
-          ks = state.currentKeyspace;
-        }
-        if (op.getOp().get("columnfamily") != null){
-          cf = (String) op.getOp().get("columnfamily");
-        } else {
-          cf = state.currentColumnFamily;
-        }
-
-        rm = new RowMutation(ks,
+        String ks = IntraService.determineKs(null, op, state);
+        String cf =IntraService.determineCf(null, op, state);
+        RowMutation rm = new RowMutation(ks,
                 IntraService.byteBufferForObject(IntraService
                         .resolveObject(op.getOp().get("rowkey"), req,
                                 res, state, i)));
@@ -332,22 +319,11 @@ public class IntraOp implements Serializable{
 		public void execute(IntraReq req, IntraRes res, IntraState state,
 				int i, Vertx vertx, IntraService is) {
 			IntraOp op = req.getE().get(i);
-			RowMutation rm = null;
-			String ks = null;
-			String cf = null;
-			
-			if (op.getOp().containsKey("keyspace")) {
-				ks = (String) op.getOp().get("keyspace");
-			} else {
-				ks = state.currentKeyspace;
-			}
-			if (op.getOp().get("columnfamily") != null){
-				cf = (String) op.getOp().get("columnfamily");
-			} else {
-				cf = state.currentColumnFamily;
-			}
-			
-			rm = new RowMutation(ks,
+
+      String ks = IntraService.determineKs(null, op, state);
+      String cf =IntraService.determineCf(null, op, state);
+
+			RowMutation rm = new RowMutation(ks,
 					IntraService.byteBufferForObject(IntraService
 							.resolveObject(op.getOp().get("rowkey"), req,
 									res, state, i)));
