@@ -1,0 +1,5 @@
+{
+    "opsRes": { "0":"OK" },
+    "exception": "line 1:7 no viable alternative at input 'TABL'",
+    "exceptionId": "1"
+}

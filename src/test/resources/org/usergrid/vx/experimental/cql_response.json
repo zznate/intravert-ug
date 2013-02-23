@@ -19,6 +19,7 @@
         },
         {
             "lname":"Smith",
+
             "username":"jsmith",
             "age":30,
             "fname":"John"

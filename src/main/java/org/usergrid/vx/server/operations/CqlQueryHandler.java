@@ -43,7 +43,10 @@ public class CqlQueryHandler implements Handler<Message<JsonObject>> {
             // since it is also hard coded in IntraState
             rm = QueryProcessor.process(params.getString("query"), ConsistencyLevel.ONE, queryState);
         } catch (RequestExecutionException | RequestValidationException e) {
-            event.reply(new JsonObject().putString(id.toString(), e.getMessage()));
+            event.reply(new JsonObject()
+                .putString(id.toString(), "ERROR")
+                .putString("exceptionId", id.toString())
+                .putString("exception", e.getMessage()));
             return;
         }
         List<Map> returnRows = new ArrayList<>();

@@ -50,7 +50,7 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
                             boolean asyncRequestsEnabled = Boolean.valueOf(
                                 System.getProperty("async-requests-enabled", "false"));
 
-                            if (asyncRequestsEnabled) {
+                            if (asyncRequestsEnabled || true) {
                                 handleRequestAsync(request, buffer);
                             } else {
                                 handleRequest(request, buffer);
@@ -174,6 +174,17 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
 
             Integer currentId = idGenerator.get();
             Integer opId = currentId - 1;
+
+            String exceptionId = event.body.getString("exceptionId");
+            String exception = event.body.getString("exception");
+
+            if (exception != null || exceptionId != null) {
+                results.putString("exception", exception);
+                results.putString("exceptionId", exceptionId);
+
+                sendResults();
+            }
+
             Map<String, Object> map = event.body.toMap();
             Object opResult = map.get(opId.toString());
 
@@ -212,14 +223,18 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
                 timerId = vertx.setTimer(10000, timeoutHandler);
                 vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation, this);
             } else {
-                try {
-                    timeoutLock.lock();
-                    if (!timedOut) {
-                        originalMessage.reply(results);
-                    }
-                } finally {
-                    timeoutLock.unlock();
+                sendResults();
+            }
+        }
+
+        private void sendResults() {
+            try {
+                timeoutLock.lock();
+                if (!timedOut) {
+                    originalMessage.reply(results);
                 }
+            } finally {
+                timeoutLock.unlock();
             }
         }
 

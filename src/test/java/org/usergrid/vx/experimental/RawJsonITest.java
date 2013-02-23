@@ -358,6 +358,22 @@ public class RawJsonITest {
         assertJSONEquals("Failed to time out long running operation", expectedResponse, actualResponse);
     }
 
+    @Test
+    public void handleBadRequest() throws Exception {
+        String actualResponse = submitRequest(loadJSON("bad_request.json"));
+        String expectedResponse = loadJSON("response_for_bad_request.json");
+
+        assertJSONEquals("Failed to handle bad request", expectedResponse, actualResponse);
+    }
+
+    @Test
+    public void handleBadCQL() throws Exception {
+        String actualResponse = submitRequest(loadJSON("bad_cql.json"));
+        String expectedResponse = loadJSON("bad_cql_response.json");
+
+        assertJSONEquals("Failed to report errors for bad CQL request", expectedResponse, actualResponse);
+    }
+
     private String loadJSON(String file) throws Exception {
         try (
         	
