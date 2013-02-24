@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.usergrid.vx.experimental.IntraHandlerJson;
 import org.usergrid.vx.experimental.IntraHandlerJsonSmile;
-import org.usergrid.vx.experimental.IntraHandlerXml;
 import org.usergrid.vx.handler.http.HelloHandler;
 import org.usergrid.vx.handler.http.NoMatchHandler;
 import org.usergrid.vx.handler.http.ThriftHandler;
@@ -58,7 +57,6 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
 		rm.get("/:appid/hello", new HelloHandler());
 		rm.post("/:appid/hello", new HelloHandler());
 		rm.post("/:appid/thriftjson", new ThriftHandler());
-		rm.post("/:appid/intrareq-xml", new IntraHandlerXml(vertx));
 		rm.post("/:appid/intrareq-json", new IntraHandlerJson(vertx));
 		rm.post("/:appid/intrareq-jsonsmile", new IntraHandlerJsonSmile(vertx));
 		rm.noMatch(new NoMatchHandler());
