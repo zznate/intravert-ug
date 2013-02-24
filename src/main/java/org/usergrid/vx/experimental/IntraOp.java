@@ -61,6 +61,7 @@ import org.apache.cassandra.thrift.KsDef;
 import org.apache.cassandra.transport.messages.ResultMessage;
 import org.apache.cassandra.transport.messages.ResultMessage.Kind;
 import org.usergrid.vx.experimental.filter.FactoryProvider;
+import org.usergrid.vx.experimental.filter.Filter;
 import org.usergrid.vx.experimental.filter.FilterFactory;
 import org.usergrid.vx.experimental.scan.ScanFilter;
 import org.vertx.java.core.Vertx;

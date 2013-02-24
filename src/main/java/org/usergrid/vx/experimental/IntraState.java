@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.cassandra.db.ConsistencyLevel;
+import org.usergrid.vx.experimental.filter.Filter;
 import org.usergrid.vx.experimental.scan.ScanContext;
 import org.usergrid.vx.experimental.scan.ScanFilter;
 

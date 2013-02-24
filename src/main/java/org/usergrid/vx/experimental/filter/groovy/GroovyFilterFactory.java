@@ -1,6 +1,6 @@
 package org.usergrid.vx.experimental.filter.groovy;
 
-import org.usergrid.vx.experimental.Filter;
+import org.usergrid.vx.experimental.filter.Filter;
 import org.usergrid.vx.experimental.filter.FilterFactory;
 
 import groovy.lang.Closure;

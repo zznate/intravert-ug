@@ -2,7 +2,7 @@ package org.usergrid.vx.experimental.filter.groovy;
 
 import java.util.Map;
 
-import org.usergrid.vx.experimental.Filter;
+import org.usergrid.vx.experimental.filter.Filter;
 
 import groovy.lang.Closure;
 

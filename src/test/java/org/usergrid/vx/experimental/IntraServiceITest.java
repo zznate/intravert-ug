@@ -93,9 +93,9 @@ public class IntraServiceITest {
 		
 		Assert.assertEquals( "OK" , res.getOpsRes().get(8)  );
 		Assert.assertEquals( true , ((List<String>) res.getOpsRes().get(9)).contains("myks")  );
-		Set s = new HashSet();
-		s.add("mycf");
-		Assert.assertEquals( s , res.getOpsRes().get(10)  );
+		//Set s = new HashSet();
+		//s.add("mycf");
+		Assert.assertTrue( ((Set) res.getOpsRes().get(10)).contains("mycf")  );
 		
 	}
 	

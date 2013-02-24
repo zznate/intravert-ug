@@ -47,6 +47,8 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
 	public void handle(final HttpServerRequest request) {
 		request.bodyHandler( new Handler<Buffer>() {
 			public void handle(Buffer buffer) {
+						/* 
+						 * time to rip band aid
                             boolean asyncRequestsEnabled = Boolean.valueOf(
                                 System.getProperty("async-requests-enabled", "false"));
 
@@ -55,6 +57,8 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
                             } else {
                                 handleRequest(request, buffer);
                             }
+                            */
+			     handleRequestAsync(request, buffer);
 			}
 		});
 	}
