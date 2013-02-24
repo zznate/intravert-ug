@@ -3,7 +3,7 @@ package org.usergrid.vx.experimental.filter.javascript;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Scriptable;
-import org.usergrid.vx.experimental.Filter;
+import org.usergrid.vx.experimental.filter.Filter;
 import org.usergrid.vx.experimental.filter.FilterFactory;
 
 public class JavaScriptFilterFactory implements FilterFactory {
