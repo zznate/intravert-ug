@@ -24,7 +24,6 @@ import org.usergrid.vx.experimental.IntraHandlerJson;
 import org.usergrid.vx.experimental.IntraHandlerJsonSmile;
 import org.usergrid.vx.handler.http.HelloHandler;
 import org.usergrid.vx.handler.http.NoMatchHandler;
-import org.usergrid.vx.handler.http.ThriftHandler;
 import org.usergrid.vx.server.operations.AssumeHandler;
 import org.usergrid.vx.server.operations.CqlQueryHandler;
 import org.usergrid.vx.server.operations.CreateColumnFamilyHandler;
@@ -56,7 +55,6 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
 		rm.put("/:appid/hello", new HelloHandler());
 		rm.get("/:appid/hello", new HelloHandler());
 		rm.post("/:appid/hello", new HelloHandler());
-		rm.post("/:appid/thriftjson", new ThriftHandler());
 		rm.post("/:appid/intrareq-json", new IntraHandlerJson(vertx));
 		rm.post("/:appid/intrareq-jsonsmile", new IntraHandlerJsonSmile(vertx));
 		rm.noMatch(new NoMatchHandler());
