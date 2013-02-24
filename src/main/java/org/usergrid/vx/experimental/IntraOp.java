@@ -32,13 +32,7 @@ import org.apache.cassandra.config.CFMetaData;
 import org.apache.cassandra.config.KSMetaData;
 import org.apache.cassandra.config.Schema;
 import org.apache.cassandra.cql3.QueryProcessor;
-import org.apache.cassandra.db.ColumnFamily;
-import org.apache.cassandra.db.ConsistencyLevel;
-import org.apache.cassandra.db.ReadCommand;
-import org.apache.cassandra.db.Row;
-import org.apache.cassandra.db.RowMutation;
-import org.apache.cassandra.db.SliceByNamesReadCommand;
-import org.apache.cassandra.db.SliceFromReadCommand;
+import org.apache.cassandra.db.*;
 import org.apache.cassandra.db.filter.QueryPath;
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.cassandra.exceptions.InvalidRequestException;
@@ -268,6 +262,39 @@ public class IntraOp implements Serializable{
       		}
       }
     },
+    COUNTER {
+      @Override
+      public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
+        IntraOp op = req.getE().get(i);
+        RowMutation rm = null;
+        String ks = null;
+        String cf = null;
+
+        if (op.getOp().containsKey("keyspace")) {
+          ks = (String) op.getOp().get("keyspace");
+        } else {
+          ks = state.currentKeyspace;
+        }
+        if (op.getOp().get("columnfamily") != null){
+          cf = (String) op.getOp().get("columnfamily");
+        } else {
+          cf = state.currentColumnFamily;
+        }
+
+        rm = new RowMutation(ks,
+                IntraService.byteBufferForObject(IntraService
+                        .resolveObject(op.getOp().get("rowkey"), req,
+                                res, state, i)));
+
+        rm.addCounter(new QueryPath(cf, null, IntraService.byteBufferForObject(IntraService
+                                .resolveObject(op.getOp().get("name"), req,
+                                        res, state, i))),
+                (Long)op.getOp().get("value"));
+        List<IMutation> mutations = new ArrayList(1);
+        mutations.add(new CounterMutation(rm, state.consistency));
+        invokeStorageProxy(mutations, state, res, i);
+      }
+    },
     GET {
       @Override
       public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
@@ -343,15 +370,9 @@ public class IntraOp implements Serializable{
 						(Long) (state.autoTimestamp ? state.nanotime : op
 								.getOp().get("timestamp")), ttl);				
 			}
-			try {
-				StorageProxy.mutate(Arrays.asList(rm), state.consistency);
-				res.getOpsRes().put(i, "OK");
-			} catch (WriteTimeoutException
-					| org.apache.cassandra.exceptions.UnavailableException
-					| OverloadedException e) {
-				res.setExceptionAndId(e.getMessage(), i);
-				return;
-			}
+      List<IMutation> mutations = new ArrayList<IMutation>();
+      mutations.add(rm);
+      invokeStorageProxy(mutations, state, res, i);
 		}
 	},
     AUTOTIMESTAMP {
@@ -566,7 +587,7 @@ public class IntraOp implements Serializable{
       public void execute(IntraReq req, IntraRes res, IntraState state, int i, Vertx vertx, IntraService is) {
         IntraOp op = req.getE().get(i);
         List<Map> rows = (List<Map>) op.getOp().get("rows");
-        List<RowMutation> m = new ArrayList<RowMutation>();
+        List<IMutation> m = new ArrayList<IMutation>();
         for (Map row:rows){
           //code is mostly cloned from Type.SET
           RowMutation rm = new RowMutation(IntraService.determineKs(row, op, state),
@@ -581,15 +602,7 @@ public class IntraOp implements Serializable{
                   "timestamp")));
           m.add(rm);
         }
-        try {
-          StorageProxy.mutate(m, state.consistency);
-          res.getOpsRes().put(i, "OK");
-        } catch (WriteTimeoutException
-            | org.apache.cassandra.exceptions.UnavailableException
-            | OverloadedException e) {
-          res.setExceptionAndId(e.getMessage(), i);
-          return;
-        }
+        invokeStorageProxy(m, state, res,i);
       }
     }, CREATESERVICEPROCESS{
 		@Override
@@ -689,5 +702,16 @@ public class IntraOp implements Serializable{
     
     
   }
-	
+
+  private static void invokeStorageProxy(Collection<IMutation> mutations, IntraState state, IntraRes res, int i) {
+    try {
+      StorageProxy.mutate(mutations, state.consistency);
+      res.getOpsRes().put(i, "OK");
+    } catch (WriteTimeoutException
+            | org.apache.cassandra.exceptions.UnavailableException
+            | OverloadedException e) {
+      res.setExceptionAndId(e.getMessage(), i);
+      return;
+    }
+  }
 }

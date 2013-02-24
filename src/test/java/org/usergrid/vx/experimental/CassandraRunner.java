@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.cassandra.config.CFMetaData;
 import org.apache.cassandra.config.KSMetaData;
 import org.apache.cassandra.db.ColumnFamilyType;
+import org.apache.cassandra.db.marshal.CounterColumnType;
 import org.apache.cassandra.db.marshal.TypeParser;
 import org.apache.cassandra.exceptions.AlreadyExistsException;
 import org.apache.cassandra.service.MigrationManager;
@@ -146,8 +147,16 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
 
   private void maybeCreateColumnFamily(RequiresColumnFamily rcf) {
     try {
-      MigrationManager.announceNewColumnFamily(new CFMetaData(rcf.ksName(), rcf.cfName(),
-              ColumnFamilyType.Standard, TypeParser.parse(rcf.comparator()), null));
+      CFMetaData cfMetaData;
+      if ( rcf.isCounter() ) {
+        cfMetaData = new CFMetaData(rcf.ksName(), rcf.cfName(),
+                      ColumnFamilyType.Standard, TypeParser.parse(rcf.comparator()), null)
+                .replicateOnWrite(false).defaultValidator(CounterColumnType.instance);
+      } else {
+        cfMetaData = new CFMetaData(rcf.ksName(), rcf.cfName(),
+                      ColumnFamilyType.Standard, TypeParser.parse(rcf.comparator()), null);
+      }
+      MigrationManager.announceNewColumnFamily(cfMetaData);
     } catch(AlreadyExistsException aee) {
       logger.info("ColumnFamily already exists for " + rcf.cfName());
       maybeTruncateSafely(rcf);
