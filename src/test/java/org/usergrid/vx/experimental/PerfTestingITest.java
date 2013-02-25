@@ -26,12 +26,12 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.usergrid.vx.experimental.IntraClient2.Transport;
+import org.usergrid.vx.client.IntraClient2;
+import org.usergrid.vx.client.IntraClient2.Transport;
 import org.vertx.java.core.Vertx;
 
 /* unless testing performance chances this should like be ignored */
 @Ignore
-
 
 @RunWith(CassandraRunner.class)
 @RequiresKeyspace(ksName = "myks")

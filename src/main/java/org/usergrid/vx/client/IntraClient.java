@@ -13,7 +13,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
 */
-package org.usergrid.vx.experimental;
+package org.usergrid.vx.client;
 
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
@@ -36,6 +36,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.smile.SmileFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.usergrid.vx.experimental.IntraReq;
+import org.usergrid.vx.experimental.IntraRes;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
