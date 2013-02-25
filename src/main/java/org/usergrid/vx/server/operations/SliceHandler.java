@@ -47,10 +47,10 @@ public class SliceHandler implements Handler<Message<JsonObject>> {
         ByteBuffer end = IntraService.byteBufferForObject(IntraService.resolveObject(endParam, null, null, null, id));
 
         List<ReadCommand> commands = new ArrayList<ReadCommand>(1);
-        ColumnPath cp = new ColumnPath();
-        cp.setColumn_family(state.getString("currentColumnFamily"));
-        QueryPath qp = new QueryPath(cp);
-        SliceFromReadCommand sr = new SliceFromReadCommand(state.getString("currentKeyspace"), rowkey, qp, start, end,
+
+        QueryPath path = new QueryPath(HandlerUtils.determineCf(params, state), null);
+
+        SliceFromReadCommand sr = new SliceFromReadCommand(state.getString("currentKeyspace"), rowkey, path, start, end,
             false, 100);
         commands.add(sr);
 
@@ -62,7 +62,7 @@ public class SliceHandler implements Handler<Message<JsonObject>> {
             ColumnFamily cf = results.get(0).cf;
             if (cf == null){ //cf= null is no data
             } else {
-                readCf(cf, finalResults, state, params);
+                HandlerUtils.readCf(cf, finalResults, state, params);
             }
 
             JsonObject response = new JsonObject();
@@ -77,38 +77,5 @@ public class SliceHandler implements Handler<Message<JsonObject>> {
         }
     }
 
-    private void readCf(ColumnFamily columnFamily, List<Map> finalResults, JsonObject state, JsonObject params) {
-        Iterator<IColumn> it = columnFamily.iterator();
-        while (it.hasNext()) {
-            IColumn ic = it.next();
-            if (ic.isLive()) {
-                HashMap m = new HashMap();
-                JsonArray components = state.getArray("components");
 
-                if (components.contains("name")) {
-                    String clazz = state.getObject("meta").getObject("column").getString("clazz");
-                    m.put("name", TypeHelper.getTyped(clazz, ic.name()));
-                }
-                if (components.contains("value")) {
-                    String clazz = state.getObject("meta").getObject("value").getString("clazz");
-                    m.put("value", TypeHelper.getTyped(clazz, ic.value()));
-                }
-                if (components.contains("timestamp")) {
-                    m.put("timestamp", ic.timestamp());
-                }
-                if (components.contains("markeddelete")) {
-                    m.put("markeddelete", ic.getMarkedForDeleteAt());
-                }
-//                if (state.currentFilter != null) {
-//                    Map newMap = (Map) state.currentFilter.filter(m);
-//                    if (newMap != null) {
-//                        finalResults.add(newMap);
-//                    }
-//                } else {
-//                    finalResults.add(m);
-//                }
-                finalResults.add(m);
-            }
-        }
-    }
 }
