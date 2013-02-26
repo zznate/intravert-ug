@@ -8,8 +8,6 @@ import org.vertx.java.core.json.JsonObject;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author zznate
@@ -36,32 +34,33 @@ public class HandlerUtils {
       return ks;
   }
 
-  public static void readCf(ColumnFamily columnFamily, List<Map> finalResults, JsonObject state, JsonObject params) {
-      Iterator<IColumn> it = columnFamily.iterator();
-      while (it.hasNext()) {
-          IColumn ic = it.next();
-          if (ic.isLive()) {
-              HashMap m = new HashMap();
-              JsonArray components = state.getArray("components");
+  public static JsonArray readCf(ColumnFamily columnFamily, JsonObject state, JsonObject params) {
+    JsonArray components = state.getArray("components");
+    JsonArray array = new JsonArray();
+    Iterator<IColumn> it = columnFamily.iterator();
+    while (it.hasNext()) {
+      IColumn ic = it.next();
+      if (ic.isLive()) {
+        HashMap m = new HashMap();
 
-              if (components.contains("name")) {
-                  String clazz = state.getObject("meta").getObject("column").getString("clazz");
-                  m.put("name", TypeHelper.getTyped(clazz, ic.name()));
-              }
-              if (components.contains("value")) {
-                  String clazz = state.getObject("meta").getObject("value").getString("clazz");
-                  m.put("value", TypeHelper.getTyped(clazz, ic.value()));
-              }
-              if (components.contains("timestamp")) {
-                  m.put("timestamp", ic.timestamp());
-              }
-              if (components.contains("markeddelete")) {
-                  m.put("markeddelete", ic.getMarkedForDeleteAt());
-              }
-
-              finalResults.add(m);
-          }
+        if (components.contains("name")) {
+          String clazz = state.getObject("meta").getObject("column").getString("clazz");
+          m.put("name", TypeHelper.getTyped(clazz, ic.name()));
+        }
+        if (components.contains("value")) {
+          String clazz = state.getObject("meta").getObject("value").getString("clazz");
+          m.put("value", TypeHelper.getTyped(clazz, ic.value()));
+        }
+        if (components.contains("timestamp")) {
+          m.put("timestamp", ic.timestamp());
+        }
+        if (components.contains("markeddelete")) {
+          m.put("markeddelete", ic.getMarkedForDeleteAt());
+        }
+        array.addObject(new JsonObject(m));
       }
+    }
+    return array;
   }
 
 }
