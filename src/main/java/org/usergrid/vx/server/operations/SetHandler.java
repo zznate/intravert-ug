@@ -1,8 +1,11 @@
 package org.usergrid.vx.server.operations;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.cassandra.db.ConsistencyLevel;
+import org.apache.cassandra.db.IMutation;
 import org.apache.cassandra.db.RowMutation;
 import org.apache.cassandra.db.filter.QueryPath;
 import org.apache.cassandra.exceptions.OverloadedException;
@@ -39,17 +42,8 @@ public class SetHandler implements Handler<Message<JsonObject>> {
             rm.add(qp, IntraService.byteBufferForObject(IntraService.resolveObject(val, null, null, null, id)),
                 System.nanoTime(), ttl);
         }
-
-        try {
-            // We don't want to hard code the consistency level but letting it slide for
-            // since it is also hard coded in IntraState
-            StorageProxy.mutate(Arrays.asList(rm), ConsistencyLevel.ONE);
-
-            event.reply(new JsonObject().putString(id.toString(), "OK"));
-        } catch (WriteTimeoutException | UnavailableException | OverloadedException e) {
-            event.reply(new JsonObject()
-                .putString("exception", e.getMessage())
-                .putString("exceptionId", id.toString()));
-        }
+        List<IMutation> mutations = new ArrayList<IMutation>();
+        mutations.add(rm);
+        HandlerUtils.write(mutations, event, id);
     }
 }

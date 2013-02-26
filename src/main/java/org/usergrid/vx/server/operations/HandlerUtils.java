@@ -1,13 +1,19 @@
 package org.usergrid.vx.server.operations;
 
-import org.apache.cassandra.db.ColumnFamily;
-import org.apache.cassandra.db.IColumn;
+import org.apache.cassandra.db.*;
+import org.apache.cassandra.exceptions.OverloadedException;
+import org.apache.cassandra.exceptions.UnavailableException;
+import org.apache.cassandra.exceptions.WriteTimeoutException;
+import org.apache.cassandra.service.StorageProxy;
 import org.usergrid.vx.experimental.TypeHelper;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author zznate
@@ -49,7 +55,11 @@ public class HandlerUtils {
         }
         if (components.contains("value")) {
           String clazz = state.getObject("meta").getObject("value").getString("clazz");
-          m.put("value", TypeHelper.getTyped(clazz, ic.value()));
+          if ( ic instanceof CounterColumn ) {
+            m.put("value", ((CounterColumn)ic).total());
+          } else {
+            m.put("value", TypeHelper.getTyped(clazz, ic.value()));
+          }
         }
         if (components.contains("timestamp")) {
           m.put("timestamp", ic.timestamp());
@@ -63,4 +73,17 @@ public class HandlerUtils {
     return array;
   }
 
+  public static void write(List<IMutation> mutations, Message<JsonObject> event, Integer id) {
+    try {
+        // We don't want to hard code the consistency level but letting it slide for
+        // since it is also hard coded in IntraState
+        StorageProxy.mutate(mutations, ConsistencyLevel.ONE);
+
+        event.reply(new JsonObject().putString(id.toString(), "OK"));
+    } catch (WriteTimeoutException | UnavailableException | OverloadedException e) {
+        event.reply(new JsonObject()
+            .putString("exception", e.getMessage())
+            .putString("exceptionId", id.toString()));
+    }
+  }
 }
