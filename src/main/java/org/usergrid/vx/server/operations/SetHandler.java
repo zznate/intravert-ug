@@ -22,22 +22,12 @@ public class SetHandler implements Handler<Message<JsonObject>> {
         JsonObject params = event.body.getObject("op");
         JsonObject state = event.body.getObject("state");
 
-        RowMutation rm = null;
-        String ks = null;
-        String cf = null;
+        RowMutation rm = new RowMutation(HandlerUtils.determineKs(params,state),
+                IntraService.byteBufferForObject(params.getString("rowkey")));
+        QueryPath qp = new QueryPath(HandlerUtils.determineCf(params,state),
+                null,
+                IntraService.byteBufferForObject(params.getString("name")));
 
-        ks = params.getString("keyspace");
-        if (ks == null) {
-            ks = state.getString("currentKeyspace");
-        }
-
-        cf = params.getString("columnfamily");
-        if (cf == null) {
-            cf = state.getString("currentColumnFamily");
-        }
-
-        rm = new RowMutation(ks, IntraService.byteBufferForObject(params.getString("rowkey")));
-        QueryPath qp = new QueryPath(cf, null, IntraService.byteBufferForObject(params.getString("name")));
         Object val = params.toMap().get("value");
 
         Integer ttl = params.getInteger("ttl");

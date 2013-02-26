@@ -44,9 +44,9 @@ public class GetHandler implements Handler<Message<JsonObject>> {
             id));
         ByteBuffer column = IntraService.byteBufferForObject(IntraService.resolveObject(nameParam, null, null, null,
             id));
-        QueryPath path = new QueryPath(determineCf(params, state), null);
+        QueryPath path = new QueryPath(HandlerUtils.determineCf(params, state), null);
         List<ByteBuffer> nameAsList = Arrays.asList(column);
-        ReadCommand command = new SliceByNamesReadCommand(determineKs(params, state), rowkey, path, nameAsList);
+        ReadCommand command = new SliceByNamesReadCommand(HandlerUtils.determineKs(params, state), rowkey, path, nameAsList);
         List<Row> rows = null;
 
         try {
@@ -56,7 +56,7 @@ public class GetHandler implements Handler<Message<JsonObject>> {
             ColumnFamily cf1 = rows.get(0).cf;
             if (cf1 == null) { // cf= null is no data
             } else {
-                readCf(cf1, finalResults, state, params);
+                HandlerUtils.readCf(cf1, finalResults, state, params);
             }
 
             JsonObject response = new JsonObject();
@@ -71,58 +71,6 @@ public class GetHandler implements Handler<Message<JsonObject>> {
         }
     }
 
-    private String determineKs(JsonObject params, JsonObject state) {
-        String ks = null;
-        if (params.getString("keyspace") != null) {
-            ks = params.getString("keyspace");
-        } else {
-            ks = state.getString("currentKeyspace");
-        }
-        return ks;
-    }
 
-    private String determineCf(JsonObject params, JsonObject state) {
-        String cf = null;
-        if (params.getString("columnfamily") != null) {
-            cf = params.getString("columnfamily");
-        } else {
-            cf = state.getString("currentColumnFamily");
-        }
-        return cf;
-    }
 
-    private void readCf(ColumnFamily columnFamily, List<Map> finalResults, JsonObject state, JsonObject params) {
-        Iterator<IColumn> it = columnFamily.iterator();
-        while (it.hasNext()) {
-            IColumn ic = it.next();
-            if (ic.isLive()) {
-                HashMap m = new HashMap();
-                JsonArray components = state.getArray("components");
-
-                if (components.contains("name")) {
-                    String clazz = state.getObject("meta").getObject("column").getString("clazz");
-                    m.put("name", TypeHelper.getTyped(clazz, ic.name()));
-                }
-                if (components.contains("value")) {
-                    String clazz = state.getObject("meta").getObject("value").getString("clazz");
-                    m.put("value", TypeHelper.getTyped(clazz, ic.value()));
-                }
-                if (components.contains("timestamp")) {
-                    m.put("timestamp", ic.timestamp());
-                }
-                if (components.contains("markeddelete")) {
-                    m.put("markeddelete", ic.getMarkedForDeleteAt());
-                }
-//                if (state.currentFilter != null) {
-//                    Map newMap = (Map) state.currentFilter.filter(m);
-//                    if (newMap != null) {
-//                        finalResults.add(newMap);
-//                    }
-//                } else {
-//                    finalResults.add(m);
-//                }
-                finalResults.add(m);
-            }
-        }
-    }
 }

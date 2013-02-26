@@ -11,7 +11,7 @@ public class SetKeyspaceHandler implements Handler<Message<JsonObject>> {
         Integer id = event.body.getInteger("id");
         JsonObject params = event.body.getObject("op");
         JsonObject state = event.body.getObject("state");
-        state.putString("currentKeyspace", params.getString("keyspace"));
+        state.putString("currentKeyspace", HandlerUtils.determineKs(params,state));
 
         event.reply(new JsonObject()
             .putString(id.toString(), "OK")
