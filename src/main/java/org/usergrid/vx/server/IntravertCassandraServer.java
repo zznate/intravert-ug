@@ -25,6 +25,7 @@ import org.usergrid.vx.experimental.IntraHandlerJsonSmile;
 import org.usergrid.vx.handler.http.HelloHandler;
 import org.usergrid.vx.handler.http.NoMatchHandler;
 import org.usergrid.vx.server.operations.AssumeHandler;
+import org.usergrid.vx.server.operations.ConsistencyHandler;
 import org.usergrid.vx.server.operations.CqlQueryHandler;
 import org.usergrid.vx.server.operations.CreateColumnFamilyHandler;
 import org.usergrid.vx.server.operations.CreateKeyspaceHandler;
@@ -90,6 +91,7 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
         vertx.eventBus().registerHandler("request.get", new GetHandler());
         vertx.eventBus().registerHandler("request.slice", new SliceHandler());
         vertx.eventBus().registerHandler("request.cqlquery", new CqlQueryHandler());
+        vertx.eventBus().registerHandler("request.consistency", new ConsistencyHandler());
     }
 
 }
