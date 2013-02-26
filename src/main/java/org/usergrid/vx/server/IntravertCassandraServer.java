@@ -35,6 +35,8 @@ import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class IntravertCassandraServer implements CassandraDaemon.Server {
 
   private final Logger logger = LoggerFactory.getLogger(IntravertCassandraServer.class);

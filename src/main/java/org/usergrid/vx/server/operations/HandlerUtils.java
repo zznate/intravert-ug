@@ -83,6 +83,37 @@ public class HandlerUtils {
     return array;
   }
 
+public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus eb,
+    Handler<Message<JsonArray>> filterReplyHandler) {
+    JsonArray components = state.getArray("components");
+    JsonArray array = new JsonArray();
+
+    for (IColumn column : columnFamily) {
+      if (column.isLive()) {
+        HashMap m = new HashMap();
+
+        if (components.contains("name")) {
+          String clazz = state.getObject("meta").getObject("column").getString("clazz");
+          m.put("name", TypeHelper.getTyped(clazz, column.name()));
+        }
+        if (components.contains("value")) {
+          String clazz = state.getObject("meta").getObject("value").getString("clazz");
+          m.put("value", TypeHelper.getTyped(clazz, column.value()));
+        }
+        if (components.contains("timestamp")) {
+          m.put("timestamp", column.timestamp());
+        }
+        if (components.contains("markeddelete")) {
+          m.put("markeddelete", column.getMarkedForDeleteAt());
+        }
+        array.addObject(new JsonObject(m));
+      }
+    }
+
+    String filter = state.getString("currentFilter");
+    eb.send("filters." + filter, array, filterReplyHandler);
+  }
+
   public static void write(List<IMutation> mutations, Message<JsonObject> event, Integer id) {
     try {
         // We don't want to hard code the consistency level but letting it slide for

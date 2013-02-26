@@ -8,6 +8,7 @@ import org.apache.cassandra.exceptions.UnavailableException;
 import org.apache.cassandra.service.StorageProxy;
 import org.usergrid.vx.experimental.IntraService;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -20,9 +21,15 @@ import java.util.Map;
 
 public class SliceHandler implements Handler<Message<JsonObject>> {
 
+  private EventBus eb;
+
+  public SliceHandler(EventBus eb) {
+    this.eb = eb;
+  }
+
   @Override
-  public void handle(Message<JsonObject> event) {
-    Integer id = event.body.getInteger("id");
+  public void handle(final Message<JsonObject> event) {
+    final Integer id = event.body.getInteger("id");
     JsonObject params = event.body.getObject("op");
     JsonObject state = event.body.getObject("state");
 
@@ -56,12 +63,22 @@ public class SliceHandler implements Handler<Message<JsonObject>> {
       if (cf == null) { //cf= null is no data
         array  = new JsonArray();
       } else {
-        array = HandlerUtils.readCf(cf, state, params);
+        String filter = state.getString("currentFilter");
+        if (filter == null) {
+          array = HandlerUtils.readCf(cf, state, params);
+          JsonObject response = new JsonObject();
+          response.putArray(id.toString(), array);
+          event.reply(response);
+        } else {
+          HandlerUtils.readCf(cf, state, eb, new Handler<Message<JsonArray>>() {
+            @Override
+            public void handle(Message<JsonArray> filterEvent) {
+              event.reply(new JsonObject()
+                .putArray(id.toString(), filterEvent.body));
+            }
+          });
+        }
       }
-
-      JsonObject response = new JsonObject();
-      response.putArray(id.toString(), array);
-      event.reply(response);
     } catch (ReadTimeoutException | UnavailableException | IsBootstrappingException | IOException e) {
       event.reply(new JsonObject().putString(id.toString(), e.getMessage()));
     }
