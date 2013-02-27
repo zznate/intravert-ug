@@ -38,7 +38,6 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
   public IntraHandlerJson(Vertx vertx) {
     super();
     this.vertx = vertx;
-    IntravertCassandraServer.registerRequestHandler(vertx);
   }
 	
 	@Override

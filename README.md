@@ -16,6 +16,9 @@ Intravert is more then an RPC library, query language, or transport for Cassandr
 * No more dealing with byte[] or ByteBuffers. Intravert lets users work with simple familiar objects like String or Integer. See [Types and Composites](https://github.com/zznate/intravert-ug/wiki/Composites).
 
 ## Motivations
+
+From an application standpoint, if you can't do sparse, wide rows, you break compatibility with 90% of Cassandra applications. So that rules out almost everything; if you can't provide the same data model, you're creating fragmentation, not pluggability.
+
 Intravert was conceived of and designed by long time users of Cassandra who have written numerous real-world applications built on the existing Thrift API. 
 
 This API had it's warts for sure, but it was felt among us that the direction of the Cassandra project with regards to the introduction of CQL sidestepped some of the core reasons we chose Cassandra in the first place. 
