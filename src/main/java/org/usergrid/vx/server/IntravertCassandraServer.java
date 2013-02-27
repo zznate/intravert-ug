@@ -24,6 +24,17 @@ import org.usergrid.vx.experimental.IntraHandlerJson;
 import org.usergrid.vx.experimental.IntraHandlerJsonSmile;
 import org.usergrid.vx.handler.http.HelloHandler;
 import org.usergrid.vx.handler.http.NoMatchHandler;
+import org.usergrid.vx.server.operations.AssumeHandler;
+import org.usergrid.vx.server.operations.ConsistencyHandler;
+import org.usergrid.vx.server.operations.CqlQueryHandler;
+import org.usergrid.vx.server.operations.CreateColumnFamilyHandler;
+import org.usergrid.vx.server.operations.CreateKeyspaceHandler;
+import org.usergrid.vx.server.operations.GetHandler;
+import org.usergrid.vx.server.operations.ListKeyspacesHandler;
+import org.usergrid.vx.server.operations.SetColumnFamilyHandler;
+import org.usergrid.vx.server.operations.SetHandler;
+import org.usergrid.vx.server.operations.SetKeyspaceHandler;
+import org.usergrid.vx.server.operations.SliceHandler;
 import org.usergrid.vx.server.operations.*;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.RouteMatcher;
@@ -70,18 +81,19 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     return running.get();
   }
 
-  private void registerOperationHandlers() {
-    vertx.eventBus().registerHandler("request.createkeyspace", new CreateKeyspaceHandler());
-    vertx.eventBus().registerHandler("request.setkeyspace", new SetKeyspaceHandler());
-    vertx.eventBus().registerHandler("request.createcolumnfamily", new CreateColumnFamilyHandler());
-    vertx.eventBus().registerHandler("request.listkeyspaces", new ListKeyspacesHandler());
-    vertx.eventBus().registerHandler("request.set", new SetHandler());
-    vertx.eventBus().registerHandler("request.setcolumnfamily", new SetColumnFamilyHandler());
-    vertx.eventBus().registerHandler("request.assume", new AssumeHandler());
-    vertx.eventBus().registerHandler("request.get", new GetHandler());
-    vertx.eventBus().registerHandler("request.slice", new SliceHandler());
-    vertx.eventBus().registerHandler("request.cqlquery", new CqlQueryHandler());
-    vertx.eventBus().registerHandler("request.counter", new CounterHandler());
-  }
+    private void registerOperationHandlers() {
+        vertx.eventBus().registerHandler("request.createkeyspace", new CreateKeyspaceHandler());
+        vertx.eventBus().registerHandler("request.setkeyspace", new SetKeyspaceHandler());
+        vertx.eventBus().registerHandler("request.createcolumnfamily", new CreateColumnFamilyHandler());
+        vertx.eventBus().registerHandler("request.listkeyspaces", new ListKeyspacesHandler());
+        vertx.eventBus().registerHandler("request.set", new SetHandler());
+        vertx.eventBus().registerHandler("request.setcolumnfamily", new SetColumnFamilyHandler());
+        vertx.eventBus().registerHandler("request.assume", new AssumeHandler());
+        vertx.eventBus().registerHandler("request.get", new GetHandler());
+        vertx.eventBus().registerHandler("request.slice", new SliceHandler());
+        vertx.eventBus().registerHandler("request.cqlquery", new CqlQueryHandler());
+        vertx.eventBus().registerHandler("request.counter", new CounterHandler());
+        vertx.eventBus().registerHandler("request.consistency", new ConsistencyHandler());
+    }
 
 }

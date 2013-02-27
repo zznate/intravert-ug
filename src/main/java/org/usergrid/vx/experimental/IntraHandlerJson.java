@@ -85,6 +85,7 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
 
     private void handleRequestAsync(final HttpServerRequest request, Buffer buffer) {
         IntraReq req = null;
+        //JsonObject j = new JsonObject(buffer);
         try {
             req = mapper.readValue(buffer.getBytes(), IntraReq.class);
         } catch (IOException e) {
@@ -115,6 +116,8 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
                 OperationsRequestHandler operationsRequestHandler = new OperationsRequestHandler(idGenerator,
                     operations, event, vertx);
                 TimeoutHandler timeoutHandler = new TimeoutHandler(operationsRequestHandler);
+                //TODO this is wrongeach operation has its own timeout, the request cant just set
+                //global timeouts like this
                 long timerId = vertx.setTimer(10000, timeoutHandler);
                 operationsRequestHandler.setTimerId(timerId);
 
