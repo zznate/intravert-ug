@@ -5,12 +5,12 @@ import org.apache.cassandra.exceptions.OverloadedException;
 import org.apache.cassandra.exceptions.UnavailableException;
 import org.apache.cassandra.exceptions.WriteTimeoutException;
 import org.apache.cassandra.service.StorageProxy;
+import org.apache.cassandra.utils.ByteBufferUtil;
 import org.usergrid.vx.experimental.TypeHelper;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -50,15 +50,25 @@ public class HandlerUtils {
         HashMap m = new HashMap();
 
         if (components.contains("name")) {
-          String clazz = state.getObject("meta").getObject("column").getString("clazz");
-          m.put("name", TypeHelper.getTyped(clazz, ic.name()));
+          JsonObject columnMetadata = state.getObject("meta").getObject("column");
+          if (columnMetadata == null) {
+            m.put("name", ByteBufferUtil.getArray(ic.name()));
+          } else {
+            String clazz = columnMetadata.getString("clazz");
+            m.put("name", TypeHelper.getTyped(clazz, ic.name()));
+          }
         }
         if (components.contains("value")) {
-          String clazz = state.getObject("meta").getObject("value").getString("clazz");
           if ( ic instanceof CounterColumn ) {
             m.put("value", ((CounterColumn)ic).total());
           } else {
-            m.put("value", TypeHelper.getTyped(clazz, ic.value()));
+            JsonObject valueMetadata = state.getObject("meta").getObject("value");
+            if (valueMetadata == null) {
+              m.put("value", ByteBufferUtil.getArray(ic.value()));
+            } else {
+              String clazz = valueMetadata.getString("clazz");
+              m.put("value", TypeHelper.getTyped(clazz, ic.value()));
+            }
           }
         }
         if (components.contains("timestamp")) {
