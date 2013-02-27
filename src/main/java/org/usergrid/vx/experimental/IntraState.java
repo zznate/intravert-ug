@@ -79,4 +79,8 @@ public class IntraState {
 		openedScanners.put(id, context);
 		return id;
 	}
+
+  public ConsistencyLevel getConsistency() {
+    return consistency;
+  }
 }

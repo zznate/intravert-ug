@@ -17,8 +17,8 @@ public class AssumeHandler implements Handler<Message<JsonObject>> {
             meta = new JsonObject();
         }
         meta.putObject(params.getString("type"), new JsonObject()
-            .putString("keyspace", params.getString("keyspace"))
-            .putString("columnfamily", params.getString("columnfamily"))
+            .putString("keyspace", HandlerUtils.determineKs(params, state))
+            .putString("columnfamily", HandlerUtils.determineCf(params, state))
             .putString("type", params.getString("type"))
             .putString("clazz", params.getString("clazz")));
         state.putObject("meta", meta);

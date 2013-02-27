@@ -35,6 +35,7 @@ import org.usergrid.vx.server.operations.SetColumnFamilyHandler;
 import org.usergrid.vx.server.operations.SetHandler;
 import org.usergrid.vx.server.operations.SetKeyspaceHandler;
 import org.usergrid.vx.server.operations.SliceHandler;
+import org.usergrid.vx.server.operations.*;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.RouteMatcher;
 
@@ -91,6 +92,7 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
         vertx.eventBus().registerHandler("request.get", new GetHandler());
         vertx.eventBus().registerHandler("request.slice", new SliceHandler());
         vertx.eventBus().registerHandler("request.cqlquery", new CqlQueryHandler());
+        vertx.eventBus().registerHandler("request.counter", new CounterHandler());
         vertx.eventBus().registerHandler("request.consistency", new ConsistencyHandler());
     }
 

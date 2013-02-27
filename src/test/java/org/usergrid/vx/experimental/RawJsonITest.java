@@ -93,6 +93,19 @@ public class RawJsonITest {
         assertJSONEquals("The response was incorrect", expectedResponse, actualResponse);
     }
 
+  @Test
+  @RequiresColumnFamily(ksName = "myks", cfName = "mycountercf", isCounter = true)
+  public void setAndGetCounter() throws Exception {
+    String setCounterJSON = loadJSON("counter_set.json");
+    submitRequest(setCounterJSON);
+
+    String getCounterJSON = loadJSON("counter_get.json");
+    String actualResponse = submitRequest(getCounterJSON);
+    String expectedResponse = loadJSON("counter_get_response.json");
+
+    assertJSONEquals("The counter response was incorrect", expectedResponse, actualResponse);
+  }
+
     @Test
     public void executeColumnSliceQuery() throws Exception {
         String insertBeersJSON = loadJSON("insert_beers.json");

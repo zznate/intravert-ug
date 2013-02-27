@@ -1,0 +1,22 @@
+{"e": [
+    {
+        "type": "SETKEYSPACE",
+        "op": {
+            "keyspace": "myks"
+        }
+    },
+    {
+        "type": "SETCOLUMNFAMILY",
+        "op": {
+            "columnfamily": "mycountercf"
+        }
+    },
+    {
+        "type": "COUNTER",
+        "op": {
+            "rowkey": "row_key1",
+            "name": "column1",
+            "value": "4"
+        }
+    }
+]}
