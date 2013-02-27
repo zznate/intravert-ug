@@ -86,4 +86,14 @@ public class HandlerUtils {
             .putString("exceptionId", id.toString()));
     }
   }
+  
+  
+  public static Long getOperationTime(JsonObject operation) {
+    JsonObject params = operation.getObject("op");
+    Long timeout = params.getLong("timeout");
+    if (timeout == null) {
+      timeout = 10000L;
+    }
+    return timeout;
+  }
 }

@@ -16,6 +16,7 @@
 package org.usergrid.vx.server;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.cassandra.service.CassandraDaemon;
 import org.slf4j.Logger;
@@ -24,20 +25,15 @@ import org.usergrid.vx.experimental.IntraHandlerJson;
 import org.usergrid.vx.experimental.IntraHandlerJsonSmile;
 import org.usergrid.vx.handler.http.HelloHandler;
 import org.usergrid.vx.handler.http.NoMatchHandler;
-import org.usergrid.vx.server.operations.AssumeHandler;
-import org.usergrid.vx.server.operations.ConsistencyHandler;
-import org.usergrid.vx.server.operations.CqlQueryHandler;
-import org.usergrid.vx.server.operations.CreateColumnFamilyHandler;
-import org.usergrid.vx.server.operations.CreateKeyspaceHandler;
-import org.usergrid.vx.server.operations.GetHandler;
-import org.usergrid.vx.server.operations.ListKeyspacesHandler;
-import org.usergrid.vx.server.operations.SetColumnFamilyHandler;
-import org.usergrid.vx.server.operations.SetHandler;
-import org.usergrid.vx.server.operations.SetKeyspaceHandler;
-import org.usergrid.vx.server.operations.SliceHandler;
+import org.usergrid.vx.handler.http.OperationsRequestHandler;
+import org.usergrid.vx.handler.http.TimeoutHandler;
 import org.usergrid.vx.server.operations.*;
+import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonObject;
 
 public class IntravertCassandraServer implements CassandraDaemon.Server {
 
@@ -76,6 +72,34 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     return running.get();
   }
 
+  public static void registerRequestHandler(final Vertx x) {
+    x.eventBus().registerHandler("request.json", new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> event) {
+        AtomicInteger idGenerator = new AtomicInteger(0);
+        JsonArray operations = event.body.getArray("e");
+        JsonObject operation = (JsonObject) operations.get(idGenerator.get());
+        Long timeout = HandlerUtils.getOperationTime(operation);
+
+        operation.putNumber("id", idGenerator.get());
+        operation.putObject("state", new JsonObject()
+            .putArray("components", new JsonArray()
+                .add("name")
+                .add("value")));
+        idGenerator.incrementAndGet();
+
+        OperationsRequestHandler operationsRequestHandler = new OperationsRequestHandler(idGenerator,
+            operations, event, x);
+        TimeoutHandler timeoutHandler = new TimeoutHandler(operationsRequestHandler);
+        long timerId = x.setTimer(timeout, timeoutHandler);
+        operationsRequestHandler.setTimerId(timerId);
+
+        x.eventBus().send("request." + operation.getString("type").toLowerCase(), operation,
+            operationsRequestHandler);
+      }
+    });
+  }
+  
   public static void registerOperationHandlers(Vertx x) {
     x.eventBus().registerHandler("request.createkeyspace", new CreateKeyspaceHandler());
     x.eventBus().registerHandler("request.setkeyspace", new SetKeyspaceHandler());

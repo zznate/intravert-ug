@@ -18,6 +18,7 @@ package org.usergrid.vx.experimental;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.usergrid.vx.handler.http.OperationsRequestHandler;
 import org.usergrid.vx.handler.http.TimeoutHandler;
+import org.usergrid.vx.server.IntravertCassandraServer;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
@@ -31,110 +32,38 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class IntraHandlerJson implements Handler<HttpServerRequest>{
 
-	static IntraService is = new IntraService();
 	static ObjectMapper mapper = new ObjectMapper();
-	
   private Vertx vertx;
   
-  public IntraHandlerJson(Vertx vertx){
+  public IntraHandlerJson(Vertx vertx) {
     super();
-    this.vertx=vertx;
-      registerRequestHandler();
+    this.vertx = vertx;
+    IntravertCassandraServer.registerRequestHandler(vertx);
   }
 	
 	@Override
 	public void handle(final HttpServerRequest request) {
 		request.bodyHandler( new Handler<Buffer>() {
 			public void handle(Buffer buffer) {
-						/* 
-						 * time to rip band aid
-                            boolean asyncRequestsEnabled = Boolean.valueOf(
-                                System.getProperty("async-requests-enabled", "false"));
-
-                            if (asyncRequestsEnabled || true) {
-                                handleRequestAsync(request, buffer);
-                            } else {
-                                handleRequest(request, buffer);
-                            }
-                            */
 			     handleRequestAsync(request, buffer);
 			}
 		});
 	}
 
-    private void handleRequest(HttpServerRequest request, Buffer buffer) {
-        IntraRes res = new IntraRes();
-        IntraReq req = null;
-        try {
-            req = mapper.readValue(buffer.getBytes(), IntraReq.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        is.handleIntraReq(req,res,vertx);
-        String value = null;
-        try {
-            value = mapper.writeValueAsString(res);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        request.response.end(value);
+  private void handleRequestAsync(final HttpServerRequest request, Buffer buffer) {
+    IntraReq req = null;
+    try {
+      req = mapper.readValue(buffer.getBytes(), IntraReq.class);
+    } catch (IOException e) {
+      //TODO we need to return something here.
+      e.printStackTrace();
     }
-
-    private void handleRequestAsync(final HttpServerRequest request, Buffer buffer) {
-        IntraReq req = null;
-        //JsonObject j = new JsonObject(buffer);
-        try {
-            req = mapper.readValue(buffer.getBytes(), IntraReq.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        vertx.eventBus().send("request.json", req.toJson(), new Handler<Message<JsonObject>>() {
-            @Override
-            public void handle(Message<JsonObject> event) {
-                request.response.end(event.body.toString());
-            }
-        });
-    }
-
-  private void registerRequestHandler() {
-    vertx.eventBus().registerHandler("request.json", new Handler<Message<JsonObject>>() {
+    vertx.eventBus().send("request.json", req.toJson(), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> event) {
-        AtomicInteger idGenerator = new AtomicInteger(0);
-        JsonArray operations = event.body.getArray("e");
-        JsonObject operation = (JsonObject) operations.get(idGenerator.get());
-        Long timeout = getOperationTime(operation);
-
-        operation.putNumber("id", idGenerator.get());
-        operation.putObject("state", new JsonObject()
-            .putArray("components", new JsonArray()
-                .add("name")
-                .add("value")));
-        idGenerator.incrementAndGet();
-
-        OperationsRequestHandler operationsRequestHandler = new OperationsRequestHandler(idGenerator,
-            operations, event, vertx);
-        TimeoutHandler timeoutHandler = new TimeoutHandler(operationsRequestHandler);
-        long timerId = vertx.setTimer(timeout, timeoutHandler);
-        operationsRequestHandler.setTimerId(timerId);
-
-        vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation,
-            operationsRequestHandler);
+        request.response.end(event.body.toString());
       }
     });
-  }
-
-  // This method is currently duplicated in OperationsRequestHandler. We could move it to
-  // HandlerUtils but I am holding off for now because if/when we start using strongly
-  // typed objects again for the request, response, etc., this method would make sense
-  // as a property if a parameters object if a such a class is introduced.
-  private Long getOperationTime(JsonObject operation) {
-    JsonObject params = operation.getObject("op");
-    Long timeout = params.getLong("timeout");
-    if (timeout == null) {
-      timeout = 10000L;
-    }
-    return timeout;
   }
 
 }
