@@ -15,16 +15,7 @@
 */
 package org.usergrid.vx.experimental;
 
-import static java.util.Arrays.asList;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-
 import com.google.common.collect.ImmutableMap;
-
 import org.apache.cassandra.config.Schema;
 import org.apache.cassandra.service.MigrationManager;
 import org.codehaus.jackson.JsonNode;
@@ -46,6 +37,14 @@ import org.vertx.java.core.http.HttpClientRequest;
 import org.vertx.java.core.http.HttpClientResponse;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+
+import static java.util.Arrays.asList;
 
 @RunWith(CassandraRunner.class)
 @RequiresKeyspace(ksName = "myks")
@@ -371,6 +370,42 @@ public class RawJsonITest {
 
         assertJSONEquals("Failed to time out long running operation", expectedResponse, actualResponse);
     }
+
+  @Test
+  public void overrideDefaultTimeoutForLongRunningOperation() throws Exception {
+    vertx.eventBus().registerHandler("request.noop", new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> event) {
+        try {
+          Thread.sleep(10050);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+
+        Integer id = event.body.getInteger("id");
+        event.reply(new JsonObject((Map) ImmutableMap.of(id.toString(), "OK")));
+      }
+    });
+
+    JsonObject json = new JsonObject();
+    JsonArray operations = new JsonArray();
+    operations.addObject(new JsonObject()
+        .putString("type", "NOOP")
+        .putObject("op", new JsonObject().putNumber("timeout", 12000)));
+    json.putArray("e", operations);
+
+    String timeoutJSON = json.toString();
+
+    String actualResponse = submitRequest(timeoutJSON);
+
+    String expectedResponse = new JsonObject()
+        .putString("exception", "Operation timed out.")
+        .putString("exceptionId", "0")
+        .putObject("opsRes", new JsonObject())
+        .toString();
+
+    assertJSONEquals("Failed to time out long running operation", expectedResponse, actualResponse);
+  }
 
     @Test
     public void handleBadRequest() throws Exception {
