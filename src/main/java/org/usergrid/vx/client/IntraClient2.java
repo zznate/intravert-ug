@@ -1,18 +1,5 @@
 package org.usergrid.vx.client;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
-
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.smile.SmileFactory;
 import org.slf4j.Logger;
@@ -26,6 +13,10 @@ import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpClientRequest;
 import org.vertx.java.core.http.HttpClientResponse;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.concurrent.CountDownLatch;
 
 public class IntraClient2 {
 	private static Logger logger = LoggerFactory.getLogger(IntraClient.class);
@@ -43,12 +34,13 @@ public class IntraClient2 {
 	
 	public IntraClient2(String host,int port){
 		vertx = Vertx.newVertx();
-		httpClient = vertx.createHttpClient().setHost("localhost")
-				.setPort(8080).setMaxPoolSize(10).setKeepAlive(true);
+		httpClient = vertx.createHttpClient().setHost(host)
+				.setPort(port).setMaxPoolSize(10).setKeepAlive(true);
 		setTransport(Transport.JSON);
 	}
 	
 	public IntraRes sendBlocking(IntraReq i) throws Exception {
+    final Buffer buffer = new Buffer();
 		final Buffer outRequest = new Buffer();
 		OutputStream st = new OutputStream(){
 			@Override
@@ -78,7 +70,7 @@ public class IntraClient2 {
 		};
 		mapper.writeValue( st, i);
 		final CountDownLatch doneSignal = new CountDownLatch(1);
-		final AtomicReference<IntraRes> ref = new AtomicReference<IntraRes>();
+
 		HttpClientRequest req = httpClient.request(METHOD,
 				endpoint, new Handler<HttpClientResponse>() {
 
@@ -87,15 +79,7 @@ public class IntraClient2 {
 						resp.dataHandler(new Handler<Buffer>() {
 							@Override
 							public void handle(Buffer arg0) {
-								IntraRes ir = null;
-								try {
-									ir = mapper.readValue(arg0.getBytes(), IntraRes.class);
-								} catch (IOException e) {
-									//TODO how do we signal exception
-									//countdown on failed as well
-									//e.printStackTrace();
-								}
-								ref.set(ir);
+                buffer.appendBuffer(arg0);
 							}
 						});
 
@@ -112,7 +96,7 @@ public class IntraClient2 {
 		req.putHeader(CONTENT_LENGTH, outRequest.length());
 		req.end(outRequest);
 		doneSignal.await();
-        return ref.get();
+    return mapper.readValue(buffer.getBytes(), IntraRes.class);
 	}
 
 	public Transport getTransport() {
