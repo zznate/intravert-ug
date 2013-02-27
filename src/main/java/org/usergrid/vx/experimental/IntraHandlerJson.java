@@ -15,12 +15,6 @@
 */
 package org.usergrid.vx.experimental;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
-
 import org.codehaus.jackson.map.ObjectMapper;
 import org.usergrid.vx.handler.http.OperationsRequestHandler;
 import org.usergrid.vx.handler.http.TimeoutHandler;
@@ -31,6 +25,9 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class IntraHandlerJson implements Handler<HttpServerRequest>{
 
@@ -99,32 +96,45 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
         });
     }
 
-    private void registerRequestHandler() {
-        vertx.eventBus().registerHandler("request.json", new Handler<Message<JsonObject>>() {
-            @Override
-            public void handle(Message<JsonObject> event) {
-                AtomicInteger idGenerator = new AtomicInteger(0);
-                JsonArray operations = event.body.getArray("e");
-                JsonObject operation = (JsonObject) operations.get(idGenerator.get());
-                operation.putNumber("id", idGenerator.get());
-                operation.putObject("state", new JsonObject()
-                    .putArray("components", new JsonArray()
-                        .add("name")
-                        .add("value")));
-                idGenerator.incrementAndGet();
+  private void registerRequestHandler() {
+    vertx.eventBus().registerHandler("request.json", new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> event) {
+        AtomicInteger idGenerator = new AtomicInteger(0);
+        JsonArray operations = event.body.getArray("e");
+        JsonObject operation = (JsonObject) operations.get(idGenerator.get());
+        Long timeout = getOperationTime(operation);
 
-                OperationsRequestHandler operationsRequestHandler = new OperationsRequestHandler(idGenerator,
-                    operations, event, vertx);
-                TimeoutHandler timeoutHandler = new TimeoutHandler(operationsRequestHandler);
-                //TODO this is wrongeach operation has its own timeout, the request cant just set
-                //global timeouts like this
-                long timerId = vertx.setTimer(10000, timeoutHandler);
-                operationsRequestHandler.setTimerId(timerId);
+        operation.putNumber("id", idGenerator.get());
+        operation.putObject("state", new JsonObject()
+            .putArray("components", new JsonArray()
+                .add("name")
+                .add("value")));
+        idGenerator.incrementAndGet();
 
-                vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation,
-                    operationsRequestHandler);
-            }
-        });
+        OperationsRequestHandler operationsRequestHandler = new OperationsRequestHandler(idGenerator,
+            operations, event, vertx);
+        TimeoutHandler timeoutHandler = new TimeoutHandler(operationsRequestHandler);
+        long timerId = vertx.setTimer(timeout, timeoutHandler);
+        operationsRequestHandler.setTimerId(timerId);
+
+        vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation,
+            operationsRequestHandler);
+      }
+    });
+  }
+
+  // This method is currently duplicated in OperationsRequestHandler. We could move it to
+  // HandlerUtils but I am holding off for now because if/when we start using strongly
+  // typed objects again for the request, response, etc., this method would make sense
+  // as a property if a parameters object if a such a class is introduced.
+  private Long getOperationTime(JsonObject operation) {
+    JsonObject params = operation.getObject("op");
+    Long timeout = params.getLong("timeout");
+    if (timeout == null) {
+      timeout = 10000L;
     }
+    return timeout;
+  }
 
 }
