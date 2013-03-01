@@ -698,6 +698,7 @@ public class IntraServiceITest {
 		Assert.assertEquals("wow", x.get(0).get("value"));
 		Assert.assertEquals(true, x.get(0).containsKey("timestamp"));
 		Assert.assertTrue( (Long)x.get(0).get("timestamp") > 0);
+		Assert.assertTrue( x.get(0).get("name") == null);
 	}
 	
 	@Test
