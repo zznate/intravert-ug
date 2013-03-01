@@ -33,6 +33,7 @@ import org.apache.cassandra.db.IColumn;
 import org.apache.cassandra.db.marshal.Int32Type;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.json.JsonArray;
 
 public class IntraService {
 
@@ -82,7 +83,9 @@ public class IntraService {
 
     // TODO remove unused method params
   public static Object resolveObject(Object o, IntraReq req, IntraRes res,IntraState state, int i){
-		if (o instanceof Object[]){
+    if (o instanceof JsonArray){
+      return ((JsonArray) o).toArray();
+    } else if (o instanceof Object[]){
 		  return o;
 		} else if (o instanceof Integer){
 		  return o;

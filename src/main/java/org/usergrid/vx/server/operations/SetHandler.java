@@ -31,7 +31,7 @@ public class SetHandler implements Handler<Message<JsonObject>> {
                 null,
                 IntraService.byteBufferForObject(params.getField("name")));
 
-        Object val = params.toMap().get("value");
+        Object val = params.getField("value");
 
         Integer ttl = params.getInteger("ttl");
         if (ttl == null) {
