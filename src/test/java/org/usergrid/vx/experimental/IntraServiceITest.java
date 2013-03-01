@@ -67,7 +67,7 @@ public class IntraServiceITest {
 		IntraReq req = new IntraReq();
 		req.add( Operations.setKeyspaceOp("myks") ); //0
 		req.add( Operations.setColumnFamilyOp("mycf") ); //1
-		req.add( Operations.setAutotimestampOp() ); //2
+		req.add( Operations.setAutotimestampOp(true) ); //2
 		req.add( Operations.setOp("rowa", "col1", "7")); //3
 		req.add( Operations.sliceOp("rowa", "col1", "z", 4)); //4
 		req.add( Operations.getOp("rowa", "col1")); //5
@@ -130,7 +130,7 @@ public class IntraServiceITest {
 	    req.add( Operations.createKsOp("assks", 1)); //1
 	    req.add( Operations.createCfOp("asscf")); //2
 	    req.add( Operations.setColumnFamilyOp("asscf") ); //3
-	    req.add( Operations.setAutotimestampOp() ); //4
+	    req.add( Operations.setAutotimestampOp(true) ); //4
 	    req.add( Operations.assumeOp("assks", "asscf", "value", "UTF8Type"));//5
 	    req.add( Operations.setOp("rowa", "col1", "wow")); //6
 	    req.add( Operations.getOp("rowa", "col1")); //7
@@ -148,7 +148,7 @@ public class IntraServiceITest {
 		req.add(Operations.createKsOp("filterks", 1)); // 1
 		req.add(Operations.createCfOp("filtercf")); // 2
 		req.add(Operations.setColumnFamilyOp("filtercf")); // 3
-		req.add(Operations.setAutotimestampOp()); // 4
+		req.add(Operations.setAutotimestampOp(true)); // 4
 		req.add(Operations.assumeOp("filterks", "filtercf", "value", "UTF8Type"));// 5
 		req.add(Operations.setOp("rowa", "col1", "20")); // 6
 		req.add(Operations.setOp("rowa", "col2", "22")); // 7
@@ -188,7 +188,7 @@ public class IntraServiceITest {
         req.add(Operations.createKsOp("jsFilterks", 1)); //1
         req.add(Operations.createCfOp("filtercf")); //2
         req.add(Operations.setColumnFamilyOp("filtercf")); //3
-        req.add(Operations.setAutotimestampOp()); //4
+        req.add(Operations.setAutotimestampOp(true)); //4
         req.add(Operations.assumeOp("jsFilterks", "filtercf", "value", "UTF8Type"));//5
         req.add(Operations.setOp("rowa", "col1", "20")); //6
         req.add(Operations.setOp("rowa", "col2", "22")); //7
@@ -212,7 +212,7 @@ public class IntraServiceITest {
      req.add( Operations.createKsOp("procks", 1)); //1
      req.add( Operations.createCfOp("proccf")); //2
      req.add( Operations.setColumnFamilyOp("proccf") ); //3
-     req.add( Operations.setAutotimestampOp() ); //4
+     req.add( Operations.setAutotimestampOp(true) ); //4
      req.add( Operations.assumeOp("procks", "proccf", "value", "UTF8Type"));//5
      req.add( Operations.setOp("rowa", "col1", "wow")); //6
      req.add( Operations.getOp("rowa", "col1")); //7
@@ -249,7 +249,7 @@ public class IntraServiceITest {
      req.add( Operations.createKsOp("intks", 1)); //1
      req.add( Operations.createCfOp("intcf")); //2
      req.add( Operations.setColumnFamilyOp("intcf") ); //3
-     req.add( Operations.setAutotimestampOp() ); //4
+     req.add( Operations.setAutotimestampOp(true) ); //4
      req.add( Operations.assumeOp("intks", "intcf", "value", "UTF8Type"));//5
      req.add( Operations.assumeOp("intks", "intcf", "column", "Int32Type"));//6
      req.add( Operations.setOp("rowa", 1, "wow")); //7
@@ -269,7 +269,7 @@ public class IntraServiceITest {
 	     req.add( Operations.createKsOp("ttlks", 1)); //1
 	     req.add( Operations.createCfOp("ttlcf")); //2
 	     req.add( Operations.setColumnFamilyOp("ttlcf") ); //3
-	     req.add( Operations.setAutotimestampOp() ); //4
+	     req.add( Operations.setAutotimestampOp(true) ); //4
 	     req.add( Operations.assumeOp("ttlks", "ttlcf", "value", "UTF8Type"));//5
 	     req.add( Operations.assumeOp("ttlks", "ttlcf", "column", "Int32Type"));//6
 	     req.add( Operations.setOp("rowa", 1, "wow")); //7
@@ -307,7 +307,7 @@ public class IntraServiceITest {
         req.add(Operations.createKsOp("compks", 1)); //1
         req.add(Operations.createCfOp("compcf")); //2
         req.add(Operations.setColumnFamilyOp("compcf")); //3
-        req.add(Operations.setAutotimestampOp()); //4
+        req.add(Operations.setAutotimestampOp(true)); //4
         req.add(Operations.assumeOp("compks", "compcf", "value", "CompositeType(UTF8Type,Int32Type)"));//5
         req.add(Operations.assumeOp("compks", "compcf", "column", "Int32Type"));//6
         req.add(Operations.setOp("rowa", 1, new Object[]{"yo", 0, 2, 0})); //7
@@ -340,7 +340,7 @@ public class IntraServiceITest {
      req.add( Operations.createKsOp("cqlks", 1)); //1
      req.add( Operations.createCfOp("cqlcf")); //2
      req.add( Operations.setColumnFamilyOp("cqlcf") ); //3
-     req.add( Operations.setAutotimestampOp() ); //4
+     req.add( Operations.setAutotimestampOp(true) ); //4
      req.add( Operations.assumeOp("cqlks", "cqlcf", "value", "Int32Type"));//5
      req.add( Operations.assumeOp("cqlks", "cqlcf", "column", "Int32Type"));//6
      req.add( Operations.setOp("rowa", 1, 2)); //7
@@ -380,7 +380,7 @@ public class IntraServiceITest {
      req.add( Operations.createKsOp("clearks", 1)); //1
      req.add( Operations.createCfOp("clearcf")); //2
      req.add( Operations.setColumnFamilyOp("clearcf") ); //3
-     req.add( Operations.setAutotimestampOp() ); //4
+     req.add( Operations.setAutotimestampOp(true) ); //4
      req.add( Operations.assumeOp("clearks", "clearcf", "value", "UTF8Type")); //5
      req.add( Operations.setOp("rowa", 1, "wow")); //6
      req.add( Operations.getOp("rowa", 1)); //7
@@ -403,7 +403,7 @@ public class IntraServiceITest {
     IntraReq req = new IntraReq();
     req.add( Operations.setKeyspaceOp("myks") ); //0
     req.add( Operations.setColumnFamilyOp("mycf") ); //1
-    req.add( Operations.setAutotimestampOp() ); //2
+    req.add( Operations.setAutotimestampOp(true) ); //2
     req.add( Operations.setOp("rowa", "col1", "7")); //3
     IntraRes res = new IntraRes();
     is.handleIntraReq(req, res, x);
@@ -429,7 +429,7 @@ public class IntraServiceITest {
     IntraReq req = new IntraReq();
     req.add( Operations.setKeyspaceOp("myks") ); //0
     req.add( Operations.setColumnFamilyOp("mycf") ); //1
-    req.add(Operations.setAutotimestampOp()); //2
+    req.add(Operations.setAutotimestampOp(true)); //2
     req.add(Operations.assumeOp("myks", "mycf", "value", "UTF8Type")); //3
     req.add(Operations.setOp("rowzz", "col1", "7")); //4
     req.add(Operations.setOp("rowzz", "col2", "8")); //5
@@ -480,7 +480,7 @@ public class IntraServiceITest {
     IntraReq req = new IntraReq();
     req.add( Operations.setKeyspaceOp("myks") ); //0
     req.add( Operations.setColumnFamilyOp("mycf") ); //1
-    req.add( Operations.setAutotimestampOp() ); //2
+    req.add( Operations.setAutotimestampOp(true) ); //2
     req.add( Operations.assumeOp("myks", "mycf", "value", "UTF8Type")); //3
     req.add( Operations.assumeOp("myks", "mycf", "column", "UTF8Type")); //4
     Map row1 = new HashMap();
@@ -523,7 +523,7 @@ public class IntraServiceITest {
 	  reqObj.put("city", "NYC");
 		
 	  req.add( Operations.setKeyspaceOp("myks") );//1
-	  req.add( Operations.setAutotimestampOp() );//2
+	  req.add( Operations.setAutotimestampOp(true) );//2
 	  req.add( Operations.createCfOp("users") );//3
 	  req.add(Operations.createCfOp("usersbycity"));//4
 	  req.add( Operations.createCfOp("usersbylast") );//5
@@ -543,7 +543,7 @@ public class IntraServiceITest {
     IntraReq req = new IntraReq();
     req.add( Operations.setKeyspaceOp("myks") ); //0
     req.add( Operations.setColumnFamilyOp("mycf") ); //1
-    req.add( Operations.setAutotimestampOp() ); //2
+    req.add( Operations.setAutotimestampOp(true) ); //2
     req.add( Operations.assumeOp("myks", "mycf", "value", "UTF8Type")); //3
     req.add( Operations.assumeOp("myks", "mycf", "column", "UTF8Type")); //4
     Map row1 = new HashMap();
@@ -594,7 +594,7 @@ public class IntraServiceITest {
     IntraReq r = new IntraReq();
     r.add( Operations.setKeyspaceOp("myks"));//0
     r.add( Operations.setColumnFamilyOp("mycf")); //1
-    r.add( Operations.setAutotimestampOp() ); //2
+    r.add( Operations.setAutotimestampOp(true) ); //2
     r.add( Operations.setOp("a", "b", "c") ); //3
     r.add( Operations.assumeOp("myks", "mycf", "value", "UTF8Type") );//4
     r.add( Operations.saveState() );//5
@@ -631,7 +631,7 @@ public class IntraServiceITest {
           IntraReq req = new IntraReq();
           req.add( Operations.setKeyspaceOp("myks") ); //0
           req.add( Operations.setColumnFamilyOp("mycf") ); //1
-          req.add( Operations.setAutotimestampOp() ); //2
+          req.add( Operations.setAutotimestampOp(true) ); //2
           req.add( Operations.setOp("rowzz", "col1", "7")); //4
           IntraRes res = null;
           try {
@@ -654,7 +654,7 @@ public class IntraServiceITest {
 	   public void optioanKSandCSTest() throws Exception {
 	     IntraReq req = new IntraReq();
 	    
-	     req.add( Operations.setAutotimestampOp() ); //0
+	     req.add( Operations.setAutotimestampOp(true) ); //0
 	     req.add( Operations.assumeOp("myks", "mycf", "value", "UTF8Type"));//1
 	     req.add( Operations.assumeOp("myks", "mycf", "column", "Int32Type"));//2
 	     IntraOp setOp = Operations.setOp("optional", 1, "wow"); //3
@@ -678,7 +678,7 @@ public class IntraServiceITest {
 	@RequiresColumnFamily(ksName = "myks", cfName = "mycf")
 	public void componentTest() throws Exception {
 		IntraReq req = new IntraReq();
-		req.add(Operations.setAutotimestampOp()); // 0
+		req.add(Operations.setAutotimestampOp(true)); // 0
 		req.add(Operations.assumeOp("myks", "mycf", "value", "UTF8Type"));// 1
 		req.add(Operations.assumeOp("myks", "mycf", "column", "Int32Type"));// 2
 		IntraOp setOp = Operations.setOp("optional", 1, "wow"); // 3
@@ -743,7 +743,7 @@ public class IntraServiceITest {
 		req.add(Operations.createKsOp("timeoutks", 1)); // 1
 		req.add(Operations.createCfOp("timeoutcf")); // 2
 		req.add(Operations.setColumnFamilyOp("timeoutcf")); // 3
-		req.add(Operations.setAutotimestampOp()); // 4
+		req.add(Operations.setAutotimestampOp(true)); // 4
 		req.add(Operations.assumeOp("timeoutks", "timeoutcf", "value", "UTF8Type"));// 5
 		req.add(Operations.setOp("rowa", "col1", "20")); // 6
 		req.add(Operations.setOp("rowa", "col2", "22")); // 7
@@ -775,7 +775,7 @@ public class IntraServiceITest {
 		batch.add(row);
 		
 		IntraReq req = new IntraReq();
-		req.add( Operations.setAutotimestampOp() )
+		req.add( Operations.setAutotimestampOp(true) )
 			.add( Operations.createKsOp("ks1", 1))
 			.add( Operations.setKeyspaceOp("ks1"))
 			.add( Operations.createCfOp("cf1"))
@@ -802,7 +802,7 @@ public class IntraServiceITest {
 	@RequiresColumnFamily(ksName = "myks", cfName = "mycf")
 	public void preparedStatementTest() throws Exception {
 		IntraReq req = new IntraReq();
-		req.add(Operations.setAutotimestampOp())
+		req.add(Operations.setAutotimestampOp(true))
 				.add(Operations
 						.setOp("preparedrow1", "preparedcol1", "preparedvalue1")
 						.set("keyspace", "myks").set("columnfamily", "mycf"));
