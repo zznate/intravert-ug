@@ -102,6 +102,7 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
   }
   
   public static void registerOperationHandlers(Vertx x) {
+    x.eventBus().registerHandler("request.autotimestamp", new AutotimestampHandler() );
     x.eventBus().registerHandler("request.createkeyspace", new CreateKeyspaceHandler());
     x.eventBus().registerHandler("request.setkeyspace", new SetKeyspaceHandler());
     x.eventBus().registerHandler("request.createcolumnfamily", new CreateColumnFamilyHandler());

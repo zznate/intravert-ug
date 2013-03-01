@@ -137,6 +137,7 @@ public class IntraServiceITest {
 	    IntraClient2 ic2 = new IntraClient2("localhost", 8080);
 	    IntraRes res = ic2.sendBlocking(req);
 	    List<Map> x = (List<Map>) res.getOpsRes().get(7);
+	    System.out.println(res);
 	    Assert.assertEquals( "wow",  x.get(0).get("value") );
 	  }
 	
