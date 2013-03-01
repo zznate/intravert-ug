@@ -53,6 +53,7 @@ public class GetHandler implements Handler<Message<JsonObject>> {
         array = HandlerUtils.readCf(cf1, state, params);
       }
 
+      System.out.println(array.toArray());
       JsonObject response = new JsonObject();
       response.putArray(id.toString(), array);
       event.reply(response);
