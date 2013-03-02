@@ -37,7 +37,6 @@
         "type":"CQLQUERY",
         "op": {
             "version": "3.0.0",
-            "convert": "true",
             "query": "SELECT * FROM myks.users_cql"
         }
     }

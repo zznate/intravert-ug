@@ -74,8 +74,8 @@ public class Operations {
              .set(COLUMN_FAMILY, columnFamily);
  	}
 
-  public static IntraOp setAutotimestampOp(){
- 		return new IntraOp(IntraOp.Type.AUTOTIMESTAMP);
+  public static IntraOp setAutotimestampOp(boolean on){
+ 		return new IntraOp(IntraOp.Type.AUTOTIMESTAMP).set("autotimestamp", on);
  	}
 
   public static IntraOp setOp(Object rowkey, Object columnName, Object columnValue){
