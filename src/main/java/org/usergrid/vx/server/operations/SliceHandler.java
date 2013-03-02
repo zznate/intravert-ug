@@ -10,7 +10,6 @@ import org.usergrid.vx.experimental.IntraService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import java.io.IOException;
@@ -33,7 +32,6 @@ public class SliceHandler implements Handler<Message<JsonObject>> {
     JsonObject params = event.body.getObject("op");
     JsonObject state = event.body.getObject("state");
 
-    List<Map> finalResults = new ArrayList<Map>();
     Map<String, Object> paramsMap = params.toMap();
     Object rowKeyParam = paramsMap.get("rowkey");
     Object startParam = paramsMap.get("start");
@@ -58,27 +56,9 @@ public class SliceHandler implements Handler<Message<JsonObject>> {
       // since it is also hard coded in IntraState
       results = StorageProxy.read(commands, ConsistencyLevel.ONE);
       ColumnFamily cf = results.get(0).cf;
-      JsonArray array;
 
-      if (cf == null) { //cf= null is no data
-        array  = new JsonArray();
-      } else {
-        String filter = state.getString("currentFilter");
-        if (filter == null) {
-          array = HandlerUtils.readCf(cf, state, params);
-          JsonObject response = new JsonObject();
-          response.putArray(id.toString(), array);
-          event.reply(response);
-        } else {
-          HandlerUtils.readCf(cf, state, eb, new Handler<Message<JsonArray>>() {
-            @Override
-            public void handle(Message<JsonArray> filterEvent) {
-              event.reply(new JsonObject()
-                .putArray(id.toString(), filterEvent.body));
-            }
-          });
-        }
-      }
+      new ReadHandler(event, eb).handleRead(cf);
+
     } catch (ReadTimeoutException | UnavailableException | IsBootstrappingException | IOException e) {
       event.reply(new JsonObject().putString(id.toString(), e.getMessage()));
     }
