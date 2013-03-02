@@ -7,6 +7,8 @@ import org.apache.cassandra.exceptions.WriteTimeoutException;
 import org.apache.cassandra.service.StorageProxy;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.usergrid.vx.experimental.TypeHelper;
+import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
@@ -93,12 +95,26 @@ public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus 
         HashMap m = new HashMap();
 
         if (components.contains("name")) {
-          String clazz = state.getObject("meta").getObject("column").getString("clazz");
-          m.put("name", TypeHelper.getTyped(clazz, column.name()));
+          JsonObject columnMetadata = state.getObject("meta").getObject("column");
+          if (columnMetadata == null) {
+            m.put("name", ByteBufferUtil.getArray(column.name()));
+          } else {
+            String clazz = columnMetadata.getString("clazz");
+            m.put("name", TypeHelper.getTyped(clazz, column.name()));
+          }
         }
         if (components.contains("value")) {
-          String clazz = state.getObject("meta").getObject("value").getString("clazz");
-          m.put("value", TypeHelper.getTyped(clazz, column.value()));
+          if (column instanceof CounterColumn ) {
+            m.put("value", ((CounterColumn)column).total());
+          } else {
+            JsonObject valueMetadata = state.getObject("meta").getObject("value");
+            if (valueMetadata == null) {
+              m.put("value", ByteBufferUtil.getArray(column.value()));
+            } else {
+              String clazz = valueMetadata.getString("clazz");
+              m.put("value", TypeHelper.getTyped(clazz, column.value()));
+            }
+          }
         }
         if (components.contains("timestamp")) {
           m.put("timestamp", column.timestamp());
