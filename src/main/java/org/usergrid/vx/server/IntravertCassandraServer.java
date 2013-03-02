@@ -15,9 +15,6 @@
  */
 package org.usergrid.vx.server;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.cassandra.service.CassandraDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +31,9 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class IntravertCassandraServer implements CassandraDaemon.Server {
 
@@ -111,11 +111,13 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     x.eventBus().registerHandler("request.set", new SetHandler());
     x.eventBus().registerHandler("request.setcolumnfamily", new SetColumnFamilyHandler());
     x.eventBus().registerHandler("request.assume", new AssumeHandler());
-    x.eventBus().registerHandler("request.get", new GetHandler());
-    x.eventBus().registerHandler("request.slice", new SliceHandler());
+    x.eventBus().registerHandler("request.get", new GetHandler(x.eventBus()));
+    x.eventBus().registerHandler("request.slice", new SliceHandler(x.eventBus()));
     x.eventBus().registerHandler("request.cqlquery", new CqlQueryHandler());
     x.eventBus().registerHandler("request.counter", new CounterHandler());
     x.eventBus().registerHandler("request.consistency", new ConsistencyHandler());
+    x.eventBus().registerHandler("request.createfilter", new CreateFilterHandler(x.eventBus()));
+    x.eventBus().registerHandler("request.filtermode", new FilterModeHandler());
   }
 
 }

@@ -8,8 +8,8 @@ import org.apache.cassandra.exceptions.UnavailableException;
 import org.apache.cassandra.service.StorageProxy;
 import org.usergrid.vx.experimental.IntraService;
 import org.vertx.java.core.Handler;
+import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
 import java.io.IOException;
@@ -20,13 +20,18 @@ import java.util.Map;
 
 public class SliceHandler implements Handler<Message<JsonObject>> {
 
+  private EventBus eb;
+
+  public SliceHandler(EventBus eb) {
+    this.eb = eb;
+  }
+
   @Override
-  public void handle(Message<JsonObject> event) {
-    Integer id = event.body.getInteger("id");
+  public void handle(final Message<JsonObject> event) {
+    final Integer id = event.body.getInteger("id");
     JsonObject params = event.body.getObject("op");
     JsonObject state = event.body.getObject("state");
 
-    List<Map> finalResults = new ArrayList<Map>();
     Map<String, Object> paramsMap = params.toMap();
     Object rowKeyParam = paramsMap.get("rowkey");
     Object startParam = paramsMap.get("start");
@@ -51,17 +56,9 @@ public class SliceHandler implements Handler<Message<JsonObject>> {
       // since it is also hard coded in IntraState
       results = StorageProxy.read(commands, ConsistencyLevel.ONE);
       ColumnFamily cf = results.get(0).cf;
-      JsonArray array;
 
-      if (cf == null) { //cf= null is no data
-        array  = new JsonArray();
-      } else {
-        array = HandlerUtils.readCf(cf, state, params);
-      }
+      new ReadHandler(event, eb).handleRead(cf);
 
-      JsonObject response = new JsonObject();
-      response.putArray(id.toString(), array);
-      event.reply(response);
     } catch (ReadTimeoutException | UnavailableException | IsBootstrappingException | IOException e) {
       event.reply(new JsonObject().putString(id.toString(), e.getMessage()));
     }

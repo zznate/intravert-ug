@@ -168,7 +168,7 @@ public class RawJsonITest {
         assertJSONEquals("Failed to set column using GETREF", expectedResponse, actualResponse);
     }
 
-    //@Test
+    @Test
     public void filterColumnSlice() throws Exception {
         String insertBeersJSON = loadJSON("insert_beers.json");
         final CountDownLatch doneSignal = new CountDownLatch(1);
@@ -219,7 +219,7 @@ public class RawJsonITest {
         assertJSONEquals("Failed to apply filter", expectedResponse, actualResponse);
     }
 
-    //@Test
+    @Test
     public void javascriptFilterColumnSlice() throws Exception {
         String insertBeersJSON = loadJSON("insert_beers.json");
         final CountDownLatch doneSignal = new CountDownLatch(1);

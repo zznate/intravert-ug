@@ -15,16 +15,16 @@
 */
 package org.usergrid.vx.experimental;
 
+import org.apache.cassandra.db.ConsistencyLevel;
+import org.usergrid.vx.experimental.filter.Filter;
+import org.usergrid.vx.experimental.scan.ScanContext;
+import org.usergrid.vx.experimental.scan.ScanFilter;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.apache.cassandra.db.ConsistencyLevel;
-import org.usergrid.vx.experimental.filter.Filter;
-import org.usergrid.vx.experimental.scan.ScanContext;
-import org.usergrid.vx.experimental.scan.ScanFilter;
 
 /* class that holds properties for the request lifecycle */
 public class IntraState {
@@ -47,7 +47,7 @@ public class IntraState {
 	Map<IntraMetaData,String> meta = new HashMap<IntraMetaData,String>();
 	//TODO separate per/request state from application/session state
 	static Map<String,Processor> processors = new HashMap<String,Processor>();
-	static Map<String,Filter> filters = new HashMap<String,Filter>();
+	public static Map<String,Filter> filters = new HashMap<String,Filter>();
 	static Map<String,MultiProcessor> multiProcessors = new HashMap<String,MultiProcessor>();
 	static Map<String,ServiceProcessor> serviceProcessors = new HashMap<String,ServiceProcessor>();
 	Filter currentFilter;
