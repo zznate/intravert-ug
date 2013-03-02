@@ -15,20 +15,16 @@
 */
 package org.usergrid.vx.experimental;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.usergrid.vx.handler.http.OperationsRequestHandler;
-import org.usergrid.vx.handler.http.TimeoutHandler;
-import org.usergrid.vx.server.IntravertCassandraServer;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicInteger;
+import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 public class IntraHandlerJson implements Handler<HttpServerRequest>{
 
@@ -42,27 +38,27 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
 	
 	@Override
 	public void handle(final HttpServerRequest request) {
-		request.bodyHandler( new Handler<Buffer>() {
-			public void handle(Buffer buffer) {
-			     handleRequestAsync(request, buffer);
-			}
-		});
+		request.bodyHandler(new Handler<Buffer>() {
+      public void handle(Buffer buffer) {
+        handleRequestAsync(request, buffer);
+      }
+    });
 	}
 
   private void handleRequestAsync(final HttpServerRequest request, Buffer buffer) {
     IntraReq req = null;
     try {
       req = mapper.readValue(buffer.getBytes(), IntraReq.class);
-    } catch (IOException e) {
-      //TODO we need to return something here.
-      e.printStackTrace();
+      vertx.eventBus().send("request.json", req.toJson(), new Handler<Message<JsonObject>>() {
+        @Override
+        public void handle(Message<JsonObject> event) {
+          request.response.end(event.body.toString());
+        }
+      });
+    } catch (Exception e) {
+      request.response.statusCode = BAD_REQUEST.getCode();
+      request.response.end(ExceptionUtils.getFullStackTrace(e));
     }
-    vertx.eventBus().send("request.json", req.toJson(), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> event) {
-        request.response.end(event.body.toString());
-      }
-    });
   }
 
 }
