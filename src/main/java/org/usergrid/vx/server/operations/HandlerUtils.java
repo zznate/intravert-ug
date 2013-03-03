@@ -13,6 +13,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -54,10 +55,15 @@ public class HandlerUtils {
         if (components.contains("name")) {
           JsonObject columnMetadata = state.getObject("meta").getObject("column");
           if (columnMetadata == null) {
-            m.put("name", ByteBufferUtil.getArray(ic.name()));
+            m.put("name", TypeHelper.getBytes(ic.name()));
           } else {
             String clazz = columnMetadata.getString("clazz");
-            m.put("name", TypeHelper.getTyped(clazz, ic.name()));
+            Object name = TypeHelper.getTyped(clazz, ic.name());
+            if (name instanceof ByteBuffer) {
+              m.put("name", TypeHelper.getBytes(ic.name()));
+            } else {
+              m.put("name", TypeHelper.getTyped(clazz, ic.name()));
+            }
           }
         }
         if (components.contains("value")) {
@@ -66,10 +72,15 @@ public class HandlerUtils {
           } else {
             JsonObject valueMetadata = state.getObject("meta").getObject("value");
             if (valueMetadata == null) {
-              m.put("value", ByteBufferUtil.getArray(ic.value()));
+              m.put("value", TypeHelper.getBytes(ic.value()));
             } else {
               String clazz = valueMetadata.getString("clazz");
-              m.put("value", TypeHelper.getTyped(clazz, ic.value()));
+              Object value = TypeHelper.getTyped(clazz, ic.value());
+              if (value instanceof ByteBuffer) {
+                m.put("value", TypeHelper.getBytes(ic.value()));
+              } else {
+                m.put("value", value);
+              }
             }
           }
         }
