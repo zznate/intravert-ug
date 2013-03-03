@@ -349,8 +349,8 @@ public class IntraServiceITest {
      req.add( Operations.assumeOp("cqlks", "cqlcf", "column", "Int32Type"));//6
      req.add( Operations.setOp("rowa", 1, 2)); //7
      req.add( Operations.getOp("rowa", 1)); //8
-     req.add( Operations.cqlQuery("select * from cqlcf", "3.0.0"));//9
-      
+     req.add( Operations.cqlQuery("select * from cqlcf", "3.0.0", false)); // 9
+
      IntraClient2 ic2 = new IntraClient2("localhost", 8080);
      IntraRes res = ic2.sendBlocking(req);
      List<Map> x = (List<Map>) res.getOpsRes().get(8);
@@ -358,9 +358,10 @@ public class IntraServiceITest {
      Assert.assertEquals( 1,  x.get(0).get("name") );
      Assert.assertEquals( 2,  x.get(0).get("value") );
      x = (List<Map>) res.getOpsRes().get(9);
+     String value = (String) x.get(2).get("value");
+     ByteBuffer bytes = ByteBuffer.wrap(Base64.decode(value));
      //Assert.assertEquals( 2, ((ByteBuffer)x.get(2).get("value")).getInt() );
-     Assert.assertEquals( new Integer(2), Int32Type.instance.compose((ByteBuffer)x.get(2).get("value")) );
-     
+     Assert.assertEquals(new Integer(2), Int32Type.instance.compose(bytes));
    }
 
 	@Test
@@ -721,7 +722,7 @@ public class IntraServiceITest {
 				  " tags varchar, "+
 				  " PRIMARY KEY (videoid,videoname) "+ 
 				" ); ";
-		req.add(Operations.cqlQuery(videos, "3.0.0"));//3
+		req.add(Operations.cqlQuery(videos, "3.0.0", false));//3
 		//String query = "SELECT columnfamily_name, comparator, default_validator, key_validator FROM system.schema_columnfamilies WHERE keyspace_name='%s'";
 		//String formatted = String.format(query, ks);
 		//req.add( Operations.setKeyspaceOp("system"));//4
@@ -730,7 +731,7 @@ public class IntraServiceITest {
 		String videoIns1 = "INSERT INTO videos (videoid,videoname,tags) VALUES (2,'weekend2','fun games returns')";
 		req.add( Operations.cqlQuery(videoIns, "3.0.0") );
 		req.add( Operations.cqlQuery(videoIns1, "3.0.0") );
-		req.add( Operations.cqlQuery("select * from videos WHERE videoid=2", "3.0.0").set("convert", true) );
+		req.add( Operations.cqlQuery("select * from videos WHERE videoid=2", "3.0.0", false).set("convert", true) );
 		IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
 		System.out.println(res.getException());
