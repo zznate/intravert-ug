@@ -15,15 +15,14 @@
 */
 package org.usergrid.vx.experimental;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+import org.apache.cassandra.db.ConsistencyLevel;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
-
-import org.apache.cassandra.db.ConsistencyLevel;
 
 /**
  * Factory class for building IntraOp objects
@@ -55,6 +54,7 @@ public class Operations {
   private static final String ON = "on";
   private static final String QUERY = "query";
   private static final String VERSION = "version";
+  private static final String TRANSPOSE = "transpose";
   private static final String ID = "id";
   private static final String MODE = "mode";
   private static final String SAVE = "save";
@@ -208,6 +208,13 @@ public class Operations {
     return new IntraOp(IntraOp.Type.CQLQUERY)
             .set(QUERY, query)
             .set(VERSION, version);
+  }
+
+  public static IntraOp cqlQuery(String query, String version, boolean transpose) {
+    return new IntraOp(IntraOp.Type.CQLQUERY)
+        .set(QUERY, query)
+        .set(VERSION, version)
+        .set(TRANSPOSE, transpose);
   }
 
   public static IntraOp clear(int resultId){
