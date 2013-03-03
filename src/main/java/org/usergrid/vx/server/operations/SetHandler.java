@@ -25,9 +25,9 @@ public class SetHandler implements Handler<Message<JsonObject>> {
         JsonObject params = event.body.getObject("op");
         JsonObject state = event.body.getObject("state");
         System.out.println(params);
-        RowMutation rm = new RowMutation(HandlerUtils.determineKs(params,state),
-                IntraService.byteBufferForObject(params.getString("rowkey")));
-        QueryPath qp = new QueryPath(HandlerUtils.determineCf(params,state),
+        RowMutation rm = new RowMutation(HandlerUtils.determineKs(params, state, null),
+                IntraService.byteBufferForObject(params.getField("rowkey")));
+        QueryPath qp = new QueryPath(HandlerUtils.determineCf(params, state, null),
                 null,
                 IntraService.byteBufferForObject(params.getField("name")));
 

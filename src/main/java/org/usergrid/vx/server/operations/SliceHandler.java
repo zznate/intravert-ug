@@ -44,7 +44,7 @@ public class SliceHandler implements Handler<Message<JsonObject>> {
 
     List<ReadCommand> commands = new ArrayList<ReadCommand>(1);
 
-    QueryPath path = new QueryPath(HandlerUtils.determineCf(params, state), null);
+    QueryPath path = new QueryPath(HandlerUtils.determineCf(params, state, null), null);
 
     SliceFromReadCommand sr = new SliceFromReadCommand(state.getString("currentKeyspace"), rowkey, path, start, end,
         false, 100);

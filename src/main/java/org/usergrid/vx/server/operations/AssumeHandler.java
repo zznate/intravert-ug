@@ -16,9 +16,9 @@ public class AssumeHandler implements Handler<Message<JsonObject>> {
             meta = new JsonObject();
         }
         StringBuilder key = new StringBuilder();
-        key.append( HandlerUtils.determineKs(params, state));
+        key.append( HandlerUtils.determineKs(params, state, null));
         key.append( ' ' );
-        key.append( HandlerUtils.determineCf(params, state));
+        key.append( HandlerUtils.determineCf(params, state, null));
         key.append( ' ' );
         key.append( params.getString("type") );
         meta.putObject(key.toString(), new JsonObject()

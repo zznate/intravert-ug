@@ -40,9 +40,9 @@ public class GetHandler implements Handler<Message<JsonObject>> {
         id));
     ByteBuffer column = IntraService.byteBufferForObject(IntraService.resolveObject(nameParam, null, null, null,
         id));
-    QueryPath path = new QueryPath(HandlerUtils.determineCf(params, state), null);
+    QueryPath path = new QueryPath(HandlerUtils.determineCf(params, state, null), null);
     List<ByteBuffer> nameAsList = Arrays.asList(column);
-    ReadCommand command = new SliceByNamesReadCommand(HandlerUtils.determineKs(params, state), rowkey, path, nameAsList);
+    ReadCommand command = new SliceByNamesReadCommand(HandlerUtils.determineKs(params, state, null), rowkey, path, nameAsList);
     List<Row> rows = null;
 
     try {

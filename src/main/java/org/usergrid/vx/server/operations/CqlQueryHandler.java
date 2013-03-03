@@ -34,7 +34,7 @@ public class CqlQueryHandler implements Handler<Message<JsonObject>> {
     ClientState clientState = new ClientState();
     try {
       clientState.setCQLVersion(params.getString("version"));
-      clientState.setKeyspace(HandlerUtils.determineKs(params, state));
+      clientState.setKeyspace(HandlerUtils.determineKs(params, state, null));
     } catch (InvalidRequestException e) {
       event.reply(new JsonObject().putString(id.toString(), e.getMessage()));
       return;
