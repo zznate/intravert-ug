@@ -24,9 +24,15 @@ import java.util.List;
  */
 public class HandlerUtils {
 
-  public static String determineCf(JsonObject params, JsonObject state) {
+  /*
+   * Determine columnfamily first look in the row for a string named keyspace, then look in the op,
+   * then look in the state. The row is only currently provided in batchset
+   */
+  public static String determineCf(JsonObject params, JsonObject state, JsonObject row) {
     String cf = null;
-    if (params.getString("columnfamily") != null) {
+    if (row != null && row.getString("columnfamily") != null) {
+      cf = row.getString("columnfamily");
+    } else if (params.getString("columnfamily") != null) {
       cf = params.getString("columnfamily");
     } else {
       cf = state.getString("currentColumnFamily");
@@ -34,14 +40,20 @@ public class HandlerUtils {
     return cf;
   }
 
-  public static String determineKs(JsonObject params, JsonObject state) {
-      String ks = null;
-      if (params.getString("keyspace") != null) {
-          ks = params.getString("keyspace");
-      } else {
-          ks = state.getString("currentKeyspace");
-      }
-      return ks;
+  /*
+   * Determine keyspace first look in the row for a string named keyspace, then look in the op, then
+   * look in the state. The row is only currently provided in batchset
+   */
+  public static String determineKs(JsonObject params, JsonObject state, JsonObject row) {
+    String ks = null;
+    if (row != null && row.getString("keyspace") != null) {
+      ks = row.getString("keyspace");
+    } else if (params.getString("keyspace") != null) {
+      ks = params.getString("keyspace");
+    } else {
+      ks = state.getString("currentKeyspace");
+    }
+    return ks;
   }
 
   public static JsonArray readCf(ColumnFamily columnFamily, JsonObject state, JsonObject params) {

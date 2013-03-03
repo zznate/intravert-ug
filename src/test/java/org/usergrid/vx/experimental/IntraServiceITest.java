@@ -798,18 +798,18 @@ public class IntraServiceITest {
 	}
 	
 	@Test
-	public void batchAcrossKeyspaces() throws CharacterCodingException {
+	public void batchAcrossKeyspaces() throws Exception {
 		List<Map> batch = new ArrayList<Map>();
 		Map row = new HashMap();
-		row.put("keyspace","ks1");
-		row.put("columnfamily","cf1");
+		row.put("keyspace","ks10");
+		row.put("columnfamily","cf10");
 		row.put("rowkey","mykey");
 		row.put("name","mycol");
 		row.put("value","myvalue");
 		batch.add(row);
 		row = new HashMap();
-		row.put("keyspace","ks2");
-		row.put("columnfamily","cf2");
+		row.put("keyspace","ks11");
+		row.put("columnfamily","cf11");
 		row.put("rowkey","mykey2");
 		row.put("name","mycol2");
 		row.put("value","myvalue2");
@@ -817,25 +817,32 @@ public class IntraServiceITest {
 		
 		IntraReq req = new IntraReq();
 		req.add( Operations.setAutotimestampOp(true) )
-			.add( Operations.createKsOp("ks1", 1))
-			.add( Operations.setKeyspaceOp("ks1"))
-			.add( Operations.createCfOp("cf1"))
-			.add( Operations.createKsOp("ks2", 1))
-			.add( Operations.setKeyspaceOp("ks2"))
-			.add( Operations.createCfOp("cf2"))
-			.add( Operations.batchSetOp(batch).set("timeout", 1000000))
-			.add( Operations.assumeOp("ks1", "cf1", "value", "UTF8Type"))
-			.add( Operations.assumeOp("ks2", "cf2", "value", "UTF8Type"))
+			.add( Operations.createKsOp("ks10", 1))
+			.add( Operations.setKeyspaceOp("ks10"))
+			.add( Operations.createCfOp("cf10"))
+			.add( Operations.createKsOp("ks11", 1))
+			.add( Operations.setKeyspaceOp("ks11"))
+			.add( Operations.createCfOp("cf11"))
+			.add( Operations.batchSetOp(batch))
+			.add( Operations.assumeOp("ks10", "cf10", "value", "UTF8Type"))
+			.add( Operations.assumeOp("ks11", "cf11", "value", "UTF8Type"))
 			.add( Operations.getOp("mykey", "mycol")
-					.set("keyspace", "ks1")
-					.set("columnfamily", "cf1"));
+					.set("keyspace", "ks10")
+					.set("columnfamily", "cf10") )
+		  .add( Operations.getOp("mykey2", "mycol2")
+	          .set("keyspace", "ks11")
+	          .set("columnfamily", "cf11"));
 		
-		IntraRes res = new IntraRes();
-		is.handleIntraReq(req, res, x);
+		IntraClient2 ic2 = new IntraClient2("localhost", 8080);
+		IntraRes res = ic2.sendBlocking(req);
 		System.out.println(res.getException());
 		System.out.println(res.getExceptionId());
 		List<Map> x = (List<Map>) res.getOpsRes().get(10);
+		System.out.println(res);
 		Assert.assertEquals("myvalue", x.get(0).get("value") );
+		
+		x = (List<Map>) res.getOpsRes().get(11);
+    Assert.assertEquals("myvalue2", x.get(0).get("value") );
 		
 	}
 	
