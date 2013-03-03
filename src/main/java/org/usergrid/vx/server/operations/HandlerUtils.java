@@ -5,6 +5,7 @@ import org.apache.cassandra.exceptions.OverloadedException;
 import org.apache.cassandra.exceptions.UnavailableException;
 import org.apache.cassandra.exceptions.WriteTimeoutException;
 import org.apache.cassandra.service.StorageProxy;
+import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.usergrid.vx.experimental.TypeHelper;
 import org.vertx.java.core.Handler;
@@ -51,9 +52,8 @@ public class HandlerUtils {
       IColumn ic = it.next();
       if (ic.isLive()) {
         HashMap m = new HashMap();
-
         if (components.contains("name")) {
-          JsonObject columnMetadata = state.getObject("meta").getObject("column");
+          JsonObject columnMetadata = findMetaData(columnFamily, state, "column" );
           if (columnMetadata == null) {
             m.put("name", TypeHelper.getBytes(ic.name()));
           } else {
@@ -70,7 +70,7 @@ public class HandlerUtils {
           if ( ic instanceof CounterColumn ) {
             m.put("value", ((CounterColumn)ic).total());
           } else {
-            JsonObject valueMetadata = state.getObject("meta").getObject("value");
+            JsonObject valueMetadata = findMetaData(columnFamily, state, "value" );
             if (valueMetadata == null) {
               m.put("value", TypeHelper.getBytes(ic.value()));
             } else {
@@ -95,7 +95,20 @@ public class HandlerUtils {
     }
     return array;
   }
-
+public static JsonObject findMetaData(ColumnFamily cf, JsonObject state, String type){
+  JsonObject meta = state.getObject("meta");
+  if (meta == null){
+    return null;
+  } else {
+    StringBuilder key = new StringBuilder();
+    key.append(cf.metadata().ksName);
+    key.append(' ');
+    key.append(cf.metadata().cfName);
+    key.append(' ');
+    key.append(type);
+    return meta.getObject(key.toString());
+  }
+}
 public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus eb,
     Handler<Message<JsonArray>> filterReplyHandler) {
     JsonArray components = state.getArray("components");
@@ -106,7 +119,7 @@ public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus 
         HashMap m = new HashMap();
 
         if (components.contains("name")) {
-          JsonObject columnMetadata = state.getObject("meta").getObject("column");
+          JsonObject columnMetadata = findMetaData(columnFamily, state, "column" );
           if (columnMetadata == null) {
             m.put("name", ByteBufferUtil.getArray(column.name()));
           } else {
@@ -118,7 +131,7 @@ public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus 
           if (column instanceof CounterColumn ) {
             m.put("value", ((CounterColumn)column).total());
           } else {
-            JsonObject valueMetadata = state.getObject("meta").getObject("value");
+            JsonObject valueMetadata = findMetaData(columnFamily, state, "value" );
             if (valueMetadata == null) {
               m.put("value", ByteBufferUtil.getArray(column.value()));
             } else {

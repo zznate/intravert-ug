@@ -143,6 +143,40 @@ public class IntraServiceITest {
 	  }
 	
 	@Test
+	public void assume2CfsTest()  throws Exception {
+	  IntraReq req = new IntraReq();
+	  req.add( Operations.setKeyspaceOp("system") );
+	  req.add( Operations.createKsOp("assks1",1) );
+	  req.add( Operations.createKsOp("assks2",1) );
+	  
+	  req.add( Operations.setKeyspaceOp("assks1") );
+	  req.add( Operations.createCfOp("asscf1"));
+	  
+	  req.add( Operations.setKeyspaceOp("assks2") );
+    req.add( Operations.createCfOp("asscf2")); 
+    req.add( Operations.setAutotimestampOp(true) );
+    req.add( Operations.assumeOp("assks1", "asscf1", "value", "UTF8Type"));
+    req.add( Operations.assumeOp("assks1", "asscf1", "column", "UTF8Type"));
+    req.add( Operations.assumeOp("assks2", "asscf2", "value", "Int32Type"));
+    req.add( Operations.assumeOp("assks2", "asscf2", "column", "Int32Type"));
+    
+    req.add( Operations.setKeyspaceOp("assks1"));
+    req.add( Operations.setColumnFamilyOp("asscf1"));
+    req.add( Operations.setOp("rowa", "col1", "wow"));
+    req.add( Operations.getOp("rowa", "col1"));
+    
+    req.add( Operations.setKeyspaceOp("assks2"));
+    req.add( Operations.setColumnFamilyOp("asscf2"));
+    req.add( Operations.setOp("rowa", 4, 3)); 
+    req.add( Operations.getOp("rowa", 4));
+    
+    IntraClient2 ic2 = new IntraClient2("localhost", 8080);
+    IntraRes res = ic2.sendBlocking(req);
+    System.out.println(res);
+    
+	}
+	
+	@Test
 	public void filterTest() throws Exception {
 		IntraReq req = new IntraReq();
 		req.add(Operations.setKeyspaceOp("filterks")); // 0
@@ -353,6 +387,7 @@ public class IntraServiceITest {
 
      IntraClient2 ic2 = new IntraClient2("localhost", 8080);
      IntraRes res = ic2.sendBlocking(req);
+     System.out.println(res);
      List<Map> x = (List<Map>) res.getOpsRes().get(8);
 
      Assert.assertEquals( 1,  x.get(0).get("name") );
