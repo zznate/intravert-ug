@@ -252,7 +252,7 @@ public class IntraServiceITest {
      req.add( Operations.setOp("rowa", "col1", "wow")); //6
      req.add( Operations.getOp("rowa", "col1")); //7
      req.add( Operations.createProcessorOp("capitalize", "groovy", 
-         "public class Capitalize implements org.usergrid.vx.experimental.Processor { \n"+
+         "public class Capitalize implements org.usergrid.vx.experimental.processor.Processor { \n"+
          "  public List<Map> process(List<Map> input){" +
          "    List<Map> results = new ArrayList<HashMap>();"+
          "    for (Map row: input){" +
@@ -265,9 +265,10 @@ public class IntraServiceITest {
          "}\n"
      ));//8
      //TAKE THE RESULT OF STEP 7 AND APPLY THE PROCESSOR TO IT
-     req.add( Operations.processOp("capitalize", new HashMap(), 7));//9
+     //req.add( Operations.processOp("capitalize", new HashMap(), 7));//9
      IntraClient2 ic2 = new IntraClient2("localhost", 8080);
      IntraRes res = ic2.sendBlocking(req);
+     System.out.println(res);
      List<Map> x = (List<Map>) res.getOpsRes().get(7);
      Assert.assertEquals( "wow",  x.get(0).get("value") );
      System.out.println(res.getException() );

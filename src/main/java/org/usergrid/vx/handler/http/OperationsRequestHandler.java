@@ -106,7 +106,12 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
       idGenerator.incrementAndGet();
       TimeoutHandler timeoutHandler = new TimeoutHandler(this);
       timerId = vertx.setTimer(timeout, timeoutHandler);
-      vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation, this);
+      if (operation.getString("type").equals("process")){
+        System.out.println ( operation.getObject("input") );
+        //this.results.getObject("opsRes").getObject()
+      } else {
+        vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation, this);
+      }
     } else {
       sendResults();
     }
