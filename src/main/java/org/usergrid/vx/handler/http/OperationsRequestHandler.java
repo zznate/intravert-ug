@@ -108,21 +108,9 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
       idGenerator.incrementAndGet();
       TimeoutHandler timeoutHandler = new TimeoutHandler(this);
       timerId = vertx.setTimer(timeout, timeoutHandler);
-      /*
-       *         IntraOp op = req.getE().get(i);
-        String processorName = (String) op.getOp().get("processorname");
-        Map params  = (Map) op.getOp().get("params");
-        Processor p = state.processors.get(processorName);
-        Integer inputId = (Integer) op.getOp().get("input");
-        List<Map> toProcess = (List<Map>)res.getOpsRes().get(inputId);
-        List<Map> results = p.process(toProcess);
-        res.getOpsRes().put(i, results);
-       */
-      
       if (operation.getString("type").equalsIgnoreCase("process")){
         JsonObject params = operation.getObject("op");
         Integer input = params.getInteger("input");
-        System.out.println ( "opsRes" + this.results.getObject("opsRes"));
         operation.putArray("input", this.results.getObject("opsRes").getArray(input+"") );
         vertx.eventBus().send("processors." + params.getString("processorname"), operation, this);
       } else {

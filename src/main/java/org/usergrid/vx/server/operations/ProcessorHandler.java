@@ -22,8 +22,6 @@ public class ProcessorHandler implements Handler<Message<JsonObject>> {
   @Override
   public void handle(Message<JsonObject> event) {
     Integer id = event.body.getInteger("id");
-    System.out.println(event);
-    System.out.println(event.body.getArray("input"));
     JsonArray input = event.body.getArray("input");
     List<Map> rows = new ArrayList<Map>();
     for (int i = 0 ; i < input.size() ; i++){
