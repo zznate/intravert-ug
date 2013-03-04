@@ -265,7 +265,7 @@ public class IntraServiceITest {
          "}\n"
      ));//8
      //TAKE THE RESULT OF STEP 7 AND APPLY THE PROCESSOR TO IT
-     //req.add( Operations.processOp("capitalize", new HashMap(), 7));//9
+     req.add( Operations.processOp("capitalize", new HashMap(), 7));//9
      IntraClient2 ic2 = new IntraClient2("localhost", 8080);
      IntraRes res = ic2.sendBlocking(req);
      System.out.println(res);
