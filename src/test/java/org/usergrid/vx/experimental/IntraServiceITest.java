@@ -599,7 +599,7 @@ public class IntraServiceITest {
     req.add( Operations.sliceOp("jsonkey", "a", "z", 100));//6
     req.add( Operations.createProcessorOp("JsonPathEx", "groovy", 
             "import com.jayway.jsonpath.*; \n" +
-            "public class JsonPathEx implements org.usergrid.vx.experimental.Processor { \n"+
+            "public class JsonPathEx implements org.usergrid.vx.experimental.processor.Processor { \n"+
             "  public List<Map> process(List<Map> input){" +
             "    List<Map> results = new ArrayList<HashMap>();"+
             "    for (Map row: input){" +
