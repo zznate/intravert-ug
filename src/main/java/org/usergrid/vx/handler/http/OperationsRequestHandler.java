@@ -90,7 +90,11 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
     } else if (opResult instanceof List) {
       results.getObject("opsRes").putArray(opId.toString(), new JsonArray((List) opResult));
     } else {
-      throw new IllegalArgumentException(opResult.getClass() + " is not a supported result type");
+      if (opResult != null){
+        throw new IllegalArgumentException(opResult.getClass() + " is not a supported result type");
+      } else {
+        throw new IllegalArgumentException("No result for operation.");
+      }
     }
 
     if (idGenerator.get() < operations.size()) {
