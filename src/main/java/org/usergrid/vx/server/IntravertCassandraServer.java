@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class IntravertCassandraServer implements CassandraDaemon.Server {
-
+  private static final int PORT = 8080;
   private final Logger logger = LoggerFactory.getLogger(IntravertCassandraServer.class);
   private static Vertx vertx;
   private static RouteMatcher rm;
@@ -56,8 +56,8 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     rm.noMatch(new NoMatchHandler());
     registerOperationHandlers(vertx);
     registerRequestHandler(vertx);
-    vertx.createHttpServer().requestHandler(rm).listen(8080);
-    logger.info("IntravertCassandraServer started.");
+    vertx.createHttpServer().requestHandler(rm).listen(PORT);
+    logger.info("IntravertCassandraServer started, listening on [" + PORT + "]");
     running.set(true);
     intravertClusterNotifier = IntravertClusterNotifier.forServer(vertx);
   }

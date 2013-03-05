@@ -27,7 +27,7 @@ public class IntravertRestUtilsUnitTest {
   }
 
   @Test
-  public void extractConsisntecyLevel() {
+  public void extractConsistencyLevel() {
     Mockito.when(req.headers()).thenReturn(headersMap);
     ConsistencyLevel cl = IntravertRestUtils.fromHeader(req);
     assertEquals(ConsistencyLevel.QUORUM, cl);
