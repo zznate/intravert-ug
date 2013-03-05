@@ -58,12 +58,12 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
     Integer currentId = idGenerator.get();
     Integer opId = currentId - 1;
 
-    String exceptionId = event.body.getString("exceptionId");
+    Integer exceptionId = event.body.getInteger("exceptionId");
     String exception = event.body.getString("exception");
 
     if (exception != null || exceptionId != null) {
       results.putString("exception", exception);
-      results.putString("exceptionId", exceptionId);
+      results.putNumber("exceptionId", exceptionId);
 
       sendResults();
     }
