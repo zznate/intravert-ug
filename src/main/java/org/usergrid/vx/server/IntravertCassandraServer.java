@@ -27,26 +27,10 @@ import org.usergrid.vx.handler.http.HelloHandler;
 import org.usergrid.vx.handler.http.NoMatchHandler;
 import org.usergrid.vx.handler.http.OperationsRequestHandler;
 import org.usergrid.vx.handler.http.TimeoutHandler;
+import org.usergrid.vx.handler.rest.ColumnFamilyMetaHandler;
 import org.usergrid.vx.handler.rest.IntraHandlerRest;
-import org.usergrid.vx.server.operations.AssumeHandler;
-import org.usergrid.vx.server.operations.AutotimestampHandler;
-import org.usergrid.vx.server.operations.BatchHandler;
-import org.usergrid.vx.server.operations.ComponentSelectHandler;
-import org.usergrid.vx.server.operations.ConsistencyHandler;
-import org.usergrid.vx.server.operations.CounterHandler;
-import org.usergrid.vx.server.operations.CqlQueryHandler;
-import org.usergrid.vx.server.operations.CreateColumnFamilyHandler;
-import org.usergrid.vx.server.operations.CreateFilterHandler;
-import org.usergrid.vx.server.operations.CreateKeyspaceHandler;
-import org.usergrid.vx.server.operations.CreateProcessorHandler;
-import org.usergrid.vx.server.operations.FilterModeHandler;
-import org.usergrid.vx.server.operations.GetHandler;
-import org.usergrid.vx.server.operations.HandlerUtils;
-import org.usergrid.vx.server.operations.ListKeyspacesHandler;
-import org.usergrid.vx.server.operations.SetColumnFamilyHandler;
-import org.usergrid.vx.server.operations.SetHandler;
-import org.usergrid.vx.server.operations.SetKeyspaceHandler;
-import org.usergrid.vx.server.operations.SliceHandler;
+import org.usergrid.vx.handler.rest.KeyspaceMetaHandler;
+import org.usergrid.vx.server.operations.*;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -73,14 +57,17 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     rm.post("/:appid/hello", new HelloHandler());
     rm.post("/:appid/intrareq-json", new IntraHandlerJson(vertx));
     rm.post("/:appid/intrareq-jsonsmile", new IntraHandlerJsonSmile(vertx));
-    
-    IntraHandlerRest restHandler = new IntraHandlerRest(vertx);
-    rm.get("/:appid/intrareq-rest/", restHandler);
-    rm.get("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/", restHandler);
-    rm.post("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" + 
-            IntraHandlerRest.ROWKEY + "/:" + IntraHandlerRest.COLUMN, restHandler);
-    rm.get("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" + 
-            IntraHandlerRest.ROWKEY + "/:" + IntraHandlerRest.COLUMN, restHandler);
+
+    KeyspaceMetaHandler keyspaceMetaHandler = new KeyspaceMetaHandler(vertx);
+    ColumnFamilyMetaHandler columnFamilyMetaHandler = new ColumnFamilyMetaHandler(vertx);
+
+    rm.get("/:appid/intrareq-rest/", keyspaceMetaHandler);
+    rm.get("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/", columnFamilyMetaHandler);
+
+    //rm.post("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" +
+    //        IntraHandlerRest.ROWKEY + "/:" + IntraHandlerRest.COLUMN, restHandler);
+    //rm.get("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" +
+    //        IntraHandlerRest.ROWKEY + "/:" + IntraHandlerRest.COLUMN, restHandler);
 
     rm.noMatch(new NoMatchHandler());
     registerOperationHandlers(vertx);
@@ -138,6 +125,7 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     x.eventBus().registerHandler("request.setkeyspace", new SetKeyspaceHandler());
     x.eventBus().registerHandler("request.createcolumnfamily", new CreateColumnFamilyHandler());
     x.eventBus().registerHandler("request.listkeyspaces", new ListKeyspacesHandler());
+    x.eventBus().registerHandler("request.listcolumnfamily", new ListColumnFamilyHandler());
     x.eventBus().registerHandler("request.set", new SetHandler());
     x.eventBus().registerHandler("request.setcolumnfamily", new SetColumnFamilyHandler());
     x.eventBus().registerHandler("request.assume", new AssumeHandler());
