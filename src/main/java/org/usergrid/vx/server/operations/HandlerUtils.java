@@ -189,4 +189,10 @@ public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus 
     }
     return timeout;
   }
+
+  public static JsonObject buildError(Integer id, String errorMessage) {
+    return new JsonObject()
+                .putString("exception", errorMessage)
+                .putNumber("exceptionId", id);
+  }
 }
