@@ -36,7 +36,7 @@ public class IntraHandlerRest extends IntraHandlerBase {
 
   public void handleRequestAsync(final HttpServerRequest request, Buffer buffer) {
     Map<String,String> reqParams = request.params();
-    logger.debug("Rest request [" + request.method + "] : [" + reqParams + "]");
+    logger.debug("Rest request [{}] : [{}]", request.method , reqParams);
     
         
     try {
