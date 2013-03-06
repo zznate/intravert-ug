@@ -36,18 +36,17 @@ public class IntraHandlerRest extends IntraHandlerBase {
 
   public void handleRequestAsync(final HttpServerRequest request, Buffer buffer) {
     Map<String,String> reqParams = request.params();
-    logger.debug("Request Parameters = [" + reqParams + "]");
+    logger.debug("Rest request [" + request.method + "] : [" + reqParams + "]");
     
-    // TODO  extract query, etc? or delegate lower. Probably lower given current delegation in virgil
-
-    // TODO extract keyspace (null is ok as this triggers getKeyspaces()
-
-    // TODO extract consistencyLevel header if available
-
-    // dispatch to handler
-    
+        
     try {
-      IntraReq req = IntravertRestUtils.getColumnSetOperation(request, buffer); 
+      IntraReq req = null;
+      if(request.method.equals("GET")){
+          req = IntravertRestUtils.getReadOperation(request, buffer);
+      } else {
+        throw new org.apache.cassandra.exceptions.InvalidRequestException("No valid REST operation found.");
+      }
+
       vertx.eventBus().send("request.json", req.toJson(), new Handler<Message<JsonObject>>() {
         @Override
         public void handle(Message<JsonObject> event) {

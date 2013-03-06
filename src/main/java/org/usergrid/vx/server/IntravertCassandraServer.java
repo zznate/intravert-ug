@@ -74,6 +74,7 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     rm.post("/:appid/intrareq-jsonsmile", new IntraHandlerJsonSmile(vertx));
     
     IntraHandlerRest restHandler = new IntraHandlerRest(vertx);
+    rm.get("/:appid/intrareq-rest/", restHandler);
     rm.post("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" + 
             IntraHandlerRest.ROWKEY + "/:" + IntraHandlerRest.COLUMN, restHandler);
     rm.get("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" + 
