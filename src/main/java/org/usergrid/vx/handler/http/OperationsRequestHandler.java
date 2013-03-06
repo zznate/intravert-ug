@@ -3,6 +3,7 @@ package org.usergrid.vx.handler.http;
 import org.usergrid.vx.experimental.IntraOp;
 import org.usergrid.vx.experimental.multiprocessor.MultiProcessor;
 import org.usergrid.vx.experimental.processor.Processor;
+import org.usergrid.vx.server.operations.HandlerUtils;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -113,15 +114,8 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
       idGenerator.incrementAndGet();
       TimeoutHandler timeoutHandler = new TimeoutHandler(this);
       timerId = vertx.setTimer(timeout, timeoutHandler);
-      /*
-       *         String name = (String) op.getOp().get("name");
-        Map params  = (Map) op.getOp().get("params");
-        //Processor p = state.processors.get(processorName);
-        MultiProcessor p = state.multiProcessors.get(name);
-
-        List<Map> mpResults =  p.multiProcess(res.getOpsRes(), params);
-        res.getOpsRes().put(i, mpResults);
-       */
+      
+      HandlerUtils.resolveRefs( operation, results.getObject("opsRes") );
       if (operation.getString("type").equalsIgnoreCase("multiprocess")){
         JsonObject params = operation.getObject("op");
         JsonObject theParams = params.getObject("params");

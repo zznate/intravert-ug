@@ -64,7 +64,7 @@ public class IntraServiceITest {
 
   @DataLoader(dataset = "mydata.txt")
   @Test
-	public void atest() throws CharacterCodingException{
+	public void atest() throws Exception{
 		IntraReq req = new IntraReq();
 		req.add( Operations.setKeyspaceOp("myks") ); //0
 		req.add( Operations.setColumnFamilyOp("mycf") ); //1
@@ -80,9 +80,9 @@ public class IntraServiceITest {
 		req.add( Operations.consistencyOp("ALL")); //8
 		req.add( Operations.listKeyspacesOp()); //9
 		req.add(Operations.listColumnFamilyOp("myks"));//10
-		IntraRes res = new IntraRes();
 		
-		is.handleIntraReq(req, res, x);
+		IntraClient2 ic2 = new IntraClient2("localhost", 8080);
+		IntraRes res = ic2.sendBlocking(req);
 		
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(0)  );
 		Assert.assertEquals (  "OK" , res.getOpsRes().get(1)  );

@@ -23,6 +23,14 @@ import java.util.List;
  * @author zznate
  */
 public class HandlerUtils {
+  
+  /* because handlers can not see the responses of other steps easily anymore 
+   * we move this logic here. Essentially find all res ref objects and replace
+   * them
+   */
+  public static void resolveRefs( JsonObject operation, JsonObject results ){
+    
+  }
 
   /*
    * Determine columnfamily first look in the row for a string named keyspace, then look in the op,
