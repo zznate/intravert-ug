@@ -1,6 +1,7 @@
 package org.usergrid.vx.handler.http;
 
 import org.usergrid.vx.experimental.IntraOp;
+import org.usergrid.vx.experimental.multiprocessor.MultiProcessor;
 import org.usergrid.vx.experimental.processor.Processor;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -112,7 +113,23 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
       idGenerator.incrementAndGet();
       TimeoutHandler timeoutHandler = new TimeoutHandler(this);
       timerId = vertx.setTimer(timeout, timeoutHandler);
-      if (operation.getString("type").equalsIgnoreCase("process")){
+      /*
+       *         String name = (String) op.getOp().get("name");
+        Map params  = (Map) op.getOp().get("params");
+        //Processor p = state.processors.get(processorName);
+        MultiProcessor p = state.multiProcessors.get(name);
+
+        List<Map> mpResults =  p.multiProcess(res.getOpsRes(), params);
+        res.getOpsRes().put(i, mpResults);
+       */
+      if (operation.getString("type").equalsIgnoreCase("multiprocess")){
+        JsonObject params = operation.getObject("op");
+        JsonObject theParams = params.getObject("params");
+        operation.putObject("mpparams", theParams);
+        operation.putObject("mpres", results.getObject("opsRes"));        
+        System.out.println("sendingevent to"+ params.getString("name"));
+        vertx.eventBus().send("multiprocessors." + params.getString("name"), operation, this);
+      } else if (operation.getString("type").equalsIgnoreCase("process")){
         JsonObject params = operation.getObject("op");
         Integer input = params.getInteger("input");
         operation.putArray("input", this.results.getObject("opsRes").getArray(input+"") );

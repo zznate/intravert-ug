@@ -479,13 +479,13 @@ public class IntraServiceITest {
     req.add( Operations.sliceOp("rowzz", "a", "z", 100));//8
     req.add(Operations.sliceOp("rowyy", "a", "z", 100));//9
     
-    req.add( Operations.createMultiProcess("union", "groovy",
-            "public class Union implements org.usergrid.vx.experimental.MultiProcessor { \n" +
+    req.add( Operations.createMultiProcess("union", "groovyclassloader",
+            "public class Union implements org.usergrid.vx.experimental.multiprocessor.MultiProcessor { \n" +
                     "  public List<Map> multiProcess(Map<Integer,Object> results, Map params){ \n" +
                     "    java.util.HashMap s = new java.util.HashMap(); \n" +
                     "    List<Integer> ids = (List<Integer>) params.get(\"steps\");\n" +
                     "    for (Integer id: ids) { \n" +
-                    "      List<Map> rows = results.get(id); \n" +
+                    "      List<Map> rows = results.get(id+\"\"); \n" +
                     "      for (Map row: rows){ \n" +
                     "        s.put(row.get(\"value\"),\"\"); \n" +
                     "      } \n" +
@@ -502,13 +502,15 @@ public class IntraServiceITest {
     paramsMap.put("steps", steps);
     req.add( Operations.multiProcess("union", paramsMap)); //11
     
-    IntraRes res = new IntraRes();
-    is.handleIntraReq(req, res, x);
+    IntraClient2 ic = new IntraClient2("localhost",8080);
+    IntraRes res = ic.sendBlocking(req);
+    
 
     List<Map> x = (List<Map>) res.getOpsRes().get(11);
     
     Set<String> expectedResults = new HashSet<String>();
     expectedResults.addAll( Arrays.asList(new String[] { "7", "8", "9"}));
+    System.out.println(res);
     Assert.assertEquals(expectedResults, x.get(0).keySet());
     
   }
