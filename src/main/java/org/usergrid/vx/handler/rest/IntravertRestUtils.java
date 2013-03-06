@@ -3,16 +3,18 @@ package org.usergrid.vx.handler.rest;
 import org.apache.cassandra.db.ConsistencyLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
+import org.vertx.java.core.json.JsonObject;
 
 /**
  * Utility class for extracting useful information from the request for the
  * REST API handlers.
  *
  * @author zznate
+ * @author boneill42
  */
 public class IntravertRestUtils {
-
   private static Logger log = LoggerFactory.getLogger(IntravertRestUtils.class);
 
   /**
@@ -50,4 +52,28 @@ public class IntravertRestUtils {
     return ConsistencyLevel.ONE;
   }
 
+  /**
+   * Returns the JSONObject for the event bus that represents a set operation.
+   */
+  public static JsonObject getColumnSetOperation(HttpServerRequest request, Buffer buffer) {
+    String ks = request.params().get(IntraHandlerRest.KEYSPACE);
+    String cf = request.params().get(IntraHandlerRest.COLUMN_FAMILY);
+    String row = request.params().get(IntraHandlerRest.ROWKEY);
+    String col = request.params().get(IntraHandlerRest.COLUMN);
+    
+    log.debug("SetOperation @ ks=[" + ks + "], cf=" + cf + "], row=[" + row + "], col=[" + col + "]");
+    JsonObject params = new JsonObject();
+    params.putString("keyspace", ks);
+    params.putString("columnfamily", cf);
+    params.putString("rowkey", row);
+    params.putString("name", col);
+    params.putString("value", buffer.toString());
+
+    JsonObject body = new JsonObject();
+    body.putNumber("id", new Integer(-1));
+    body.putObject("op", params);
+    
+    return body;
+  }
+  
 }

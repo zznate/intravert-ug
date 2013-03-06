@@ -15,6 +15,9 @@
  */
 package org.usergrid.vx.server;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.cassandra.service.CassandraDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,16 +27,31 @@ import org.usergrid.vx.handler.http.HelloHandler;
 import org.usergrid.vx.handler.http.NoMatchHandler;
 import org.usergrid.vx.handler.http.OperationsRequestHandler;
 import org.usergrid.vx.handler.http.TimeoutHandler;
-import org.usergrid.vx.server.operations.*;
+import org.usergrid.vx.handler.rest.IntraHandlerRest;
+import org.usergrid.vx.server.operations.AssumeHandler;
+import org.usergrid.vx.server.operations.AutotimestampHandler;
+import org.usergrid.vx.server.operations.BatchHandler;
+import org.usergrid.vx.server.operations.ComponentSelectHandler;
+import org.usergrid.vx.server.operations.ConsistencyHandler;
+import org.usergrid.vx.server.operations.CounterHandler;
+import org.usergrid.vx.server.operations.CqlQueryHandler;
+import org.usergrid.vx.server.operations.CreateColumnFamilyHandler;
+import org.usergrid.vx.server.operations.CreateFilterHandler;
+import org.usergrid.vx.server.operations.CreateKeyspaceHandler;
+import org.usergrid.vx.server.operations.FilterModeHandler;
+import org.usergrid.vx.server.operations.GetHandler;
+import org.usergrid.vx.server.operations.HandlerUtils;
+import org.usergrid.vx.server.operations.ListKeyspacesHandler;
+import org.usergrid.vx.server.operations.SetColumnFamilyHandler;
+import org.usergrid.vx.server.operations.SetHandler;
+import org.usergrid.vx.server.operations.SetKeyspaceHandler;
+import org.usergrid.vx.server.operations.SliceHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class IntravertCassandraServer implements CassandraDaemon.Server {
   private static final int PORT = 8080;
@@ -48,11 +66,19 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     logger.debug("Starting IntravertCassandraServer...");
     vertx = Vertx.newVertx();
     rm = new RouteMatcher();
+    // TODO Should we use a single instance of HelloHandler here?
     rm.put("/:appid/hello", new HelloHandler());
     rm.get("/:appid/hello", new HelloHandler());
     rm.post("/:appid/hello", new HelloHandler());
     rm.post("/:appid/intrareq-json", new IntraHandlerJson(vertx));
     rm.post("/:appid/intrareq-jsonsmile", new IntraHandlerJsonSmile(vertx));
+    
+    IntraHandlerRest restHandler = new IntraHandlerRest(vertx);
+    rm.post("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" + 
+            IntraHandlerRest.ROWKEY + "/:" + IntraHandlerRest.COLUMN, restHandler);
+    rm.get("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" + 
+            IntraHandlerRest.ROWKEY + "/:" + IntraHandlerRest.COLUMN, restHandler);
+
     rm.noMatch(new NoMatchHandler());
     registerOperationHandlers(vertx);
     registerRequestHandler(vertx);
