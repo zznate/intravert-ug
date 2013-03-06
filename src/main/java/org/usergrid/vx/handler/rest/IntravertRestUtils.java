@@ -23,6 +23,11 @@ public class IntravertRestUtils {
    */
   public static final String CONSISTENCY_LEVEL_HEADER = "X-Consistency-Level";
 
+  public static final String KEYSPACE = "ks";
+  public static final String COLUMN_FAMILY = "cf";
+  public static final String ROWKEY = "rawKey";
+  public static final String COLUMN = "col";
+
   /**
    * Returns the consistency level from the header if present. Defaults to
    * {@link ConsistencyLevel#ONE} if:
@@ -48,33 +53,6 @@ public class IntravertRestUtils {
     }
     // TODO this should be a configuration option one day
     return ConsistencyLevel.ONE;
-  }
-
-
-
-  /**
-   * Returns the JSONObject for the event bus that represents a set operation.
-   */
-  public static IntraReq getReadOperation(HttpServerRequest request, Buffer buffer) {
-    String ks = request.params().get(IntraHandlerRest.KEYSPACE);
-    String cf = request.params().get(IntraHandlerRest.COLUMN_FAMILY);
-    String row = request.params().get(IntraHandlerRest.ROWKEY);
-    String col = request.params().get(IntraHandlerRest.COLUMN);
-
-    IntraReq req = new IntraReq();
-    if ( log.isDebugEnabled()) {
-      log.debug("ReadOperation @ ks=[{}], cf=[{}], row=[{}], col=[{}]",
-              new Object[]{ks, cf, row, col});
-    }
-
-    if (ks == null){
-      log.debug("Listing keyspaces.");
-      req.add(Operations.listKeyspacesOp());
-    } else if (ks != null) {
-      log.debug("Listing column families for [{}]",ks);
-      req.add(Operations.listColumnFamilyOp(ks));      
-    }    
-    return req;
   }
 
 }
