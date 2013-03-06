@@ -1,5 +1,7 @@
 package org.usergrid.vx.handler.http;
 
+import org.usergrid.vx.experimental.IntraOp;
+import org.usergrid.vx.experimental.processor.Processor;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -110,7 +112,14 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
       idGenerator.incrementAndGet();
       TimeoutHandler timeoutHandler = new TimeoutHandler(this);
       timerId = vertx.setTimer(timeout, timeoutHandler);
-      vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation, this);
+      if (operation.getString("type").equalsIgnoreCase("process")){
+        JsonObject params = operation.getObject("op");
+        Integer input = params.getInteger("input");
+        operation.putArray("input", this.results.getObject("opsRes").getArray(input+"") );
+        vertx.eventBus().send("processors." + params.getString("processorname"), operation, this);
+      } else {
+        vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation, this);
+      }
     } else {
       sendResults();
     }

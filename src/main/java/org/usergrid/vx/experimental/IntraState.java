@@ -17,6 +17,8 @@ package org.usergrid.vx.experimental;
 
 import org.apache.cassandra.db.ConsistencyLevel;
 import org.usergrid.vx.experimental.filter.Filter;
+import org.usergrid.vx.experimental.multiprocessor.MultiProcessor;
+import org.usergrid.vx.experimental.processor.Processor;
 import org.usergrid.vx.experimental.scan.ScanContext;
 import org.usergrid.vx.experimental.scan.ScanFilter;
 
