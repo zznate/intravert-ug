@@ -149,6 +149,7 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     x.eventBus().registerHandler("request.createfilter", new CreateFilterHandler(x.eventBus()));
     x.eventBus().registerHandler("request.createprocessor", new CreateProcessorHandler(x.eventBus()));
     x.eventBus().registerHandler("request.filtermode", new FilterModeHandler());
+    x.eventBus().registerHandler("request.createmultiprocess", new CreateMultiProcessHandler(x.eventBus()));
   }
 
 }
