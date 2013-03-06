@@ -38,6 +38,7 @@ import org.usergrid.vx.server.operations.CqlQueryHandler;
 import org.usergrid.vx.server.operations.CreateColumnFamilyHandler;
 import org.usergrid.vx.server.operations.CreateFilterHandler;
 import org.usergrid.vx.server.operations.CreateKeyspaceHandler;
+import org.usergrid.vx.server.operations.CreateProcessorHandler;
 import org.usergrid.vx.server.operations.FilterModeHandler;
 import org.usergrid.vx.server.operations.GetHandler;
 import org.usergrid.vx.server.operations.HandlerUtils;
@@ -146,7 +147,7 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     x.eventBus().registerHandler("request.counter", new CounterHandler());
     x.eventBus().registerHandler("request.consistency", new ConsistencyHandler());
     x.eventBus().registerHandler("request.createfilter", new CreateFilterHandler(x.eventBus()));
-    //x.eventBus().registerHandler("request.createprocessor", new CreateProcessorHandler(x.eventBus()));
+    x.eventBus().registerHandler("request.createprocessor", new CreateProcessorHandler(x.eventBus()));
     x.eventBus().registerHandler("request.filtermode", new FilterModeHandler());
   }
 
