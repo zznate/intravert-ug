@@ -37,29 +37,16 @@ public class CreateProcessorHandler implements Handler<Message<JsonObject>>{
 
     FactoryProvider factoryProvider = new FactoryProvider();
     try {
-      //ProcessorFactory processorFactory = factoryProvider.getFilterFactory(lang);
-      //Processor processor = processorFactory.createProcessor(scriptSource);
-      GroovyClassLoader gc = new GroovyClassLoader();
-      Class c = gc.parseClass( scriptSource) ;
-      Processor p = null;
-    
-        p = (Processor) c.newInstance();
-    
-      eb.registerHandler("processors." + name, new ProcessorHandler(p));
-      //IntraState.filters.put(name, filterFactory.createFilter(scriptSource));
+      ProcessorFactory processorFactory = factoryProvider.getFilterFactory(lang);
+      Processor processor = processorFactory.createProcessor(scriptSource);
+      eb.registerHandler("processors." + name, new ProcessorHandler(processor));
       event.reply(new JsonObject().putString(id.toString(), "OK"));
     } catch (IllegalArgumentException e) {
       event.reply(new JsonObject()
         .putString(id.toString(), e.getClass().getName())
         .putString("exception", e.getMessage())
         .putString("exceptionId", id.toString()));
-    } catch (InstantiationException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    } catch (IllegalAccessException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+    } 
     
   }
 

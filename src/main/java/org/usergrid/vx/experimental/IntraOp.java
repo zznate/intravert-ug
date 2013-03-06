@@ -57,6 +57,7 @@ import org.apache.cassandra.transport.messages.ResultMessage.Kind;
 import org.usergrid.vx.experimental.filter.FactoryProvider;
 import org.usergrid.vx.experimental.filter.Filter;
 import org.usergrid.vx.experimental.filter.FilterFactory;
+import org.usergrid.vx.experimental.multiprocessor.MultiProcessor;
 import org.usergrid.vx.experimental.processor.Processor;
 import org.usergrid.vx.experimental.scan.ScanFilter;
 import org.vertx.java.core.Vertx;

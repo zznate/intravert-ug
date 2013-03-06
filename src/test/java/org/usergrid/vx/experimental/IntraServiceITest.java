@@ -251,7 +251,7 @@ public class IntraServiceITest {
      req.add( Operations.assumeOp("procks", "proccf", "value", "UTF8Type"));//5
      req.add( Operations.setOp("rowa", "col1", "wow")); //6
      req.add( Operations.getOp("rowa", "col1")); //7
-     req.add( Operations.createProcessorOp("capitalize", "groovy", 
+     req.add( Operations.createProcessorOp("capitalize", "groovyclassloader", 
          "public class Capitalize implements org.usergrid.vx.experimental.processor.Processor { \n"+
          "  public List<Map> process(List<Map> input){" +
          "    List<Map> results = new ArrayList<HashMap>();"+

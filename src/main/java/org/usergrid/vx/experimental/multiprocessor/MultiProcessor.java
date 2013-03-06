@@ -13,7 +13,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
 */
-package org.usergrid.vx.experimental;
+package org.usergrid.vx.experimental.multiprocessor;
 
 import java.util.List;
 import java.util.Map;
