@@ -1,7 +1,6 @@
 package org.usergrid.vx.handler;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.usergrid.vx.handler.rest.RestOperationNotSupportedException;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
@@ -23,7 +22,6 @@ public abstract class IntraHandlerBase implements IntraHandler {
 
   public IntraHandlerBase(Vertx vertx) {
     this.vertx = vertx;
-    registerRequestHandler();
   }
 
   @Override

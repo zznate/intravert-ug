@@ -42,11 +42,4 @@ public abstract class IntraHandlerRest extends IntraHandlerBase {
     });
   }
 
-  public void registerRequestHandler() {
-    // TODO this is probably not needed given delegation to event bus handlers
-    //vertx.eventBus().registerHandler("data.keyspaceMeta", new KeyspaceMetaHandler());
-
-  }
-
-
 }
