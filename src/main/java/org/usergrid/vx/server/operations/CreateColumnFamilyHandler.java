@@ -21,21 +21,25 @@ public class CreateColumnFamilyHandler implements Handler<Message<JsonObject>> {
         String cf = params.getString("name");
         CfDef def = new CfDef();
         def.setName(cf);
+        String ks = state.getString("currentKeyspace");
         def.setKeyspace(state.getString("currentKeyspace"));
         def.unsetId();
         CFMetaData cfm = null;
 
         try {
+          if (ks == null){ 
+            throw new org.apache.cassandra.exceptions.InvalidRequestException("No current keyspace.");
+          }
             cfm = CFMetaData.fromThrift(def);
             cfm.addDefaultIndexNames();
         } catch (org.apache.cassandra.exceptions.InvalidRequestException e) {
             response.putString("exception", e.getMessage());
-            response.putString("exceptionId", id.toString());
+            response.putNumber("exceptionId", id);
             event.reply(response);
             return;
         } catch (ConfigurationException e) {
             response.putString("exception", e.getMessage());
-            response.putString("exceptionId", id.toString());
+            response.putNumber("exceptionId", id);
             event.reply(response);
             return;
         }
@@ -43,7 +47,7 @@ public class CreateColumnFamilyHandler implements Handler<Message<JsonObject>> {
             MigrationManager.announceNewColumnFamily(cfm);
         } catch (ConfigurationException e) {
             response.putString("exception", e.getMessage());
-            response.putString("exceptionId", id.toString());
+            response.putNumber("exceptionId", id);
             event.reply(response);
             return;
         }

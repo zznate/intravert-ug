@@ -8,6 +8,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.usergrid.vx.experimental.IntraReq;
 import org.usergrid.vx.handler.IntraHandlerBase;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -46,10 +47,8 @@ public class IntraHandlerRest extends IntraHandlerBase {
     // dispatch to handler
     
     try {
-      JsonObject operation = IntravertRestUtils.getColumnSetOperation(request, buffer); 
-      //req = mapper.readValue(buffer.getBytes(), IntraReq.class);
-      
-      vertx.eventBus().send("request.set", operation, new Handler<Message<JsonObject>>() {
+      IntraReq req = IntravertRestUtils.getColumnSetOperation(request, buffer); 
+      vertx.eventBus().send("request.json", req.toJson(), new Handler<Message<JsonObject>>() {
         @Override
         public void handle(Message<JsonObject> event) {
           request.response.end(event.body.toString());
@@ -59,8 +58,6 @@ public class IntraHandlerRest extends IntraHandlerBase {
       request.response.statusCode = BAD_REQUEST.getCode();
       request.response.end(ExceptionUtils.getFullStackTrace(e));
     }
-
-
   }
 
   public void registerRequestHandler() {
