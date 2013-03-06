@@ -25,41 +25,25 @@ public abstract class IntraHandlerRest extends IntraHandlerBase {
   private final Logger logger = LoggerFactory.getLogger(IntraHandlerRest.class);
   private static ObjectMapper mapper = new ObjectMapper();
   
-  public static final String KEYSPACE = "ks";
-  public static final String COLUMN_FAMILY = "cf";
-  public static final String ROWKEY = "rawKey";
-  public static final String COLUMN = "col";
+
 
   public IntraHandlerRest(Vertx vertx) {
     super(vertx);
   }
 
-  public void handleRequestAsyncProctected(final HttpServerRequest request, Buffer buffer) {
-    Map<String,String> reqParams = request.params();
-    logger.debug("Rest request [{}] : [{}]", request.method , reqParams);
-    
-        
-    try {
-      IntraReq req = null;
-      if(request.method.equals("GET")){
-          req = IntravertRestUtils.getReadOperation(request, buffer);
-      } else {
-        throw new org.apache.cassandra.exceptions.InvalidRequestException("No valid REST operation found.");
-      }
 
-      vertx.eventBus().send("request.json", req.toJson(), new Handler<Message<JsonObject>>() {
-        @Override
-        public void handle(Message<JsonObject> event) {
-          request.response.end(event.body.toString());
-        }
-      });
-    } catch (Exception e) {
-      request.response.statusCode = BAD_REQUEST.getCode();
-      request.response.end(ExceptionUtils.getFullStackTrace(e));
-    }
+
+  protected void delegateAndReply(final HttpServerRequest request, IntraReq req) {
+    vertx.eventBus().send("request.json", req.toJson(), new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> event) {
+        request.response.end(event.body.toString());
+      }
+    });
   }
 
   public void registerRequestHandler() {
+    // TODO this is probably not needed given delegation to event bus handlers
     //vertx.eventBus().registerHandler("data.keyspaceMeta", new KeyspaceMetaHandler());
 
   }
