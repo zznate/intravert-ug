@@ -63,9 +63,12 @@ public class IntravertRestUtils {
     log.debug("ReadOperation @ ks=[" + ks + "], cf=" + cf + "], row=[" + row + "], col=[" + col + "]");
 
     if (ks == null){
+      log.debug("Listing keyspaces.");
       req.add(Operations.listKeyspacesOp());
-    }
-    
+    } else if (ks != null) {
+      log.debug("Listing column families for [" + ks + "]");
+      req.add(Operations.listColumnFamilyOp(ks));      
+    }    
     return req;
   }
 

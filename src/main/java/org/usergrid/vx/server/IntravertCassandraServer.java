@@ -75,6 +75,7 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     
     IntraHandlerRest restHandler = new IntraHandlerRest(vertx);
     rm.get("/:appid/intrareq-rest/", restHandler);
+    rm.get("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/", restHandler);
     rm.post("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" + 
             IntraHandlerRest.ROWKEY + "/:" + IntraHandlerRest.COLUMN, restHandler);
     rm.get("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" + 
