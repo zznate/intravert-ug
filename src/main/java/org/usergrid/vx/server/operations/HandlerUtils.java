@@ -5,6 +5,7 @@ import org.apache.cassandra.exceptions.OverloadedException;
 import org.apache.cassandra.exceptions.UnavailableException;
 import org.apache.cassandra.exceptions.WriteTimeoutException;
 import org.apache.cassandra.service.StorageProxy;
+import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.usergrid.vx.experimental.TypeHelper;
 import org.vertx.java.core.Handler;
@@ -13,6 +14,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -22,9 +24,15 @@ import java.util.List;
  */
 public class HandlerUtils {
 
-  public static String determineCf(JsonObject params, JsonObject state) {
+  /*
+   * Determine columnfamily first look in the row for a string named keyspace, then look in the op,
+   * then look in the state. The row is only currently provided in batchset
+   */
+  public static String determineCf(JsonObject params, JsonObject state, JsonObject row) {
     String cf = null;
-    if (params.getString("columnfamily") != null) {
+    if (row != null && row.getString("columnfamily") != null) {
+      cf = row.getString("columnfamily");
+    } else if (params.getString("columnfamily") != null) {
       cf = params.getString("columnfamily");
     } else {
       cf = state.getString("currentColumnFamily");
@@ -32,14 +40,20 @@ public class HandlerUtils {
     return cf;
   }
 
-  public static String determineKs(JsonObject params, JsonObject state) {
-      String ks = null;
-      if (params.getString("keyspace") != null) {
-          ks = params.getString("keyspace");
-      } else {
-          ks = state.getString("currentKeyspace");
-      }
-      return ks;
+  /*
+   * Determine keyspace first look in the row for a string named keyspace, then look in the op, then
+   * look in the state. The row is only currently provided in batchset
+   */
+  public static String determineKs(JsonObject params, JsonObject state, JsonObject row) {
+    String ks = null;
+    if (row != null && row.getString("keyspace") != null) {
+      ks = row.getString("keyspace");
+    } else if (params.getString("keyspace") != null) {
+      ks = params.getString("keyspace");
+    } else {
+      ks = state.getString("currentKeyspace");
+    }
+    return ks;
   }
 
   public static JsonArray readCf(ColumnFamily columnFamily, JsonObject state, JsonObject params) {
@@ -50,26 +64,35 @@ public class HandlerUtils {
       IColumn ic = it.next();
       if (ic.isLive()) {
         HashMap m = new HashMap();
-
         if (components.contains("name")) {
-          JsonObject columnMetadata = state.getObject("meta").getObject("column");
+          JsonObject columnMetadata = findMetaData(columnFamily, state, "column" );
           if (columnMetadata == null) {
-            m.put("name", ByteBufferUtil.getArray(ic.name()));
+            m.put("name", TypeHelper.getBytes(ic.name()));
           } else {
             String clazz = columnMetadata.getString("clazz");
-            m.put("name", TypeHelper.getTyped(clazz, ic.name()));
+            Object name = TypeHelper.getTyped(clazz, ic.name());
+            if (name instanceof ByteBuffer) {
+              m.put("name", TypeHelper.getBytes(ic.name()));
+            } else {
+              m.put("name", TypeHelper.getTyped(clazz, ic.name()));
+            }
           }
         }
         if (components.contains("value")) {
           if ( ic instanceof CounterColumn ) {
             m.put("value", ((CounterColumn)ic).total());
           } else {
-            JsonObject valueMetadata = state.getObject("meta").getObject("value");
+            JsonObject valueMetadata = findMetaData(columnFamily, state, "value" );
             if (valueMetadata == null) {
-              m.put("value", ByteBufferUtil.getArray(ic.value()));
+              m.put("value", TypeHelper.getBytes(ic.value()));
             } else {
               String clazz = valueMetadata.getString("clazz");
-              m.put("value", TypeHelper.getTyped(clazz, ic.value()));
+              Object value = TypeHelper.getTyped(clazz, ic.value());
+              if (value instanceof ByteBuffer) {
+                m.put("value", TypeHelper.getBytes(ic.value()));
+              } else {
+                m.put("value", value);
+              }
             }
           }
         }
@@ -84,7 +107,20 @@ public class HandlerUtils {
     }
     return array;
   }
-
+public static JsonObject findMetaData(ColumnFamily cf, JsonObject state, String type){
+  JsonObject meta = state.getObject("meta");
+  if (meta == null){
+    return null;
+  } else {
+    StringBuilder key = new StringBuilder();
+    key.append(cf.metadata().ksName);
+    key.append(' ');
+    key.append(cf.metadata().cfName);
+    key.append(' ');
+    key.append(type);
+    return meta.getObject(key.toString());
+  }
+}
 public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus eb,
     Handler<Message<JsonArray>> filterReplyHandler) {
     JsonArray components = state.getArray("components");
@@ -95,7 +131,7 @@ public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus 
         HashMap m = new HashMap();
 
         if (components.contains("name")) {
-          JsonObject columnMetadata = state.getObject("meta").getObject("column");
+          JsonObject columnMetadata = findMetaData(columnFamily, state, "column" );
           if (columnMetadata == null) {
             m.put("name", ByteBufferUtil.getArray(column.name()));
           } else {
@@ -107,7 +143,7 @@ public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus 
           if (column instanceof CounterColumn ) {
             m.put("value", ((CounterColumn)column).total());
           } else {
-            JsonObject valueMetadata = state.getObject("meta").getObject("value");
+            JsonObject valueMetadata = findMetaData(columnFamily, state, "value" );
             if (valueMetadata == null) {
               m.put("value", ByteBufferUtil.getArray(column.value()));
             } else {

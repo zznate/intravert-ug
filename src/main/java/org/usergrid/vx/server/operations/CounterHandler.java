@@ -27,11 +27,11 @@ public class CounterHandler implements Handler<Message<JsonObject>> {
     JsonObject params = event.body.getObject("op");
     JsonObject state = event.body.getObject("state");
 
-    RowMutation rm = new RowMutation(HandlerUtils.determineKs(params,state),
+    RowMutation rm = new RowMutation(HandlerUtils.determineKs(params, state, null),
             IntraService.byteBufferForObject(params.getString("rowkey")));
 
     rm.addCounter(new QueryPath(
-            HandlerUtils.determineCf(params,state),
+            HandlerUtils.determineCf(params, state, null ),
             null,
             IntraService.byteBufferForObject(params.getString("name"))),
             Long.parseLong(params.toMap().get("value").toString()));

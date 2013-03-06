@@ -15,41 +15,48 @@
 */
 package org.usergrid.vx.experimental;
 
-import java.nio.ByteBuffer;
-
 import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.db.marshal.TypeParser;
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.cassandra.exceptions.SyntaxException;
+import org.apache.cassandra.utils.ByteBufferUtil;
+
+import java.nio.ByteBuffer;
 
 public class TypeHelper {
-  public static Object getTypedIfPossible(IntraState state, String type, ByteBuffer bb, IntraOp op){
-	  
-    IntraMetaData imd = new IntraMetaData(IntraService.determineKs(null ,op, state),IntraService.determineCf(null, op, state),type);
+  public static Object getTypedIfPossible(IntraState state, String type, ByteBuffer bb, IntraOp op) {
+
+    IntraMetaData imd = new IntraMetaData(IntraService.determineKs(null, op, state), IntraService.determineCf(null, op, state), type);
     String s = state.meta.get(imd);
-      if (s == null) {
-          return bb;
-      }
-      return compose(bb, s);
+    if (s == null) {
+      return bb;
+    }
+    return compose(bb, s);
   }
 
-    public static Object getTyped(String type, ByteBuffer bb) {
-        return compose(bb, type);
-    }
+  public static Object getTyped(String type, ByteBuffer bb) {
+    return compose(bb, type);
+  }
 
-    public static Object getCqlTyped(String type, ByteBuffer bb) {
-        if (bb == null) {
-            return null;
-        }
-        return compose(bb, type);
+  public static Object getCqlTyped(String type, ByteBuffer bb) {
+    if (bb == null) {
+      return null;
     }
+    return compose(bb, type);
+  }
 
-    private static Object compose(ByteBuffer bb, String s) {
-        try {
-            AbstractType<?> abstractType = TypeParser.parse(s);
-            return abstractType.compose(bb);
-        } catch (SyntaxException | ConfigurationException e) {
-            throw new RuntimeException("Failed to parse type [" + s + "]", e);
-        }
+  private static Object compose(ByteBuffer bb, String s) {
+    try {
+      AbstractType<?> abstractType = TypeParser.parse(s);
+      return abstractType.compose(bb);
+    } catch (SyntaxException | ConfigurationException e) {
+      throw new RuntimeException("Failed to parse type [" + s + "]", e);
     }
+  }
+
+  public static byte[] getBytes(ByteBuffer buffer) {
+    // TODO figure out more efficient way to pull bytes out of buffer
+    return ByteBufferUtil.getArray(buffer);
+  }
+
 }

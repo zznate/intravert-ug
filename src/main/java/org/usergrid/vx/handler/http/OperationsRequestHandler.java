@@ -1,5 +1,7 @@
 package org.usergrid.vx.handler.http;
 
+import org.usergrid.vx.experimental.IntraOp;
+import org.usergrid.vx.experimental.processor.Processor;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.Message;
@@ -58,12 +60,12 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
     Integer currentId = idGenerator.get();
     Integer opId = currentId - 1;
 
-    String exceptionId = event.body.getString("exceptionId");
+    Integer exceptionId = event.body.getInteger("exceptionId");
     String exception = event.body.getString("exception");
 
     if (exception != null || exceptionId != null) {
       results.putString("exception", exception);
-      results.putString("exceptionId", exceptionId);
+      results.putNumber("exceptionId", exceptionId);
 
       sendResults();
     }
@@ -90,7 +92,11 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
     } else if (opResult instanceof List) {
       results.getObject("opsRes").putArray(opId.toString(), new JsonArray((List) opResult));
     } else {
-      throw new IllegalArgumentException(opResult.getClass() + " is not a supported result type");
+      if (opResult != null){
+        throw new IllegalArgumentException(opResult.getClass() + " is not a supported result type");
+      } else {
+        throw new IllegalArgumentException("No result for operation.");
+      }
     }
 
     if (idGenerator.get() < operations.size()) {
@@ -106,7 +112,14 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
       idGenerator.incrementAndGet();
       TimeoutHandler timeoutHandler = new TimeoutHandler(this);
       timerId = vertx.setTimer(timeout, timeoutHandler);
-      vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation, this);
+      if (operation.getString("type").equalsIgnoreCase("process")){
+        JsonObject params = operation.getObject("op");
+        Integer input = params.getInteger("input");
+        operation.putArray("input", this.results.getObject("opsRes").getArray(input+"") );
+        vertx.eventBus().send("processors." + params.getString("processorname"), operation, this);
+      } else {
+        vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation, this);
+      }
     } else {
       sendResults();
     }
