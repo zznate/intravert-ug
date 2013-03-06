@@ -21,7 +21,7 @@ import org.vertx.java.core.json.JsonObject;
  * @author zznate
  * @author boneill42
  */
-public class IntraHandlerRest extends IntraHandlerBase {
+public abstract class IntraHandlerRest extends IntraHandlerBase {
   private final Logger logger = LoggerFactory.getLogger(IntraHandlerRest.class);
   private static ObjectMapper mapper = new ObjectMapper();
   
@@ -34,7 +34,7 @@ public class IntraHandlerRest extends IntraHandlerBase {
     super(vertx);
   }
 
-  public void handleRequestAsync(final HttpServerRequest request, Buffer buffer) {
+  public void handleRequestAsyncProctected(final HttpServerRequest request, Buffer buffer) {
     Map<String,String> reqParams = request.params();
     logger.debug("Rest request [{}] : [{}]", request.method , reqParams);
     
@@ -60,7 +60,7 @@ public class IntraHandlerRest extends IntraHandlerBase {
   }
 
   public void registerRequestHandler() {
-    vertx.eventBus().registerHandler("data.keyspaceMeta", new KeyspaceMetaHandler());
+    //vertx.eventBus().registerHandler("data.keyspaceMeta", new KeyspaceMetaHandler());
 
   }
 
