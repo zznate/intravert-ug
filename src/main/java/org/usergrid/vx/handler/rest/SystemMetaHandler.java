@@ -11,11 +11,10 @@ import org.vertx.java.core.http.HttpServerRequest;
 /**
  * REST Handler for listing non-system keyspaces via
  * {@link org.apache.cassandra.config.Schema#getNonSystemTables()}
- *
+ * 
  * @author zznate
  */
 public class SystemMetaHandler extends IntraHandlerRest {
-
   private Logger log = LoggerFactory.getLogger(SystemMetaHandler.class);
 
   public SystemMetaHandler(Vertx vertx) {
@@ -23,11 +22,7 @@ public class SystemMetaHandler extends IntraHandlerRest {
   }
 
   @Override
-  public void handleRequestAsync(final HttpServerRequest request, Buffer buffer) {
-    log.debug("In KeyspaceMetaHandler#handleRequestAsync");
-    IntraReq req = new IntraReq();
+  public void handleGet(final HttpServerRequest request, Buffer buffer, IntraReq req) {
     req.add(Operations.listKeyspacesOp());
-    delegateAndReply(request, req);
   }
-
 }

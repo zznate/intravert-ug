@@ -13,25 +13,10 @@ import org.vertx.java.core.http.HttpServerRequest;
  * @author boneill42
  */
 public class KeyspaceMetaHandler extends IntraHandlerRest {
-
   private Logger log = LoggerFactory.getLogger(KeyspaceMetaHandler.class);
 
   public KeyspaceMetaHandler(Vertx vertx) {
     super(vertx);
-  }
-
-  @Override
-  public void handleRequestAsync(final HttpServerRequest request, Buffer buffer) {
-    log.debug("In ColumnFamilyMetaHandler#handleRequestAsync");
-    IntraReq req = new IntraReq();
-    if (request.method.equals("GET")) {
-      handleGet(request, buffer, req);
-    } else if (request.method.equals("POST")) {
-      handlePost(request, buffer, req);
-    } else if (request.method.equals("DELETE")) {
-      handleDelete(request, buffer, req);
-    }    
-    delegateAndReply(request, req);
   }
 
   public void handleGet(final HttpServerRequest request, Buffer buffer, IntraReq req) {
