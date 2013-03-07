@@ -1,11 +1,5 @@
 package org.usergrid.vx.handler.rest;
 
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-
-import java.util.Map;
-
-import org.apache.commons.lang.exception.ExceptionUtils;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.usergrid.vx.experimental.IntraReq;
@@ -22,17 +16,27 @@ import org.vertx.java.core.json.JsonObject;
  * @author boneill42
  */
 public abstract class IntraHandlerRest extends IntraHandlerBase {
-  private final Logger logger = LoggerFactory.getLogger(IntraHandlerRest.class);
-  private static ObjectMapper mapper = new ObjectMapper();
+  private final Logger log = LoggerFactory.getLogger(IntraHandlerRest.class);
   
-
-
   public IntraHandlerRest(Vertx vertx) {
     super(vertx);
   }
 
-
-
+  @Override
+  public void handleRequestAsync(final HttpServerRequest request, Buffer buffer) {
+    IntraReq req = new IntraReq();
+    if (request.method.equals("GET")) {
+      handleGet(request, buffer, req);
+    } else if (request.method.equals("POST")) {
+      handlePost(request, buffer, req);
+    } else if (request.method.equals("DELETE")) {
+      handleDelete(request, buffer, req);
+    } else if (request.method.equals("PUT")) {
+      handlePut(request, buffer, req);
+    }    
+    delegateAndReply(request, req);
+  }
+  
   protected void delegateAndReply(final HttpServerRequest request, IntraReq req) {
     vertx.eventBus().send("request.json", req.toJson(), new Handler<Message<JsonObject>>() {
       @Override
@@ -41,5 +45,20 @@ public abstract class IntraHandlerRest extends IntraHandlerBase {
       }
     });
   }
+  
+  public void handleGet(final HttpServerRequest request, Buffer buffer, IntraReq req) {
+    throw new RuntimeException("GET not supported by this handler [" + this.getClass().getSimpleName() + "]");
+  }
 
+  public void handlePost(final HttpServerRequest request, Buffer buffer, IntraReq req) {
+    throw new RuntimeException("POST not supported by this handler [" + this.getClass().getSimpleName() + "]");
+  }
+
+  public void handleDelete(final HttpServerRequest request, Buffer buffer, IntraReq req) {
+    throw new RuntimeException("DELETE not supported by this handler [" + this.getClass().getSimpleName() + "]");
+  }
+
+  public void handlePut(final HttpServerRequest request, Buffer buffer, IntraReq req) {
+    throw new RuntimeException("PUT not supported by this handler [" + this.getClass().getSimpleName() + "]");
+  }
 }
