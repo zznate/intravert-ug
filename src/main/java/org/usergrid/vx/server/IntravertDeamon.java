@@ -35,7 +35,7 @@ public class IntravertDeamon extends CassandraDaemon {
 		System.setProperty("cassandra-foreground", "true");
 		System.setProperty("log4j.defaultInitOverride", "true");
 		System.setProperty("log4j.configuration", "log4j.properties");
-    basePath = System.getProperty("basePath","/intravert");
+    basePath = System.getProperty("basePath",DEF_BASE_PATH);
 
     instance.activate();
 	}
