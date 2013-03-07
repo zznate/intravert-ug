@@ -62,7 +62,8 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     ColumnFamilyMetaHandler columnFamilyMetaHandler = new ColumnFamilyMetaHandler(vertx);
 
     rm.get("/:appid/intrareq-rest/", keyspaceMetaHandler);
-    rm.get("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/", columnFamilyMetaHandler);
+    rm.get("/:appid/intrareq-rest/:ks/", columnFamilyMetaHandler);
+    rm.post("/:appid/intrareq-rest/:ks/", columnFamilyMetaHandler);
 
     //rm.post("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" +
     //        IntraHandlerRest.ROWKEY + "/:" + IntraHandlerRest.COLUMN, restHandler);
