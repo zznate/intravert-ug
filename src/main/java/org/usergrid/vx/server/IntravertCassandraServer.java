@@ -27,9 +27,9 @@ import org.usergrid.vx.handler.http.HelloHandler;
 import org.usergrid.vx.handler.http.NoMatchHandler;
 import org.usergrid.vx.handler.http.OperationsRequestHandler;
 import org.usergrid.vx.handler.http.TimeoutHandler;
-import org.usergrid.vx.handler.rest.ColumnFamilyMetaHandler;
-import org.usergrid.vx.handler.rest.IntraHandlerRest;
 import org.usergrid.vx.handler.rest.KeyspaceMetaHandler;
+import org.usergrid.vx.handler.rest.IntraHandlerRest;
+import org.usergrid.vx.handler.rest.SystemMetaHandler;
 import org.usergrid.vx.server.operations.*;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -58,12 +58,12 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     rm.post("/:appid/intrareq-json", new IntraHandlerJson(vertx));
     rm.post("/:appid/intrareq-jsonsmile", new IntraHandlerJsonSmile(vertx));
 
+    SystemMetaHandler systemMetaHandler = new SystemMetaHandler(vertx);
     KeyspaceMetaHandler keyspaceMetaHandler = new KeyspaceMetaHandler(vertx);
-    ColumnFamilyMetaHandler columnFamilyMetaHandler = new ColumnFamilyMetaHandler(vertx);
 
-    rm.get("/:appid/intrareq-rest/", keyspaceMetaHandler);
-    rm.get("/:appid/intrareq-rest/:ks/", columnFamilyMetaHandler);
-    rm.post("/:appid/intrareq-rest/:ks/", columnFamilyMetaHandler);
+    rm.get("/:appid/intrareq-rest/", systemMetaHandler);
+    rm.get("/:appid/intrareq-rest/:ks/", keyspaceMetaHandler);
+    rm.post("/:appid/intrareq-rest/:ks/", keyspaceMetaHandler);
 
     //rm.post("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" +
     //        IntraHandlerRest.ROWKEY + "/:" + IntraHandlerRest.COLUMN, restHandler);

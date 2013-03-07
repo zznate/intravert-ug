@@ -9,10 +9,8 @@ import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 /**
- * REST Handler for listing non-system keyspaces via
- * {@link org.apache.cassandra.config.Schema#getNonSystemTables()}
- *
  * @author zznate
+ * @author boneill42
  */
 public class KeyspaceMetaHandler extends IntraHandlerRest {
 
@@ -24,10 +22,22 @@ public class KeyspaceMetaHandler extends IntraHandlerRest {
 
   @Override
   public void handleRequestAsync(final HttpServerRequest request, Buffer buffer) {
-    log.debug("In KeyspaceMetaHandler#handleRequestAsync");
+    log.debug("In ColumnFamilyMetaHandler#handleRequestAsync");
     IntraReq req = new IntraReq();
-    req.add(Operations.listKeyspacesOp());
+    if (request.method.equals("GET")) {
+      handleGet(request, buffer, req);
+    } else if (request.method.equals("POST")) {
+      handlePost(request, buffer, req);
+    }    
     delegateAndReply(request, req);
   }
 
+  public void handleGet(final HttpServerRequest request, Buffer buffer, IntraReq req) {
+    req.add(Operations.listColumnFamilyOp(request.params().get("ks")));
+  }
+
+  public void handlePost(final HttpServerRequest request, Buffer buffer, IntraReq req) {
+    // TODO: where should replication come from?
+    req.add(Operations.createKsOp(request.params().get("ks"), 1));
+  }
 }
