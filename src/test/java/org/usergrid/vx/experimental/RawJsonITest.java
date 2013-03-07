@@ -22,6 +22,7 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -415,6 +416,7 @@ public class RawJsonITest {
         assertJSONEquals("Failed to handle bad request", expectedResponse, actualResponse);
     }
 
+    @Ignore
     @Test
     public void handleBadCQL() throws Exception {
         String actualResponse = submitRequest(loadJSON("bad_cql.json"));
