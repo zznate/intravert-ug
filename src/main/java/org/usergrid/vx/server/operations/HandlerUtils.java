@@ -39,7 +39,7 @@ public class HandlerUtils {
       Object o = params.getField(name);
       if (o instanceof JsonObject){
         JsonObject j = (JsonObject) o;
-        if( j.getString("type").equals("GETREF")){
+        if( j.getString("type") !=null && j.getString("type").equals("GETREF")){
           int refId = j.getObject("op").getInteger("resultref");
           String wanted = j.getObject("op").getString("wanted");
           Object k =results.getArray(refId+"").get(0);
