@@ -28,6 +28,8 @@ public class KeyspaceMetaHandler extends IntraHandlerRest {
       handleGet(request, buffer, req);
     } else if (request.method.equals("POST")) {
       handlePost(request, buffer, req);
+    } else if (request.method.equals("DELETE")) {
+      handleDelete(request, buffer, req);
     }    
     delegateAndReply(request, req);
   }
@@ -39,5 +41,9 @@ public class KeyspaceMetaHandler extends IntraHandlerRest {
   public void handlePost(final HttpServerRequest request, Buffer buffer, IntraReq req) {
     // TODO: where should replication come from?
     req.add(Operations.createKsOp(request.params().get("ks"), 1));
+  }
+
+  public void handleDelete(final HttpServerRequest request, Buffer buffer, IntraReq req) {
+    req.add(Operations.dropKeyspaceOp(request.params().get("ks")));
   }
 }

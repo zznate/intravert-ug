@@ -64,6 +64,7 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     rm.get("/:appid/intrareq-rest/", systemMetaHandler);
     rm.get("/:appid/intrareq-rest/:ks/", keyspaceMetaHandler);
     rm.post("/:appid/intrareq-rest/:ks/", keyspaceMetaHandler);
+    rm.delete("/:appid/intrareq-rest/:ks/", keyspaceMetaHandler);
 
     //rm.post("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" +
     //        IntraHandlerRest.ROWKEY + "/:" + IntraHandlerRest.COLUMN, restHandler);
