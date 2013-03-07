@@ -1,17 +1,11 @@
 package org.usergrid.vx.server.operations;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import org.apache.cassandra.db.ConsistencyLevel;
 import org.apache.cassandra.db.IMutation;
 import org.apache.cassandra.db.RowMutation;
 import org.apache.cassandra.db.filter.QueryPath;
-import org.apache.cassandra.exceptions.OverloadedException;
-import org.apache.cassandra.exceptions.UnavailableException;
-import org.apache.cassandra.exceptions.WriteTimeoutException;
-import org.apache.cassandra.service.StorageProxy;
 import org.usergrid.vx.experimental.IntraService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;

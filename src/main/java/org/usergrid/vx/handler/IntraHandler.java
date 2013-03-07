@@ -18,6 +18,4 @@ public interface IntraHandler extends Handler<HttpServerRequest> {
    */
   void handleRequestAsync(HttpServerRequest req, Buffer buffer);
 
-  void registerRequestHandler();
-
 }

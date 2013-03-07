@@ -15,6 +15,9 @@
  */
 package org.usergrid.vx.server;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.cassandra.service.CassandraDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +27,9 @@ import org.usergrid.vx.handler.http.HelloHandler;
 import org.usergrid.vx.handler.http.NoMatchHandler;
 import org.usergrid.vx.handler.http.OperationsRequestHandler;
 import org.usergrid.vx.handler.http.TimeoutHandler;
+import org.usergrid.vx.handler.rest.KeyspaceMetaHandler;
+import org.usergrid.vx.handler.rest.IntraHandlerRest;
+import org.usergrid.vx.handler.rest.SystemMetaHandler;
 import org.usergrid.vx.server.operations.*;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -31,9 +37,6 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.RouteMatcher;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class IntravertCassandraServer implements CassandraDaemon.Server {
   private static final int PORT = 8080;
@@ -48,11 +51,26 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     logger.debug("Starting IntravertCassandraServer...");
     vertx = Vertx.newVertx();
     rm = new RouteMatcher();
+    // TODO Should we use a single instance of HelloHandler here?
     rm.put("/:appid/hello", new HelloHandler());
     rm.get("/:appid/hello", new HelloHandler());
     rm.post("/:appid/hello", new HelloHandler());
     rm.post("/:appid/intrareq-json", new IntraHandlerJson(vertx));
     rm.post("/:appid/intrareq-jsonsmile", new IntraHandlerJsonSmile(vertx));
+
+    SystemMetaHandler systemMetaHandler = new SystemMetaHandler(vertx);
+    KeyspaceMetaHandler keyspaceMetaHandler = new KeyspaceMetaHandler(vertx);
+
+    rm.get("/:appid/intrareq-rest/", systemMetaHandler);
+    rm.get("/:appid/intrareq-rest/:ks/", keyspaceMetaHandler);
+    rm.post("/:appid/intrareq-rest/:ks/", keyspaceMetaHandler);
+    rm.delete("/:appid/intrareq-rest/:ks/", keyspaceMetaHandler);
+
+    //rm.post("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" +
+    //        IntraHandlerRest.ROWKEY + "/:" + IntraHandlerRest.COLUMN, restHandler);
+    //rm.get("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" +
+    //        IntraHandlerRest.ROWKEY + "/:" + IntraHandlerRest.COLUMN, restHandler);
+
     rm.noMatch(new NoMatchHandler());
     registerOperationHandlers(vertx);
     registerRequestHandler(vertx);
@@ -109,6 +127,7 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     x.eventBus().registerHandler("request.setkeyspace", new SetKeyspaceHandler());
     x.eventBus().registerHandler("request.createcolumnfamily", new CreateColumnFamilyHandler());
     x.eventBus().registerHandler("request.listkeyspaces", new ListKeyspacesHandler());
+    x.eventBus().registerHandler("request.listcolumnfamily", new ListColumnFamilyHandler());
     x.eventBus().registerHandler("request.set", new SetHandler());
     x.eventBus().registerHandler("request.setcolumnfamily", new SetColumnFamilyHandler());
     x.eventBus().registerHandler("request.assume", new AssumeHandler());

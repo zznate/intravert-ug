@@ -30,3 +30,18 @@ Spend some time looking through the documentation, test cases, and examples to s
 ## Getting Started
 You can find a brief overview located here:
 <https://github.com/zznate/intravert-ug/wiki>
+
+If you are super impatient, download the source, use maven to install:
+
+    mvn install
+
+Then use maven executor to start the IntravertDeamon thusly:
+
+    mvn -e exec:java -Dexec.mainClass="org.usergrid.vx.server.IntravertDeamon"
+
+
+To ensure that everything is working, invoke the say_hello.sh script in the examples director:
+
+	./examples/say_hello.sh
+	
+You can then try some of the additional examples for either the rest or json sub directories. 
