@@ -1,3 +1,3 @@
 echo "Listing keyspaces."
-curl -X GET http://localhost:8080/myapp/intrareq-rest/
+curl -X GET http://localhost:8080/intravert/intrareq-rest/
 echo

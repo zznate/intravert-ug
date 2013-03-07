@@ -122,7 +122,7 @@ public class RawJsonITest {
     public void setColumnUsingGetRef() throws Exception {
         String insertColumnsJSON = loadJSON("insert_columns_for_getref.json");
         final CountDownLatch doneSignal = new CountDownLatch(1);
-        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
+        final HttpClientRequest setReq = httpClient.request("POST", "/intravert/intrareq-json", new Handler<HttpClientResponse>() {
             @Override
             public void handle(HttpClientResponse resp) {
                 resp.endHandler(new SimpleHandler() {
@@ -139,7 +139,7 @@ public class RawJsonITest {
 
         String getrefJSON = loadJSON("getref.json");
         final Buffer data = new Buffer(0);
-        final HttpClientRequest getReq = httpClient.request("POST", "/:appid/intrareq-json",
+        final HttpClientRequest getReq = httpClient.request("POST", "/intravert/intrareq-json",
             new Handler<HttpClientResponse>() {
                 @Override
                 public void handle(HttpClientResponse resp) {
@@ -173,7 +173,7 @@ public class RawJsonITest {
     public void filterColumnSlice() throws Exception {
         String insertBeersJSON = loadJSON("insert_beers.json");
         final CountDownLatch doneSignal = new CountDownLatch(1);
-        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
+        final HttpClientRequest setReq = httpClient.request("POST", "/intravert/intrareq-json", new Handler<HttpClientResponse>() {
             @Override
             public void handle(HttpClientResponse resp) {
                 resp.endHandler(new SimpleHandler() {
@@ -190,7 +190,7 @@ public class RawJsonITest {
 
         final String getBeersJSON = loadJSON("filter_beers.json");
         final Buffer data = new Buffer(0);
-        final HttpClientRequest getReq = httpClient.request("POST", "/:appid/intrareq-json",
+        final HttpClientRequest getReq = httpClient.request("POST", "/intravert/intrareq-json",
             new Handler<HttpClientResponse>() {
                 @Override
                 public void handle(HttpClientResponse resp) {
@@ -224,7 +224,7 @@ public class RawJsonITest {
     public void javascriptFilterColumnSlice() throws Exception {
         String insertBeersJSON = loadJSON("insert_beers.json");
         final CountDownLatch doneSignal = new CountDownLatch(1);
-        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
+        final HttpClientRequest setReq = httpClient.request("POST", "/intravert/intrareq-json", new Handler<HttpClientResponse>() {
             @Override
             public void handle(HttpClientResponse resp) {
                 resp.endHandler(new SimpleHandler() {
@@ -241,7 +241,7 @@ public class RawJsonITest {
 
         final String getBeersJSON = loadJSON("filter_beers_js.json");
         final Buffer data = new Buffer(0);
-        final HttpClientRequest getReq = httpClient.request("POST", "/:appid/intrareq-json",
+        final HttpClientRequest getReq = httpClient.request("POST", "/intravert/intrareq-json",
             new Handler<HttpClientResponse>() {
                 @Override
                 public void handle(HttpClientResponse resp) {
@@ -454,7 +454,7 @@ public class RawJsonITest {
     private String submitRequest(String json) throws InterruptedException {
         final Buffer data = new Buffer();
         final CountDownLatch doneSignal = new CountDownLatch(1);
-        final HttpClientRequest setReq = httpClient.request("POST", "/:appid/intrareq-json", new Handler<HttpClientResponse>() {
+        final HttpClientRequest setReq = httpClient.request("POST", "/intravert/intrareq-json", new Handler<HttpClientResponse>() {
             @Override
             public void handle(HttpClientResponse resp) {
                 resp.dataHandler(new Handler<Buffer>() {

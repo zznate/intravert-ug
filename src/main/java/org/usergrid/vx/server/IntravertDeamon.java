@@ -25,34 +25,34 @@ public class IntravertDeamon extends CassandraDaemon {
 
   private static final Logger logger = LoggerFactory.getLogger(IntravertDeamon.class);
 
+  public static final String DEF_BASE_PATH = "/intravert";
+
   private static final IntravertDeamon instance = new IntravertDeamon();
   public Server intravertServer;
+  private static String basePath = DEF_BASE_PATH;
 
 	public static void main(String[] args) {
 		System.setProperty("cassandra-foreground", "true");
 		System.setProperty("log4j.defaultInitOverride", "true");
 		System.setProperty("log4j.configuration", "log4j.properties");
-		//CassandraDaemon.initLog4j();
+    basePath = System.getProperty("basePath",DEF_BASE_PATH);
 
     instance.activate();
-		//IntravertDeamon is = new IntravertDeamon();
-
 	}
 
   @Override
   protected void setup() {
     super.setup();
-    intravertServer = new IntravertCassandraServer();
+    intravertServer = new IntravertCassandraServer(basePath);
   }
 
   @Override
   public void init(String[] arguments) throws IOException {
-    super.init(arguments);    //To change body of overridden methods use File | Settings | File Templates.
+    super.init(arguments);
   }
 
   @Override
   public void start() {
-    //super.start();
     intravertServer.start();
   }
 

@@ -60,7 +60,7 @@ public class IntraClient implements Handler<HttpClientResponse> {
 	}
 
 	public IntraRes sendBlocking(IntraReq i) throws Exception {
-		HttpClientRequest req = httpClient.request("POST", "/:appid/intrareq-"+payload, this);
+		HttpClientRequest req = httpClient.request("POST", "/intravert/intrareq-"+payload, this);
 		if (payload.equalsIgnoreCase("xml")){
 			ByteArrayOutputStream bo = new ByteArrayOutputStream();
 			XMLEncoder e = new XMLEncoder(bo);
