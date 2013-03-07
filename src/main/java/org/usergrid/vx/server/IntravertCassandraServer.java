@@ -45,26 +45,32 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
   private static RouteMatcher rm;
   private static IntravertClusterNotifier intravertClusterNotifier;
   private static final AtomicBoolean running = new AtomicBoolean(false);
+  private final String basePath;
+
+  public IntravertCassandraServer(String basePath) {
+    this.basePath = basePath;
+  }
+
 
   @Override
   public void start() {
-    logger.debug("Starting IntravertCassandraServer...");
+    logger.info("Starting IntravertCassandraServer with base path {}", basePath);
     vertx = Vertx.newVertx();
     rm = new RouteMatcher();
     // TODO Should we use a single instance of HelloHandler here?
-    rm.put("/:appid/hello", new HelloHandler());
-    rm.get("/:appid/hello", new HelloHandler());
-    rm.post("/:appid/hello", new HelloHandler());
-    rm.post("/:appid/intrareq-json", new IntraHandlerJson(vertx));
-    rm.post("/:appid/intrareq-jsonsmile", new IntraHandlerJsonSmile(vertx));
+    rm.put(String.format("%s/hello", basePath), new HelloHandler());
+    rm.get(String.format("%s/hello", basePath), new HelloHandler());
+    rm.post(String.format("%s/hello", basePath), new HelloHandler());
+    rm.post(String.format("%s/intrareq-json", basePath), new IntraHandlerJson(vertx));
+    rm.post(String.format("%s/intrareq-jsonsmile", basePath), new IntraHandlerJsonSmile(vertx));
 
     SystemMetaHandler systemMetaHandler = new SystemMetaHandler(vertx);
     KeyspaceMetaHandler keyspaceMetaHandler = new KeyspaceMetaHandler(vertx);
 
-    rm.get("/:appid/intrareq-rest/", systemMetaHandler);
-    rm.get("/:appid/intrareq-rest/:ks/", keyspaceMetaHandler);
-    rm.post("/:appid/intrareq-rest/:ks/", keyspaceMetaHandler);
-    rm.delete("/:appid/intrareq-rest/:ks/", keyspaceMetaHandler);
+    rm.get(String.format("%s/intrareq-rest/", basePath),systemMetaHandler);
+    rm.get(String.format("%s/intrareq-rest/:ks/", basePath), keyspaceMetaHandler);
+    rm.post(String.format("%s/intrareq-rest/:ks/",basePath), keyspaceMetaHandler);
+    rm.delete(String.format("%s/intrareq-rest/:ks/", basePath),keyspaceMetaHandler);
 
     //rm.post("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" +
     //        IntraHandlerRest.ROWKEY + "/:" + IntraHandlerRest.COLUMN, restHandler);
