@@ -12,12 +12,15 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
+import org.vertx.java.core.json.JsonElement;
 import org.vertx.java.core.json.JsonObject;
 
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author zznate
@@ -29,6 +32,31 @@ public class HandlerUtils {
    * them
    */
   public static void resolveRefs( JsonObject operation, JsonObject results ){
+    JsonObject params = operation.getObject("op");
+    Set<String> names = params.getFieldNames();
+    System.out.println("filed names" + names);
+    for (String name : names){
+      Object o = params.getField(name);
+      if (o instanceof JsonObject){
+        JsonObject j = (JsonObject) o;
+        if( j.getString("type").equals("GETREF")){
+          int refId = j.getObject("op").getInteger("resultref");
+          String wanted = j.getObject("op").getString("wanted");
+          Object k =results.getArray(refId+"").get(0);
+          JsonObject m = (JsonObject) k;
+          Object theDamnThing = m.getField(wanted);
+          System.out.println(theDamnThing);
+          if (theDamnThing instanceof String){
+            params.putString(name, (String) theDamnThing);
+          }
+          if (theDamnThing instanceof Number){
+            params.putNumber(name, (Number)theDamnThing);
+          }
+          
+          
+        }
+      }
+    }
     
   }
 
