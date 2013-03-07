@@ -25,9 +25,11 @@ public class IntravertDeamon extends CassandraDaemon {
 
   private static final Logger logger = LoggerFactory.getLogger(IntravertDeamon.class);
 
+  public static final String DEF_BASE_PATH = "/intravert";
+
   private static final IntravertDeamon instance = new IntravertDeamon();
   public Server intravertServer;
-  private static String basePath;
+  private static String basePath = DEF_BASE_PATH;
 
 	public static void main(String[] args) {
 		System.setProperty("cassandra-foreground", "true");

@@ -25,8 +25,8 @@ public class IntraClient2 {
 	private ObjectMapper mapper ;
 	private SmileFactory sf = new SmileFactory();
 	private static String METHOD="POST";
-	private static String ENDPOINT_JSON="/:appid/intrareq-json";
-	private static String ENDPOINT_SMILE="/:appid/intrareq-smile";
+	private static String ENDPOINT_JSON="/intravert/intrareq-json";
+	private static String ENDPOINT_SMILE="/intravert/intrareq-smile";
 	private String endpoint;
 	private static final String CONTENT_LENGTH="content-length";
 	public enum Transport { JSON, SMILE, XML }
