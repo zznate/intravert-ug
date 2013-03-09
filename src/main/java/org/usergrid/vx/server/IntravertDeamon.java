@@ -15,7 +15,10 @@
 */
 package org.usergrid.vx.server;
 
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Preconditions;
 import org.apache.cassandra.service.CassandraDaemon;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +38,8 @@ public class IntravertDeamon extends CassandraDaemon {
 		System.setProperty("cassandra-foreground", "true");
 		System.setProperty("log4j.defaultInitOverride", "true");
 		System.setProperty("log4j.configuration", "log4j.properties");
-    basePath = System.getProperty("basePath",DEF_BASE_PATH);
+
+    createBasePath();
 
     instance.activate();
 	}
@@ -62,5 +66,18 @@ public class IntravertDeamon extends CassandraDaemon {
     intravertServer.stop();
   }
 
+  /**
+   * check for a pre-configured basePath, reset to empty string if we are just a
+   * slash or spaces.
+   *
+   * @return
+   */
+  private static String createBasePath() {
+    basePath = System.getProperty("basePath",DEF_BASE_PATH);
+    if (StringUtils.isBlank(basePath) || StringUtils.equals(basePath, "/") ) {
+      basePath = StringUtils.EMPTY;
+    } 
+    return basePath;
+  }
 
 }
