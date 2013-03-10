@@ -17,6 +17,7 @@ package org.usergrid.vx.experimental;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.usergrid.vx.handler.RequestJsonHandler;
@@ -40,11 +41,19 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
  *     of {@link IHResponse}</li>
  *   <li>IHResponse with send the response via the end method of HttpServerRequest</li>
  * </ol>
+ *
+ * In debug mode, this class will dump the payload received in the form of what was
+ * paesed into {@link IntraReq}
  */
 public class IntraHandlerJson implements Handler<HttpServerRequest>{
   private static Logger logger = LoggerFactory.getLogger(IntraHandlerJson.class);
 
   private static ObjectMapper mapper = new ObjectMapper();
+  private static ObjectMapper indentObjectMapper = new ObjectMapper();
+
+  static {
+      indentObjectMapper.getSerializationConfig().set(SerializationConfig.Feature.INDENT_OUTPUT, true);
+  }
 
   private final Vertx vertx;
 
@@ -65,6 +74,10 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
     IntraReq req = null;
     try {
       req = mapper.readValue(buffer.getBytes(), IntraReq.class);
+      if ( logger.isDebugEnabled()) {
+        logger.debug("IntraJsonHandler received payload: \n{}",
+                indentObjectMapper.writeValueAsString(req));
+      }
       vertx.eventBus().send(RequestJsonHandler.IHJSON_HANDLER_TOPIC,
               req.toJson(),
               new IHResponse(request));
