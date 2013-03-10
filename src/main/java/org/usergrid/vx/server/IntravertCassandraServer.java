@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.usergrid.vx.experimental.IntraHandlerJson;
 import org.usergrid.vx.experimental.IntraHandlerJsonSmile;
+import org.usergrid.vx.handler.RequestJsonHandler;
 import org.usergrid.vx.handler.http.HelloHandler;
 import org.usergrid.vx.handler.http.NoMatchHandler;
 import org.usergrid.vx.handler.http.OperationsRequestHandler;
@@ -92,32 +93,9 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     return running.get();
   }
 
-  public static void registerRequestHandler(final Vertx x) {
-    x.eventBus().registerHandler("request.json", new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> event) {
-        AtomicInteger idGenerator = new AtomicInteger(0);
-        JsonArray operations = event.body.getArray("e");
-        JsonObject operation = (JsonObject) operations.get(idGenerator.get());
-        Long timeout = HandlerUtils.getOperationTime(operation);
-
-        operation.putNumber("id", idGenerator.get());
-        operation.putObject("state", new JsonObject()
-            .putArray("components", new JsonArray()
-                .add("name")
-                .add("value")));
-        idGenerator.incrementAndGet();
-
-        OperationsRequestHandler operationsRequestHandler = new OperationsRequestHandler(idGenerator,
-            operations, event, x);
-        TimeoutHandler timeoutHandler = new TimeoutHandler(operationsRequestHandler);
-        long timerId = x.setTimer(timeout, timeoutHandler);
-        operationsRequestHandler.setTimerId(timerId);
-
-        x.eventBus().send("request." + operation.getString("type").toLowerCase(), operation,
-            operationsRequestHandler);
-      }
-    });
+  public static void registerRequestHandler(Vertx x) {
+    x.eventBus().registerHandler(RequestJsonHandler.IHJSON_HANDLER_TOPIC,
+            new RequestJsonHandler(vertx));
   }
    
   public static void registerOperationHandlers(Vertx x) {
