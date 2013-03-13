@@ -15,7 +15,10 @@
 */
 package org.usergrid.vx.server;
 
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Preconditions;
 import org.apache.cassandra.service.CassandraDaemon;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,34 +28,35 @@ public class IntravertDeamon extends CassandraDaemon {
 
   private static final Logger logger = LoggerFactory.getLogger(IntravertDeamon.class);
 
+  public static final String DEF_BASE_PATH = "/intravert";
+
   private static final IntravertDeamon instance = new IntravertDeamon();
   public Server intravertServer;
+  private static String basePath = DEF_BASE_PATH;
 
 	public static void main(String[] args) {
 		System.setProperty("cassandra-foreground", "true");
 		System.setProperty("log4j.defaultInitOverride", "true");
 		System.setProperty("log4j.configuration", "log4j.properties");
-		//CassandraDaemon.initLog4j();
+
+    createBasePath();
 
     instance.activate();
-		//IntravertDeamon is = new IntravertDeamon();
-
 	}
 
   @Override
   protected void setup() {
     super.setup();
-    intravertServer = new IntravertCassandraServer();
+    intravertServer = new IntravertCassandraServer(basePath);
   }
 
   @Override
   public void init(String[] arguments) throws IOException {
-    super.init(arguments);    //To change body of overridden methods use File | Settings | File Templates.
+    super.init(arguments);
   }
 
   @Override
   public void start() {
-    //super.start();
     intravertServer.start();
   }
 
@@ -62,5 +66,18 @@ public class IntravertDeamon extends CassandraDaemon {
     intravertServer.stop();
   }
 
+  /**
+   * check for a pre-configured basePath, reset to empty string if we are just a
+   * slash or spaces.
+   *
+   * @return
+   */
+  private static String createBasePath() {
+    basePath = System.getProperty("basePath",DEF_BASE_PATH);
+    if (StringUtils.isBlank(basePath) || StringUtils.equals(basePath, "/") ) {
+      basePath = StringUtils.EMPTY;
+    } 
+    return basePath;
+  }
 
 }

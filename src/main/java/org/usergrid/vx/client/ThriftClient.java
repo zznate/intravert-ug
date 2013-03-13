@@ -30,7 +30,7 @@ import org.vertx.java.core.http.HttpClientResponse;
 public class ThriftClient implements Handler<HttpClientResponse> {
 
 	public static void main(String[] args) throws Exception {
-		String servletUrl = "http://localhost:8080/:appid/thriftjson";
+		String servletUrl = "http://localhost:8080/intravert/thriftjson";
 
 		THttpClient thc = new THttpClient(servletUrl);
 		TProtocol loPFactory = new TJSONProtocol(thc);

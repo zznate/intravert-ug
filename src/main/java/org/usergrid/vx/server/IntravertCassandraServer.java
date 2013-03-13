@@ -16,27 +16,41 @@
 package org.usergrid.vx.server;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.cassandra.service.CassandraDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.usergrid.vx.experimental.IntraHandlerJson;
 import org.usergrid.vx.experimental.IntraHandlerJsonSmile;
+import org.usergrid.vx.handler.RequestJsonHandler;
 import org.usergrid.vx.handler.http.HelloHandler;
 import org.usergrid.vx.handler.http.NoMatchHandler;
-import org.usergrid.vx.handler.http.OperationsRequestHandler;
-import org.usergrid.vx.handler.http.TimeoutHandler;
+import org.usergrid.vx.handler.rest.ColumnFamilyRestHandler;
+import org.usergrid.vx.handler.rest.ColumnRestHandler;
 import org.usergrid.vx.handler.rest.KeyspaceMetaHandler;
-import org.usergrid.vx.handler.rest.IntraHandlerRest;
 import org.usergrid.vx.handler.rest.SystemMetaHandler;
-import org.usergrid.vx.server.operations.*;
-import org.vertx.java.core.Handler;
+import org.usergrid.vx.server.operations.AssumeHandler;
+import org.usergrid.vx.server.operations.AutotimestampHandler;
+import org.usergrid.vx.server.operations.BatchHandler;
+import org.usergrid.vx.server.operations.ComponentSelectHandler;
+import org.usergrid.vx.server.operations.ConsistencyHandler;
+import org.usergrid.vx.server.operations.CounterHandler;
+import org.usergrid.vx.server.operations.CqlQueryHandler;
+import org.usergrid.vx.server.operations.CreateColumnFamilyHandler;
+import org.usergrid.vx.server.operations.CreateFilterHandler;
+import org.usergrid.vx.server.operations.CreateKeyspaceHandler;
+import org.usergrid.vx.server.operations.CreateMultiProcessHandler;
+import org.usergrid.vx.server.operations.CreateProcessorHandler;
+import org.usergrid.vx.server.operations.FilterModeHandler;
+import org.usergrid.vx.server.operations.GetHandler;
+import org.usergrid.vx.server.operations.ListColumnFamilyHandler;
+import org.usergrid.vx.server.operations.ListKeyspacesHandler;
+import org.usergrid.vx.server.operations.SetColumnFamilyHandler;
+import org.usergrid.vx.server.operations.SetHandler;
+import org.usergrid.vx.server.operations.SetKeyspaceHandler;
+import org.usergrid.vx.server.operations.SliceHandler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
 
 public class IntravertCassandraServer implements CassandraDaemon.Server {
   private static final int PORT = 8080;
@@ -45,31 +59,37 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
   private static RouteMatcher rm;
   private static IntravertClusterNotifier intravertClusterNotifier;
   private static final AtomicBoolean running = new AtomicBoolean(false);
+  private final String basePath;
+
+  public IntravertCassandraServer(String basePath) {
+    this.basePath = basePath;
+  }
+
 
   @Override
   public void start() {
-    logger.debug("Starting IntravertCassandraServer...");
+    logger.info("Starting IntravertCassandraServer with base path {}", basePath);
     vertx = Vertx.newVertx();
     rm = new RouteMatcher();
     // TODO Should we use a single instance of HelloHandler here?
-    rm.put("/:appid/hello", new HelloHandler());
-    rm.get("/:appid/hello", new HelloHandler());
-    rm.post("/:appid/hello", new HelloHandler());
-    rm.post("/:appid/intrareq-json", new IntraHandlerJson(vertx));
-    rm.post("/:appid/intrareq-jsonsmile", new IntraHandlerJsonSmile(vertx));
+    rm.put(String.format("%s/hello", basePath), new HelloHandler());
+    rm.get(String.format("%s/hello", basePath), new HelloHandler());
+    rm.post(String.format("%s/hello", basePath), new HelloHandler());
+    rm.post(String.format("%s/intrareq-json", basePath), new IntraHandlerJson(vertx));
+    rm.post(String.format("%s/intrareq-jsonsmile", basePath), new IntraHandlerJsonSmile(vertx));
 
     SystemMetaHandler systemMetaHandler = new SystemMetaHandler(vertx);
     KeyspaceMetaHandler keyspaceMetaHandler = new KeyspaceMetaHandler(vertx);
+    ColumnFamilyRestHandler columnFamilyRestHandler = new ColumnFamilyRestHandler(vertx);
+    ColumnRestHandler columnRestHandler = new ColumnRestHandler(vertx);
 
-    rm.get("/:appid/intrareq-rest/", systemMetaHandler);
-    rm.get("/:appid/intrareq-rest/:ks/", keyspaceMetaHandler);
-    rm.post("/:appid/intrareq-rest/:ks/", keyspaceMetaHandler);
-    rm.delete("/:appid/intrareq-rest/:ks/", keyspaceMetaHandler);
-
-    //rm.post("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" +
-    //        IntraHandlerRest.ROWKEY + "/:" + IntraHandlerRest.COLUMN, restHandler);
-    //rm.get("/:appid/intrareq-rest/:" + IntraHandlerRest.KEYSPACE + "/:" + IntraHandlerRest.COLUMN_FAMILY + "/:" +
-    //        IntraHandlerRest.ROWKEY + "/:" + IntraHandlerRest.COLUMN, restHandler);
+    rm.get(String.format("%s/intrareq-rest/", basePath),systemMetaHandler);
+    rm.get(String.format("%s/intrareq-rest/:ks/", basePath), keyspaceMetaHandler);
+    rm.post(String.format("%s/intrareq-rest/:ks/",basePath), keyspaceMetaHandler);
+    rm.delete(String.format("%s/intrareq-rest/:ks/", basePath), keyspaceMetaHandler);
+    rm.post(String.format("%s/intrareq-rest/:ks/:cf", basePath), columnFamilyRestHandler);
+    rm.post(String.format("%s/intrareq-rest/:ks/:cf/:row/:col", basePath), columnRestHandler);
+    rm.get(String.format("%s/intrareq-rest/:ks/:cf/:row/:col", basePath), columnRestHandler);
 
     rm.noMatch(new NoMatchHandler());
     registerOperationHandlers(vertx);
@@ -91,32 +111,9 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     return running.get();
   }
 
-  public static void registerRequestHandler(final Vertx x) {
-    x.eventBus().registerHandler("request.json", new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> event) {
-        AtomicInteger idGenerator = new AtomicInteger(0);
-        JsonArray operations = event.body.getArray("e");
-        JsonObject operation = (JsonObject) operations.get(idGenerator.get());
-        Long timeout = HandlerUtils.getOperationTime(operation);
-
-        operation.putNumber("id", idGenerator.get());
-        operation.putObject("state", new JsonObject()
-            .putArray("components", new JsonArray()
-                .add("name")
-                .add("value")));
-        idGenerator.incrementAndGet();
-
-        OperationsRequestHandler operationsRequestHandler = new OperationsRequestHandler(idGenerator,
-            operations, event, x);
-        TimeoutHandler timeoutHandler = new TimeoutHandler(operationsRequestHandler);
-        long timerId = x.setTimer(timeout, timeoutHandler);
-        operationsRequestHandler.setTimerId(timerId);
-
-        x.eventBus().send("request." + operation.getString("type").toLowerCase(), operation,
-            operationsRequestHandler);
-      }
-    });
+  public static void registerRequestHandler(Vertx x) {
+    x.eventBus().registerHandler(RequestJsonHandler.IHJSON_HANDLER_TOPIC,
+            new RequestJsonHandler(vertx));
   }
    
   public static void registerOperationHandlers(Vertx x) {

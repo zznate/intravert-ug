@@ -43,7 +43,7 @@ public class HelloClient implements Handler<HttpClientResponse> {
         }
         
         public void post(){
-        	HttpClientRequest req = httpClient.request("POST", "/:appid/hello", this);
+        	HttpClientRequest req = httpClient.request("POST", "/intravert/hello", this);
         	String value ="";
         	req.putHeader("content-length", value.length());
         	req.write(value);
