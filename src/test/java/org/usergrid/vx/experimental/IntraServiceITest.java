@@ -415,6 +415,7 @@ public class IntraServiceITest {
 	}
 	 
 	 @Test
+	 @Ignore
    public void clearTest() throws Exception{
      IntraReq req = new IntraReq();
      req.add( Operations.setKeyspaceOp("clearks") ); //0
@@ -630,6 +631,7 @@ public class IntraServiceITest {
   }
   
   @Test
+  @Ignore
   @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
   public void saveStateTest() throws Exception {
     //IntraClient ic = new IntraClient();
@@ -850,6 +852,7 @@ public class IntraServiceITest {
 	}
 	
 	@Test
+	@Ignore
 	@RequiresColumnFamily(ksName = "myks", cfName = "mycf")
 	public void preparedStatementTest() throws Exception {
 		IntraReq req = new IntraReq();
@@ -918,6 +921,7 @@ public class IntraServiceITest {
 	
 	
 	@Test
+	@Ignore
 	@RequiresColumnFamily(ksName = "myks", cfName = "mycf")
 	public void sliceNamesTest() throws Exception {
 		IntraReq req = new IntraReq();
@@ -939,6 +943,7 @@ public class IntraServiceITest {
 	}
 
   @Test
+  @Ignore
   @RequiresColumnFamily(ksName = "myks", cfName = "mycountercf", isCounter = true)
   public void counterNoodling() throws Exception {
     IntraReq req = new IntraReq();

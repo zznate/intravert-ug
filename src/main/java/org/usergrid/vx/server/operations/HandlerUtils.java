@@ -26,38 +26,33 @@ import java.util.Set;
  * @author zznate
  */
 public class HandlerUtils {
-  
-  /* because handlers can not see the responses of other steps easily anymore 
-   * we move this logic here. Essentially find all res ref objects and replace
-   * them
+
+  /*
+   * because handlers can not see the responses of other steps easily anymore we move this logic
+   * here. Essentially find all res ref objects and replace them
    */
-  public static void resolveRefs( JsonObject operation, JsonObject results ){
+  public static void resolveRefs(JsonObject operation, JsonObject results) {
     JsonObject params = operation.getObject("op");
     Set<String> names = params.getFieldNames();
-    System.out.println("filed names" + names);
-    for (String name : names){
+    for (String name : names) {
       Object o = params.getField(name);
-      if (o instanceof JsonObject){
+      if (o instanceof JsonObject) {
         JsonObject j = (JsonObject) o;
-        if( j.getString("type") !=null && j.getString("type").equals("GETREF")){
+        if (j.getString("type") != null && j.getString("type").equals("GETREF")) {
           int refId = j.getObject("op").getInteger("resultref");
           String wanted = j.getObject("op").getString("wanted");
-          Object k =results.getArray(refId+"").get(0);
+          Object k = results.getArray(refId + "").get(0);
           JsonObject m = (JsonObject) k;
           Object theDamnThing = m.getField(wanted);
-          System.out.println(theDamnThing);
-          if (theDamnThing instanceof String){
+          if (theDamnThing instanceof String) {
             params.putString(name, (String) theDamnThing);
           }
-          if (theDamnThing instanceof Number){
-            params.putNumber(name, (Number)theDamnThing);
+          if (theDamnThing instanceof Number) {
+            params.putNumber(name, (Number) theDamnThing);
           }
-          
-          
         }
       }
     }
-    
   }
 
   /*
@@ -101,7 +96,7 @@ public class HandlerUtils {
       if (ic.isLive()) {
         HashMap m = new HashMap();
         if (components.contains("name")) {
-          JsonObject columnMetadata = findMetaData(columnFamily, state, "column" );
+          JsonObject columnMetadata = findMetaData(columnFamily, state, "column");
           if (columnMetadata == null) {
             m.put("name", TypeHelper.getBytes(ic.name()));
           } else {
@@ -115,10 +110,10 @@ public class HandlerUtils {
           }
         }
         if (components.contains("value")) {
-          if ( ic instanceof CounterColumn ) {
-            m.put("value", ((CounterColumn)ic).total());
+          if (ic instanceof CounterColumn) {
+            m.put("value", ((CounterColumn) ic).total());
           } else {
-            JsonObject valueMetadata = findMetaData(columnFamily, state, "value" );
+            JsonObject valueMetadata = findMetaData(columnFamily, state, "value");
             if (valueMetadata == null) {
               m.put("value", TypeHelper.getBytes(ic.value()));
             } else {
@@ -143,22 +138,24 @@ public class HandlerUtils {
     }
     return array;
   }
-public static JsonObject findMetaData(ColumnFamily cf, JsonObject state, String type){
-  JsonObject meta = state.getObject("meta");
-  if (meta == null){
-    return null;
-  } else {
-    StringBuilder key = new StringBuilder();
-    key.append(cf.metadata().ksName);
-    key.append(' ');
-    key.append(cf.metadata().cfName);
-    key.append(' ');
-    key.append(type);
-    return meta.getObject(key.toString());
+
+  public static JsonObject findMetaData(ColumnFamily cf, JsonObject state, String type) {
+    JsonObject meta = state.getObject("meta");
+    if (meta == null) {
+      return null;
+    } else {
+      StringBuilder key = new StringBuilder();
+      key.append(cf.metadata().ksName);
+      key.append(' ');
+      key.append(cf.metadata().cfName);
+      key.append(' ');
+      key.append(type);
+      return meta.getObject(key.toString());
+    }
   }
-}
-public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus eb,
-    Handler<Message<JsonArray>> filterReplyHandler) {
+
+  public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus eb,
+          Handler<Message<JsonArray>> filterReplyHandler) {
     JsonArray components = state.getArray("components");
     JsonArray array = new JsonArray();
 
@@ -167,7 +164,7 @@ public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus 
         HashMap m = new HashMap();
 
         if (components.contains("name")) {
-          JsonObject columnMetadata = findMetaData(columnFamily, state, "column" );
+          JsonObject columnMetadata = findMetaData(columnFamily, state, "column");
           if (columnMetadata == null) {
             m.put("name", ByteBufferUtil.getArray(column.name()));
           } else {
@@ -176,10 +173,10 @@ public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus 
           }
         }
         if (components.contains("value")) {
-          if (column instanceof CounterColumn ) {
-            m.put("value", ((CounterColumn)column).total());
+          if (column instanceof CounterColumn) {
+            m.put("value", ((CounterColumn) column).total());
           } else {
-            JsonObject valueMetadata = findMetaData(columnFamily, state, "value" );
+            JsonObject valueMetadata = findMetaData(columnFamily, state, "value");
             if (valueMetadata == null) {
               m.put("value", ByteBufferUtil.getArray(column.value()));
             } else {
@@ -204,19 +201,17 @@ public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus 
 
   public static void write(List<IMutation> mutations, Message<JsonObject> event, Integer id) {
     try {
-        // We don't want to hard code the consistency level but letting it slide for
-        // since it is also hard coded in IntraState
-        StorageProxy.mutate(mutations, ConsistencyLevel.ONE);
+      // We don't want to hard code the consistency level but letting it slide for
+      // since it is also hard coded in IntraState
+      StorageProxy.mutate(mutations, ConsistencyLevel.ONE);
 
-        event.reply(new JsonObject().putString(id.toString(), "OK"));
+      event.reply(new JsonObject().putString(id.toString(), "OK"));
     } catch (WriteTimeoutException | UnavailableException | OverloadedException e) {
-        event.reply(new JsonObject()
-            .putString("exception", e.getMessage())
-            .putString("exceptionId", id.toString()));
+      event.reply(new JsonObject().putString("exception", e.getMessage()).putString("exceptionId",
+              id.toString()));
     }
   }
-  
-  
+
   public static Long getOperationTime(JsonObject operation) {
     JsonObject params = operation.getObject("op");
     Long timeout = params.getLong("timeout");
@@ -227,8 +222,6 @@ public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus 
   }
 
   public static JsonObject buildError(Integer id, String errorMessage) {
-    return new JsonObject()
-                .putString("exception", errorMessage)
-                .putNumber("exceptionId", id);
+    return new JsonObject().putString("exception", errorMessage).putNumber("exceptionId", id);
   }
 }
