@@ -7,6 +7,10 @@ import org.apache.cassandra.exceptions.WriteTimeoutException;
 import org.apache.cassandra.service.StorageProxy;
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.utils.ByteBufferUtil;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.usergrid.vx.experimental.IntraReq;
+import org.usergrid.vx.experimental.IntraRes;
+import org.usergrid.vx.experimental.NonAtomicReference;
 import org.usergrid.vx.experimental.TypeHelper;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
@@ -15,18 +19,51 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonElement;
 import org.vertx.java.core.json.JsonObject;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @author zznate
  */
 public class HandlerUtils {
 
+  
+  public static IntraRes handleRequestBlocking(IntraReq req, EventBus eventBus){
+    
+    final ObjectMapper mapper = new ObjectMapper();
+    final CountDownLatch doneSignal = new CountDownLatch(1);
+    final NonAtomicReference ref = new NonAtomicReference();
+    System.out.println( "Putting request on bus" + req.toJson());
+    
+    eventBus.send("request.json", req.toJson(), new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> event) {
+        System.out.println("Got this back "+ event.body.toString());
+        try {
+          IntraRes res = mapper.readValue(event.body.toString(), IntraRes.class);
+          ref.something = res;
+        } catch (IOException e) {
+          System.out.println("handle request blockingfired this "+e);
+        }
+        doneSignal.countDown();
+      }
+    });
+    System.out.println("on bus");
+    try {
+      Thread.sleep(7000);
+    } catch (InterruptedException e) {
+      System.out.println(e);
+    }
+    System.out.println("ref.something "+ref.something);
+    return (IntraRes) ref.something;
+    
+  }
   /*
    * because handlers can not see the responses of other steps easily anymore we move this logic
    * here. Essentially find all res ref objects and replace them

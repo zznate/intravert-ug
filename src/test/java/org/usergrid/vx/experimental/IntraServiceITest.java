@@ -574,8 +574,9 @@ public class IntraServiceITest {
 	  req.add(Operations.serviceProcess("buildMySecondary", reqObj));//6
 	  req.add( Operations.setColumnFamilyOp("usersbycity")); //7
 	  req.add( Operations.sliceOp("NYC", "a", "z", 5)); //8
-	  IntraRes res = new IntraRes();
-	  is.handleIntraReq(req, res, x);
+	  IntraClient2 ic2 = new IntraClient2("localhost",8080);
+	  IntraRes res = ic2.sendBlocking(req);
+	  System.out.println(res);
 	  List<Map> r = (List<Map>) res.getOpsRes().get(8);
 	  Assert.assertEquals("bsmith", ByteBufferUtil.string((ByteBuffer) r.get(0).get("name")));
   }

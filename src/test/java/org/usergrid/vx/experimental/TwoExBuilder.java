@@ -16,10 +16,15 @@
 package org.usergrid.vx.experimental;
 
 import java.util.Map;
+
+import org.usergrid.vx.server.operations.HandlerUtils;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.json.JsonObject;
 
 public class TwoExBuilder implements ServiceProcessor {
 
+  /*
 	@Override
 	public void process(IntraReq req, IntraRes res, IntraState state, int i,
 			Vertx vertx, IntraService is) {
@@ -49,5 +54,34 @@ public class TwoExBuilder implements ServiceProcessor {
 			res.getOpsRes().put(i, "OK");
 		}
 	}
+  */
+  @Override
+  public void process(JsonObject request, JsonObject state, JsonObject response, EventBus eb) {
+    System.out.println("called");
+    response.putString("a", "OK");
+    //operation.putObject("mpparams", theParams);
+    //operation.putObject("mpres", results.getObject("opsRes"));
+   
+    JsonObject params = request.getObject("mpparams");
+    String uid = (String) params.getString("userid");
+    String fname = (String) params.getString("fname");
+    String lname = (String) params.getString("lname");
+    String city = (String) params.getString("city");
 
+    IntraReq innerReq = new IntraReq();
+    innerReq.add(Operations.setKeyspaceOp("myks"));
+    innerReq.add(Operations.setColumnFamilyOp("users"));
+    innerReq.add(Operations.setAutotimestampOp(true));
+    // innerReq.add( Operations.setOp(uid, "fname", fname) );
+    // innerReq.add( Operations.setOp(uid, "lname", lname) );
+    /*
+     * innerReq.add( Operations.setColumnFamilyOp("usersbycity") ); innerReq.add(
+     * Operations.setOp(city, uid, "") ); innerReq.add( Operations.setColumnFamilyOp("usersbylast")
+     * ); innerReq.add( Operations.setOp(lname, uid, "") );
+     */
+    System.out.println("Sending internal request");
+    IntraRes res = HandlerUtils.handleRequestBlocking(innerReq, eb);
+
+    System.out.println("The inner result is " + res);
+  }
 }
