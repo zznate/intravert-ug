@@ -21,6 +21,17 @@ public class ColumnRestHandler extends IntraHandlerRest {
 
   public void handlePost(final HttpServerRequest request, Buffer buffer, IntraReq req) {
     req.add(Operations.setKeyspaceOp(request.params().get("ks")));    
-    req.add(Operations.setColumnFamilyOp("cf"));
+    req.add(Operations.setColumnFamilyOp(request.params().get("cf")));
+    String row = request.params().get("row");
+    String col = request.params().get("col");
+    req.add(Operations.setOp(row, col, buffer.getBytes()));    
+  }
+  
+  public void handleGet(final HttpServerRequest request, Buffer buffer, IntraReq req) {
+    req.add(Operations.setKeyspaceOp(request.params().get("ks")));    
+    req.add(Operations.setColumnFamilyOp(request.params().get("cf")));
+    String row = request.params().get("row");
+    String col = request.params().get("col");
+    req.add(Operations.getOp(row, col));    
   }
 }

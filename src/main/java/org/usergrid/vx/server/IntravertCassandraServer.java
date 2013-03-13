@@ -26,6 +26,7 @@ import org.usergrid.vx.handler.RequestJsonHandler;
 import org.usergrid.vx.handler.http.HelloHandler;
 import org.usergrid.vx.handler.http.NoMatchHandler;
 import org.usergrid.vx.handler.rest.ColumnFamilyRestHandler;
+import org.usergrid.vx.handler.rest.ColumnRestHandler;
 import org.usergrid.vx.handler.rest.KeyspaceMetaHandler;
 import org.usergrid.vx.handler.rest.SystemMetaHandler;
 import org.usergrid.vx.server.operations.AssumeHandler;
@@ -80,12 +81,15 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     SystemMetaHandler systemMetaHandler = new SystemMetaHandler(vertx);
     KeyspaceMetaHandler keyspaceMetaHandler = new KeyspaceMetaHandler(vertx);
     ColumnFamilyRestHandler columnFamilyRestHandler = new ColumnFamilyRestHandler(vertx);
+    ColumnRestHandler columnRestHandler = new ColumnRestHandler(vertx);
 
     rm.get(String.format("%s/intrareq-rest/", basePath),systemMetaHandler);
     rm.get(String.format("%s/intrareq-rest/:ks/", basePath), keyspaceMetaHandler);
     rm.post(String.format("%s/intrareq-rest/:ks/",basePath), keyspaceMetaHandler);
     rm.delete(String.format("%s/intrareq-rest/:ks/", basePath), keyspaceMetaHandler);
     rm.post(String.format("%s/intrareq-rest/:ks/:cf", basePath), columnFamilyRestHandler);
+    rm.post(String.format("%s/intrareq-rest/:ks/:cf/:row/:col", basePath), columnRestHandler);
+    rm.get(String.format("%s/intrareq-rest/:ks/:cf/:row/:col", basePath), columnRestHandler);
 
     rm.noMatch(new NoMatchHandler());
     registerOperationHandlers(vertx);
