@@ -48,9 +48,10 @@ public class HandlerUtils {
         try {
           IntraRes res = mapper.readValue(event.body.toString(), IntraRes.class);
           ref.something = res;
-        } catch (IOException e) {
+        } catch (Exception e) {
           System.out.println("handle request blockingfired this "+e);
         }
+        System.out.println("i REACHED THE END" );
         doneSignal.countDown();
       }
     });
