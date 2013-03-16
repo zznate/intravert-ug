@@ -15,8 +15,18 @@
 */
 package org.usergrid.vx.experimental;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.cassandra.db.ConsistencyLevel;
+import org.apache.cassandra.db.IMutation;
+import org.apache.cassandra.db.RowMutation;
+import org.apache.cassandra.db.filter.QueryPath;
+import org.apache.cassandra.exceptions.OverloadedException;
+import org.apache.cassandra.exceptions.UnavailableException;
+import org.apache.cassandra.exceptions.WriteTimeoutException;
+import org.apache.cassandra.service.StorageProxy;
 import org.usergrid.vx.server.operations.HandlerUtils;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.eventbus.EventBus;
@@ -58,9 +68,6 @@ public class TwoExBuilder implements ServiceProcessor {
   @Override
   public void process(JsonObject request, JsonObject state, JsonObject response, EventBus eb) {
     System.out.println("called");
-    response.putString("a", "OK");
-    //operation.putObject("mpparams", theParams);
-    //operation.putObject("mpres", results.getObject("opsRes"));
    
     JsonObject params = request.getObject("mpparams");
     String uid = (String) params.getString("userid");
@@ -68,20 +75,28 @@ public class TwoExBuilder implements ServiceProcessor {
     String lname = (String) params.getString("lname");
     String city = (String) params.getString("city");
 
-    IntraReq innerReq = new IntraReq();
-    innerReq.add(Operations.setKeyspaceOp("myks"));
-    innerReq.add(Operations.setColumnFamilyOp("users"));
-    innerReq.add(Operations.setAutotimestampOp(true));
-    // innerReq.add( Operations.setOp(uid, "fname", fname) );
-    // innerReq.add( Operations.setOp(uid, "lname", lname) );
-    /*
-     * innerReq.add( Operations.setColumnFamilyOp("usersbycity") ); innerReq.add(
-     * Operations.setOp(city, uid, "") ); innerReq.add( Operations.setColumnFamilyOp("usersbylast")
-     * ); innerReq.add( Operations.setOp(lname, uid, "") );
-     */
-    System.out.println("Sending internal request");
-    IntraRes res = HandlerUtils.handleRequestBlocking(innerReq, eb);
+    RowMutation rm = new RowMutation("myks", IntraService.byteBufferForObject(uid));
+    QueryPath qp = new QueryPath("users", null, IntraService.byteBufferForObject("fname"));
+    rm.add(qp, IntraService.byteBufferForObject(fname), System.nanoTime());
+    QueryPath qp2 = new QueryPath("users", null, IntraService.byteBufferForObject("lname"));
+    rm.add(qp2, IntraService.byteBufferForObject(lname), System.nanoTime());
+    
+    
+    RowMutation rm2 = new RowMutation("myks", IntraService.byteBufferForObject(city));
+    QueryPath qp3 = new QueryPath("usersbycity", null, IntraService.byteBufferForObject(uid));
+    rm2.add(qp3, IntraService.byteBufferForObject(""), System.nanoTime());
+    
+    QueryPath qp4 = new QueryPath("usersbylast", null, IntraService.byteBufferForObject(lname));
+    rm.add(qp4, IntraService.byteBufferForObject(uid), System.nanoTime());
+    List<IMutation> mutations = new ArrayList<IMutation>();
+    mutations.add(rm);
+    mutations.add(rm2);
+    try {
+      StorageProxy.mutate(mutations, ConsistencyLevel.ONE);
+    } catch (WriteTimeoutException | UnavailableException | OverloadedException e) {
+      e.printStackTrace();
+    }
 
-    System.out.println("The inner result is " + res);
+    System.out.println("done");
   }
 }

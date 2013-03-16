@@ -8,6 +8,7 @@ public class SetKeyspaceHandler implements Handler<Message<JsonObject>> {
 
     @Override
     public void handle(Message<JsonObject> event) {
+      System.out.println("set keyspace " + event.body.toString());
         Integer id = event.body.getInteger("id");
         JsonObject params = event.body.getObject("op");
         JsonObject state = event.body.getObject("state");

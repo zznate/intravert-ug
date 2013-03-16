@@ -19,10 +19,8 @@ public class ServiceProcessorHandler implements Handler<Message<JsonObject>> {
   
   @Override
   public void handle(Message<JsonObject> event) {
-    System.out.println("In service processor handler");
-    
     Integer id = null;
-    String res = "WOK";
+    String res = "OK";
     try {
       id = event.body.getInteger("id");
       sp.process(event.body, event.body.getObject("state"), new JsonObject(), eb);

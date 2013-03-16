@@ -8,6 +8,7 @@ import org.apache.cassandra.service.StorageProxy;
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.usergrid.vx.client.IntraClient2;
 import org.usergrid.vx.experimental.IntraReq;
 import org.usergrid.vx.experimental.IntraRes;
 import org.usergrid.vx.experimental.NonAtomicReference;
@@ -33,38 +34,6 @@ import java.util.concurrent.CountDownLatch;
  */
 public class HandlerUtils {
 
-  
-  public static IntraRes handleRequestBlocking(IntraReq req, EventBus eventBus){
-    
-    final ObjectMapper mapper = new ObjectMapper();
-    final CountDownLatch doneSignal = new CountDownLatch(1);
-    final NonAtomicReference ref = new NonAtomicReference();
-    System.out.println( "Putting request on bus" + req.toJson());
-    
-    eventBus.send("request.json", req.toJson(), new Handler<Message<JsonObject>>() {
-      @Override
-      public void handle(Message<JsonObject> event) {
-        System.out.println("Got this back "+ event.body.toString());
-        try {
-          IntraRes res = mapper.readValue(event.body.toString(), IntraRes.class);
-          ref.something = res;
-        } catch (Exception e) {
-          System.out.println("handle request blockingfired this "+e);
-        }
-        System.out.println("i REACHED THE END" );
-        doneSignal.countDown();
-      }
-    });
-    System.out.println("on bus");
-    try {
-      Thread.sleep(7000);
-    } catch (InterruptedException e) {
-      System.out.println(e);
-    }
-    System.out.println("ref.something "+ref.something);
-    return (IntraRes) ref.something;
-    
-  }
   /*
    * because handlers can not see the responses of other steps easily anymore we move this logic
    * here. Essentially find all res ref objects and replace them
@@ -126,6 +95,7 @@ public class HandlerUtils {
   }
 
   public static JsonArray readCf(ColumnFamily columnFamily, JsonObject state, JsonObject params) {
+    System.out.println(state.toString());
     JsonArray components = state.getArray("components");
     JsonArray array = new JsonArray();
     Iterator<IColumn> it = columnFamily.iterator();

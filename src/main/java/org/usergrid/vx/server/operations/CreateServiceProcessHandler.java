@@ -19,20 +19,19 @@ public class CreateServiceProcessHandler implements Handler<Message<JsonObject>>
   
   @Override
   public void handle(Message<JsonObject> event) {
-    System.out.println("creating");
+    System.out.println("create service p" + event.body.toString());
     Integer id = event.body.getInteger("id");
     JsonObject params = event.body.getObject("op");
     String name = params.getString("name");
     String lang = params.getString("spec");
     String scriptSource = params.getString("value");
+    JsonObject state = event.body.getObject("state");
     
     GroovyClassLoader gc = new GroovyClassLoader(this.getClass().getClassLoader());
     Class c = gc.parseClass( scriptSource );
     ServiceProcessor sp = null;
     try {
       sp = (ServiceProcessor) c.newInstance();
-      System.out.println( "Is sp == null" + (sp == null));
-      System.out.println("registering processor named"+ " sps." + name);
       eb.registerHandler("sps." + name.toLowerCase(), new ServiceProcessorHandler(sp,eb));
     } catch (InstantiationException | IllegalAccessException e) {
       event.reply(new JsonObject()
@@ -40,7 +39,7 @@ public class CreateServiceProcessHandler implements Handler<Message<JsonObject>>
       .putString("exception", e.getMessage())
       .putString("exceptionId", id.toString()));
     }
-    event.reply(new JsonObject().putString(id.toString(), "WOK"));
+    event.reply(new JsonObject().putString(id.toString(), "OK").putObject("state", state));
   }
 }
 
