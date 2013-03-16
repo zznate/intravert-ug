@@ -7,6 +7,11 @@ import org.apache.cassandra.exceptions.WriteTimeoutException;
 import org.apache.cassandra.service.StorageProxy;
 import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.utils.ByteBufferUtil;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.usergrid.vx.client.IntraClient2;
+import org.usergrid.vx.experimental.IntraReq;
+import org.usergrid.vx.experimental.IntraRes;
+import org.usergrid.vx.experimental.NonAtomicReference;
 import org.usergrid.vx.experimental.TypeHelper;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
@@ -15,12 +20,14 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonElement;
 import org.vertx.java.core.json.JsonObject;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @author zznate
@@ -88,6 +95,7 @@ public class HandlerUtils {
   }
 
   public static JsonArray readCf(ColumnFamily columnFamily, JsonObject state, JsonObject params) {
+    System.out.println(state.toString());
     JsonArray components = state.getArray("components");
     JsonArray array = new JsonArray();
     Iterator<IColumn> it = columnFamily.iterator();

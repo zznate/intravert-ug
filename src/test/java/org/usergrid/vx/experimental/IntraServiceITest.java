@@ -569,15 +569,17 @@ public class IntraServiceITest {
 	  req.add( Operations.setKeyspaceOp("myks") );//1
 	  req.add( Operations.setAutotimestampOp(true) );//2
 	  req.add( Operations.createCfOp("users") );//3
-	  req.add(Operations.createCfOp("usersbycity"));//4
+	  req.add (Operations.createCfOp("usersbycity"));//4
 	  req.add( Operations.createCfOp("usersbylast") );//5
-	  req.add(Operations.serviceProcess("buildMySecondary", reqObj));//6
+	  req.add( Operations.serviceProcess("buildMySecondary", reqObj));//6
 	  req.add( Operations.setColumnFamilyOp("usersbycity")); //7
-	  req.add( Operations.sliceOp("NYC", "a", "z", 5)); //8
-	  IntraRes res = new IntraRes();
-	  is.handleIntraReq(req, res, x);
-	  List<Map> r = (List<Map>) res.getOpsRes().get(8);
-	  Assert.assertEquals("bsmith", ByteBufferUtil.string((ByteBuffer) r.get(0).get("name")));
+	  req.add( Operations.assumeOp("myks", "usersbycity", "column", "UTF8Type"));
+	  req.add( Operations.sliceOp("NYC", "a", "z", 5)); //9
+	  IntraClient2 ic2 = new IntraClient2("localhost",8080);
+	  IntraRes res = ic2.sendBlocking(req);
+	  System.out.println(res);
+	  List<Map> r = (List<Map>) res.getOpsRes().get(9);
+	  Assert.assertEquals("bsmith", r.get(0).get("name"));
   }
   
   @Test

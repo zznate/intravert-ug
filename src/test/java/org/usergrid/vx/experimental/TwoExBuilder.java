@@ -15,11 +15,26 @@
 */
 package org.usergrid.vx.experimental;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+
+import org.apache.cassandra.db.ConsistencyLevel;
+import org.apache.cassandra.db.IMutation;
+import org.apache.cassandra.db.RowMutation;
+import org.apache.cassandra.db.filter.QueryPath;
+import org.apache.cassandra.exceptions.OverloadedException;
+import org.apache.cassandra.exceptions.UnavailableException;
+import org.apache.cassandra.exceptions.WriteTimeoutException;
+import org.apache.cassandra.service.StorageProxy;
+import org.usergrid.vx.server.operations.HandlerUtils;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.eventbus.EventBus;
+import org.vertx.java.core.json.JsonObject;
 
 public class TwoExBuilder implements ServiceProcessor {
 
+  /*
 	@Override
 	public void process(IntraReq req, IntraRes res, IntraState state, int i,
 			Vertx vertx, IntraService is) {
@@ -49,5 +64,40 @@ public class TwoExBuilder implements ServiceProcessor {
 			res.getOpsRes().put(i, "OK");
 		}
 	}
+  */
+  @Override
+  public void process(JsonObject request, JsonObject state, JsonObject response, EventBus eb) {
+    System.out.println("called");
+   
+    JsonObject params = request.getObject("mpparams");
+    String uid = (String) params.getString("userid");
+    String fname = (String) params.getString("fname");
+    String lname = (String) params.getString("lname");
+    String city = (String) params.getString("city");
 
+    RowMutation rm = new RowMutation("myks", IntraService.byteBufferForObject(uid));
+    QueryPath qp = new QueryPath("users", null, IntraService.byteBufferForObject("fname"));
+    rm.add(qp, IntraService.byteBufferForObject(fname), System.nanoTime());
+    QueryPath qp2 = new QueryPath("users", null, IntraService.byteBufferForObject("lname"));
+    rm.add(qp2, IntraService.byteBufferForObject(lname), System.nanoTime());
+    
+    
+    RowMutation rm2 = new RowMutation("myks", IntraService.byteBufferForObject(city));
+    QueryPath qp3 = new QueryPath("usersbycity", null, IntraService.byteBufferForObject(uid));
+    rm2.add(qp3, IntraService.byteBufferForObject(""), System.nanoTime());
+    
+    QueryPath qp4 = new QueryPath("usersbylast", null, IntraService.byteBufferForObject(lname));
+    rm.add(qp4, IntraService.byteBufferForObject(uid), System.nanoTime());
+    List<IMutation> mutations = new ArrayList<IMutation>();
+    mutations.add(rm);
+    mutations.add(rm2);
+    try {
+      StorageProxy.mutate(mutations, ConsistencyLevel.ONE);
+    } catch (WriteTimeoutException | UnavailableException | OverloadedException e) {
+      e.printStackTrace();
+      response.putString("status", "FAILED");
+    }
+    response.putString("status", "OK");
+    System.out.println("done");
+  }
 }

@@ -116,12 +116,18 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
       timerId = vertx.setTimer(timeout, timeoutHandler);
       
       HandlerUtils.resolveRefs( operation, results.getObject("opsRes") );
-      if (operation.getString("type").equalsIgnoreCase("multiprocess")){
+      
+      if (operation.getString("type").equalsIgnoreCase("serviceprocess")) {
+        JsonObject params = operation.getObject("op");
+        JsonObject theParams = params.getObject("params");
+        operation.putObject("mpparams", theParams);
+        operation.putObject("mpres", results.getObject("opsRes"));
+        vertx.eventBus().send("sps." + params.getString("name").toLowerCase(), operation, this);
+      } else if (operation.getString("type").equalsIgnoreCase("multiprocess")){
         JsonObject params = operation.getObject("op");
         JsonObject theParams = params.getObject("params");
         operation.putObject("mpparams", theParams);
         operation.putObject("mpres", results.getObject("opsRes"));        
-        System.out.println("sendingevent to"+ params.getString("name"));
         vertx.eventBus().send("multiprocessors." + params.getString("name"), operation, this);
       } else if (operation.getString("type").equalsIgnoreCase("process")){
         JsonObject params = operation.getObject("op");

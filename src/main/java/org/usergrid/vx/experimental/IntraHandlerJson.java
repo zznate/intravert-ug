@@ -100,7 +100,7 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
       if ( logger.isDebugEnabled()) {
         logger.debug("in IntraHanlderJson's on handler topic {} with event {}",
                 RequestJsonHandler.IHJSON_HANDLER_TOPIC,
-                event.toString() );
+                event.body.toString() );
       }
       request.response.end(event.body.toString());
     }
