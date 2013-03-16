@@ -95,8 +95,9 @@ public class TwoExBuilder implements ServiceProcessor {
       StorageProxy.mutate(mutations, ConsistencyLevel.ONE);
     } catch (WriteTimeoutException | UnavailableException | OverloadedException e) {
       e.printStackTrace();
+      response.putString("status", "FAILED");
     }
-
+    response.putString("status", "OK");
     System.out.println("done");
   }
 }
