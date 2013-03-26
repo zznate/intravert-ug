@@ -37,6 +37,30 @@ public class FilterITest {
       Assert.assertEquals(1, results.size());
   }
   
+  
+  @Test
+  public void executeClojureFilter() throws Exception {
+    IntraReq req = new IntraReq();
+    req.add(Operations.setKeyspaceOp("jsFilterks")); //0
+    req.add(Operations.createKsOp("jsFilterks", 1)); //1
+    req.add(Operations.createCfOp("filtercf")); //2
+    req.add(Operations.setColumnFamilyOp("filtercf")); //3
+    req.add(Operations.setAutotimestampOp(true)); //4
+    req.add(Operations.assumeOp("jsFilterks", "filtercf", "value", "UTF8Type"));//5
+    req.add(Operations.setOp("rowy", "col1", "20")); //6
+    req.add(Operations.setOp("rowy", "col2", "y")); //7
+    req.add(Operations.createFilterOp("valuey", "clojure",
+            "(ns user) (defn fil [a] (if (= (a \"value\") \"y\" ) a ))")); // 8
+    req.add(Operations.filterModeOp("valuey", true)); //9
+    req.add(Operations.sliceOp("rowy", "col1", "col3", 10)); //10
+    IntraClient2 ic2 = new IntraClient2("localhost", 8080);
+    IntraRes res = ic2.sendBlocking(req);
+    System.out.println(res.getException());
+    List<Map> results = (List<Map>) res.getOpsRes().get(10);
+    Assert.assertEquals("y", results.get(0).get("value"));
+    Assert.assertEquals(1, results.size());
+}
+  
   @Ignore
   @Test
   /* why wont this work */

@@ -19,9 +19,15 @@ public class ClojureFilterFactory implements FilterFactory {
     } catch (ClassNotFoundException | IOException e) {
       e.printStackTrace();
     }
-    Var r = (Var) Compiler.load(new StringReader(script));  
-    ClojureFilter f = new ClojureFilter(r);
-    return f;
+    Object result =  Compiler.load(new StringReader(script));
+    if (result instanceof Filter) {
+      return (Filter) result;
+    } else if (result instanceof Var){
+      Var r = (Var) result;
+      return new ClojureFilter(r);
+    } else {
+      throw new IllegalArgumentException(script );
+    }
   }
 
 }
