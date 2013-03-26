@@ -8,6 +8,7 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.junit.Test;
+import org.usergrid.vx.experimental.filter.clojure.ClojureFilterFactory;
 
 import clojure.lang.IPersistentMap;
 import clojure.lang.RT;
@@ -41,21 +42,30 @@ public class SimpleClujTest {
     (- x)
     x))
      */
-    String str = "(ns user) (defn fil [a] (if (= (a \"value\") \"y\" ) a           )           )";
-    Compiler.load(new StringReader(str));  
+    String str = "(ns user) (defn fil [a] (if (= (a \"value\") \"y\" ) a ))";
+    Object r = Compiler.load(new StringReader(str));  
+    System.out.println(r);
+    System.out.println(r.getClass());
+    
     Var foo = RT.var("user", "fil");
     Map m = new HashMap();
     m.put("name", "x");
     m.put("value", "y");
     
-    IPersistentMap m2 = clojure.lang.RT.map( m );
+    IPersistentMap m2 = clojure.lang.RT.map(  );
     m2 = m2.assoc("name", "x");
     m2 = m2.assoc("value", "y");
     Object result = foo.invoke( m2 );
     Assert.assertEquals(m, result);
   }
   
-  
-  
+  @Test
+  public void cTest(){
+    Map m = new HashMap();
+    m.put("name", "x");
+    m.put("value", "y");
+    //how you like this one liner biotch?!
+    Assert.assertEquals(m, new ClojureFilterFactory().createFilter("(ns user) (defn fil [a] (if (= (a \"value\") \"y\" ) a ))").filter(m) );
+  }
   
 }
