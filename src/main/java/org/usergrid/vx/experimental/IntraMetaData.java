@@ -15,6 +15,7 @@
 */
 package org.usergrid.vx.experimental;
 
+@Deprecated
 public class IntraMetaData {
   public String keyspace;
   public String columnfamily;
