@@ -15,18 +15,9 @@
 */
 package org.usergrid.vx.experimental;
 
-import org.apache.cassandra.db.ConsistencyLevel;
 import org.usergrid.vx.experimental.filter.Filter;
-import org.usergrid.vx.experimental.multiprocessor.MultiProcessor;
-import org.usergrid.vx.experimental.processor.Processor;
-import org.usergrid.vx.experimental.scan.ScanContext;
-import org.usergrid.vx.experimental.scan.ScanFilter;
-
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /* class that holds properties for the request lifecycle */
 @Deprecated
