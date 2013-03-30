@@ -16,6 +16,7 @@
 package org.usergrid.vx.experimental;
 
 import org.junit.Test;
+import org.usergrid.vx.server.operations.HandlerUtils;
 
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
@@ -50,8 +51,6 @@ public class IntraOpUnitTest {
 
   @Test
   public void compositeBBTest(){
-    IntraService is = new IntraService();
-    is.byteBufferForObject(new Object[] {"yo",0, 2,0});
-    
+    HandlerUtils.byteBufferForObject(new Object[] {"yo",0, 2,0});
   }
 }

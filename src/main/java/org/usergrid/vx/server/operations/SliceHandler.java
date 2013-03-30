@@ -6,7 +6,6 @@ import org.apache.cassandra.exceptions.IsBootstrappingException;
 import org.apache.cassandra.exceptions.ReadTimeoutException;
 import org.apache.cassandra.exceptions.UnavailableException;
 import org.apache.cassandra.service.StorageProxy;
-import org.usergrid.vx.experimental.IntraService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
@@ -37,16 +36,15 @@ public class SliceHandler implements Handler<Message<JsonObject>> {
     Object startParam = paramsMap.get("start");
     Object endParam = paramsMap.get("end");
 
-    ByteBuffer rowkey = IntraService
-        .byteBufferForObject(IntraService.resolveObject(rowKeyParam, null, null, null, id));
-    ByteBuffer start = IntraService.byteBufferForObject(IntraService.resolveObject(startParam, null, null, null, id));
-    ByteBuffer end = IntraService.byteBufferForObject(IntraService.resolveObject(endParam, null, null, null, id));
+    ByteBuffer rowkey = HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(rowKeyParam));
+    ByteBuffer start = HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(startParam));
+    ByteBuffer end = HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(endParam));
 
     List<ReadCommand> commands = new ArrayList<ReadCommand>(1);
 
     QueryPath path = new QueryPath(HandlerUtils.determineCf(params, state, null), null);
 
-    SliceFromReadCommand sr = new SliceFromReadCommand(state.getString("currentKeyspace"), rowkey, path, start, end,
+    SliceFromReadCommand sr = new SliceFromReadCommand(HandlerUtils.determineKs(params, state, null), rowkey, path, start, end,
         false, 100);
     commands.add(sr);
 

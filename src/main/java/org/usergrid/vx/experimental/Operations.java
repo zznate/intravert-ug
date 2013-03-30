@@ -28,6 +28,7 @@ import java.util.Set;
  * Factory class for building IntraOp objects
  * @author zznate
  */
+@SuppressWarnings("rawtypes")
 public class Operations {
 
   private static final String KEYSPACE = "keyspace";
@@ -36,8 +37,6 @@ public class Operations {
   private static final String NAME = "name";
   private static final String VALUE = "value";
   private static final String ROWS = "rows";
-  private static final String WANTED = "wanted";
-  private static final String RESULTREF = "resultref";
   private static final String START = "start";
   private static final String END = "end";
   private static final String SIZE = "size";
@@ -263,8 +262,10 @@ public class Operations {
 		return new IntraOp(IntraOp.Type.PREPARE);
 	}
 
-	public static Map bindMarker(int mark) {
-		Map m = new HashMap();
+	
+  @SuppressWarnings("unchecked")
+  public static Map bindMarker(int mark) {
+    Map m = new HashMap();
 		m.put("type","BINDMARKER");
 		m.put("mark", mark);
 		return m;

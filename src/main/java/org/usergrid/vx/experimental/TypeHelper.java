@@ -24,6 +24,7 @@ import org.apache.cassandra.utils.ByteBufferUtil;
 import java.nio.ByteBuffer;
 
 public class TypeHelper {
+  /*
   public static Object getTypedIfPossible(IntraState state, String type, ByteBuffer bb, IntraOp op) {
 
     IntraMetaData imd = new IntraMetaData(IntraService.determineKs(null, op, state), IntraService.determineCf(null, op, state), type);
@@ -32,7 +33,7 @@ public class TypeHelper {
       return bb;
     }
     return compose(bb, s);
-  }
+  }*/
 
   public static Object getTyped(String type, ByteBuffer bb) {
     return compose(bb, type);

@@ -47,7 +47,7 @@ public class CreateKeyspaceHandler implements Handler<Message<JsonObject>> {
 
         try {
             MigrationManager.announceNewKeyspace(ksm);
-        } catch (ConfigurationException e) {
+        } catch ( ConfigurationException e ) {
             response.putString("exception", e.getMessage());
             response.putNumber("exceptionId", id);
             event.reply(response);

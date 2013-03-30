@@ -66,10 +66,12 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
     String exception = event.body.getString("exception");
 
     if (exception != null || exceptionId != null) {
+      
       results.putString("exception", exception);
       results.putNumber("exceptionId", exceptionId);
 
       sendResults();
+      return;
     }
 
     Map<String, Object> map = event.body.toMap();

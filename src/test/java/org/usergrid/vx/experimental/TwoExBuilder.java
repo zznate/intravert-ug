@@ -75,19 +75,19 @@ public class TwoExBuilder implements ServiceProcessor {
     String lname = (String) params.getString("lname");
     String city = (String) params.getString("city");
 
-    RowMutation rm = new RowMutation("myks", IntraService.byteBufferForObject(uid));
-    QueryPath qp = new QueryPath("users", null, IntraService.byteBufferForObject("fname"));
-    rm.add(qp, IntraService.byteBufferForObject(fname), System.nanoTime());
-    QueryPath qp2 = new QueryPath("users", null, IntraService.byteBufferForObject("lname"));
-    rm.add(qp2, IntraService.byteBufferForObject(lname), System.nanoTime());
+    RowMutation rm = new RowMutation("myks", HandlerUtils.byteBufferForObject(uid));
+    QueryPath qp = new QueryPath("users", null, HandlerUtils.byteBufferForObject("fname"));
+    rm.add(qp, HandlerUtils.byteBufferForObject(fname), System.nanoTime());
+    QueryPath qp2 = new QueryPath("users", null, HandlerUtils.byteBufferForObject("lname"));
+    rm.add(qp2, HandlerUtils.byteBufferForObject(lname), System.nanoTime());
     
+ 
+    RowMutation rm2 = new RowMutation("myks", HandlerUtils.byteBufferForObject(city));
+    QueryPath qp3 = new QueryPath("usersbycity", null, HandlerUtils.byteBufferForObject(uid));
+    rm2.add(qp3, HandlerUtils.byteBufferForObject(""), System.nanoTime());
     
-    RowMutation rm2 = new RowMutation("myks", IntraService.byteBufferForObject(city));
-    QueryPath qp3 = new QueryPath("usersbycity", null, IntraService.byteBufferForObject(uid));
-    rm2.add(qp3, IntraService.byteBufferForObject(""), System.nanoTime());
-    
-    QueryPath qp4 = new QueryPath("usersbylast", null, IntraService.byteBufferForObject(lname));
-    rm.add(qp4, IntraService.byteBufferForObject(uid), System.nanoTime());
+    QueryPath qp4 = new QueryPath("usersbylast", null, HandlerUtils.byteBufferForObject(lname));
+    rm.add(qp4, HandlerUtils.byteBufferForObject(uid), System.nanoTime());
     List<IMutation> mutations = new ArrayList<IMutation>();
     mutations.add(rm);
     mutations.add(rm2);

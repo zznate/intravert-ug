@@ -52,7 +52,6 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
 
   private static final Logger logger = LoggerFactory.getLogger(CassandraRunner.class);
 
-  static IntraService is = new IntraService();
   static IntravertDeamon intravertDeamon;
   static ExecutorService executor = Executors.newSingleThreadExecutor();
 

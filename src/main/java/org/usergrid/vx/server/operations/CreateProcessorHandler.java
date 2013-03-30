@@ -45,7 +45,7 @@ public class CreateProcessorHandler implements Handler<Message<JsonObject>>{
       event.reply(new JsonObject()
         .putString(id.toString(), e.getClass().getName())
         .putString("exception", e.getMessage())
-        .putString("exceptionId", id.toString()));
+        .putNumber("exceptionId", id));
     } 
     
   }

@@ -12,7 +12,7 @@ public class FactoryProvider {
       case "groovyclassloader":
         return new GroovyClProcessorFactory();
       default:
-        throw new IllegalArgumentException(spec + " is not yet supported for filters");
+        throw new IllegalArgumentException(spec + " is not yet supported for processors");
     }
   }
 
