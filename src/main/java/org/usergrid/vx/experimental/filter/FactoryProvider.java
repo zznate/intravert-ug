@@ -1,6 +1,7 @@
 package org.usergrid.vx.experimental.filter;
 
 import org.usergrid.vx.experimental.filter.clojure.ClojureFilterFactory;
+import org.usergrid.vx.experimental.filter.groovy.GroovyCLFilterFactory;
 import org.usergrid.vx.experimental.filter.groovy.GroovyFilterFactory;
 import org.usergrid.vx.experimental.filter.javascript.JavaScriptFilterFactory;
 
@@ -10,6 +11,8 @@ public class FactoryProvider {
     switch (spec) {
       case "groovy":
         return new GroovyFilterFactory();
+      case "groovyclassloader":
+        return new GroovyCLFilterFactory();
       case "javascript":
         return new JavaScriptFilterFactory();
       case "clojure":

@@ -38,7 +38,6 @@ import org.vertx.java.core.Vertx;
 @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
 public class PerfTestingITest {
 	
-	  IntraService is = new IntraService();
 	  Vertx x = Vertx.newVertx();
 
 	@Test
@@ -209,7 +208,7 @@ public class PerfTestingITest {
 		
 	}
 	
-	
+	/*
 	@Test
 	public void map() throws  JsonMappingException, IOException{
 		ObjectMapper m = new ObjectMapper();
@@ -223,7 +222,7 @@ public class PerfTestingITest {
 		long end = System.currentTimeMillis();
 		System.out.println("jackson"+ (end - start));
 	}
-	
+	*/
 	class InternalLoader implements Runnable{
 		int start;
 		int end;
@@ -235,14 +234,15 @@ public class PerfTestingITest {
 		}
 		@Override
 		public void run() {
-			
+		  IntraClient2 ic2 = new IntraClient2("localhost",8080);
 			for (i=start;i<end;i++){
 				IntraReq req = new IntraReq();
 				req.add(Operations.setOp(i+"", i+"", "" ).set("keyspace", "myks")
 						.set("columnfamily", "mycf")); // 1
 				IntraRes res = new IntraRes();
 				try {
-					is.handleIntraReq(req, res, x); 
+				  
+			    res = ic2.sendBlocking(req); 
 				} catch (Exception e) {
 					System.err.println(e);
 				}

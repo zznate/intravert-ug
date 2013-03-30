@@ -22,7 +22,6 @@ import org.apache.cassandra.service.CassandraDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.usergrid.vx.experimental.IntraHandlerJson;
-import org.usergrid.vx.experimental.IntraHandlerJsonSmile;
 import org.usergrid.vx.handler.RequestJsonHandler;
 import org.usergrid.vx.handler.http.HelloHandler;
 import org.usergrid.vx.handler.http.NoMatchHandler;
@@ -63,7 +62,7 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
     rm.get(String.format("%s/hello", basePath), new HelloHandler());
     rm.post(String.format("%s/hello", basePath), new HelloHandler());
     rm.post(String.format("%s/intrareq-json", basePath), new IntraHandlerJson(vertx));
-    rm.post(String.format("%s/intrareq-jsonsmile", basePath), new IntraHandlerJsonSmile(vertx));
+    //rm.post(String.format("%s/intrareq-jsonsmile", basePath), new IntraHandlerJsonSmile(vertx));
 
     SystemMetaHandler systemMetaHandler = new SystemMetaHandler(vertx);
     KeyspaceMetaHandler keyspaceMetaHandler = new KeyspaceMetaHandler(vertx);

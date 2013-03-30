@@ -6,7 +6,6 @@ import org.apache.cassandra.db.IMutation;
 import org.apache.cassandra.db.RowMutation;
 import org.apache.cassandra.db.filter.QueryPath;
 import org.usergrid.vx.experimental.IntraOp;
-import org.usergrid.vx.experimental.IntraService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
@@ -28,12 +27,12 @@ public class CounterHandler implements Handler<Message<JsonObject>> {
     JsonObject state = event.body.getObject("state");
 
     RowMutation rm = new RowMutation(HandlerUtils.determineKs(params, state, null),
-            IntraService.byteBufferForObject(params.getString("rowkey")));
+            HandlerUtils.byteBufferForObject(params.getString("rowkey")));
 
     rm.addCounter(new QueryPath(
             HandlerUtils.determineCf(params, state, null ),
             null,
-            IntraService.byteBufferForObject(params.getString("name"))),
+            HandlerUtils.byteBufferForObject(params.getString("name"))),
             Long.parseLong(params.toMap().get("value").toString()));
     List<IMutation> mutations = new ArrayList(1);
     // TODO fix hard-coded consistency

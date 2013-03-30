@@ -59,7 +59,6 @@ public class IntraServiceITest {
 
   private Logger logger = LoggerFactory.getLogger(IntraServiceITest.class);
 
-  IntraService is = new IntraService();
   Vertx x = Vertx.newVertx();
 
   @DataLoader(dataset = "mydata.txt")
@@ -176,45 +175,7 @@ public class IntraServiceITest {
     
 	}
 	
-	@Test
-	public void filterTest() throws Exception {
-		IntraReq req = new IntraReq();
-		req.add(Operations.setKeyspaceOp("filterks")); // 0
-		req.add(Operations.createKsOp("filterks", 1)); // 1
-		req.add(Operations.createCfOp("filtercf")); // 2
-		req.add(Operations.setColumnFamilyOp("filtercf")); // 3
-		req.add(Operations.setAutotimestampOp(true)); // 4
-		req.add(Operations.assumeOp("filterks", "filtercf", "value", "UTF8Type"));// 5
-		req.add(Operations.setOp("rowa", "col1", "20")); // 6
-		req.add(Operations.setOp("rowa", "col2", "22")); // 7
-		req.add(Operations
-				.createFilterOp("over21", "groovy",
-                "{ row -> if (row['value'].toInteger() > 21) return row else return null }")); // 8
-		req.add(Operations.filterModeOp("over21", true)); // 9
-		req.add(Operations.sliceOp("rowa", "col1", "col3", 10)); // 10
-		IntraClient2 ic2 = new IntraClient2("localhost", 8080);
-    IntraRes res = ic2.sendBlocking(req);
-		System.out.println(res.getException());
-		List<Map> results = (List<Map>) res.getOpsRes().get(10);
-		Assert.assertEquals("22", results.get(0).get("value"));
-		Assert.assertEquals(1, results.size());
-
-		IntraReq req2 = new IntraReq();
-		req2.add(Operations.assumeOp("filterks", "filtercf", "value", "UTF8Type"));// 0
-		req2.add(Operations.filterModeOp("over21", true)); // 1
-		req2.add( Operations.sliceOp("rowa", "col1", "col3", 10) //2
-				.set("keyspace", "filterks")
-				.set("columnfamily", "filtercf")
-				.set("extendedresults", true) );
-		IntraRes res2 = new IntraRes();
-		is.handleIntraReq(req2, res2, x);
-		Map extendedMap = (Map) res2.getOpsRes().get(2);
-		results = (List<Map>) extendedMap.get("results");
-		Assert.assertEquals("22", results.get(0).get("value"));
-		Assert.assertEquals("col2", ByteBufferUtil.string((ByteBuffer) extendedMap.get("lastname")));
-		
-		
-	}
+	
 	 
 	 @Test
    public void processorTest() throws Exception{
@@ -274,42 +235,37 @@ public class IntraServiceITest {
      Assert.assertEquals( "wow",  x.get(0).get("value") );
      Assert.assertEquals( 1,  x.get(0).get("name") );
    }
-	 @Test
-	 public void ttlTest () throws Exception {
-	     IntraReq req = new IntraReq();
-	     req.add( Operations.setKeyspaceOp("ttlks") ); //0
-	     req.add( Operations.createKsOp("ttlks", 1)); //1
-	     req.add( Operations.createCfOp("ttlcf")); //2
-	     req.add( Operations.setColumnFamilyOp("ttlcf") ); //3
-	     req.add( Operations.setAutotimestampOp(true) ); //4
-	     req.add( Operations.assumeOp("ttlks", "ttlcf", "value", "UTF8Type"));//5
-	     req.add( Operations.assumeOp("ttlks", "ttlcf", "column", "Int32Type"));//6
-	     req.add( Operations.setOp("rowa", 1, "wow")); //7
-	     req.add( Operations.setOp("rowa", 2, "wow").set("ttl", 1)); //8
-	     //req.add( Operations.sliceOp("rowa", 1, 5, 4) ); //9
-		 
-	     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
-	     IntraRes res = ic2.sendBlocking(req);
-	     Assert.assertEquals( "OK", res.getOpsRes().get(8));
-	     try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-		}
-	     
-	    IntraReq r = new IntraReq();
-	    r.add( Operations.setKeyspaceOp("ttlks") ); //0
-	    r.add( Operations.setColumnFamilyOp("ttlcf") ); //1
-	     r.add( Operations.assumeOp("ttlks", "ttlcf", "value", "UTF8Type"));//2
-	     r.add( Operations.assumeOp("ttlks", "ttlcf", "column", "Int32Type"));//3
-	    r.add( Operations.sliceOp("rowa", 1, 5, 4) ); //4
-	    IntraRes rs = new IntraRes();
-	    
-	    is.handleIntraReq(r, rs, x);
-	    
-	    List<Map> x = (List<Map>) rs.getOpsRes().get(4);
-	    System.out.println(x);
-	    Assert.assertEquals(1, x.size());
-	    
+	 
+  @Test
+  public void ttlTest() throws Exception {
+    IntraReq req = new IntraReq();
+    req.add(Operations.setKeyspaceOp("ttlks")); // 0
+    req.add(Operations.createKsOp("ttlks", 1)); // 1
+    req.add(Operations.createCfOp("ttlcf")); // 2
+    req.add(Operations.setColumnFamilyOp("ttlcf")); // 3
+    req.add(Operations.setAutotimestampOp(true)); // 4
+    req.add(Operations.assumeOp("ttlks", "ttlcf", "value", "UTF8Type"));// 5
+    req.add(Operations.assumeOp("ttlks", "ttlcf", "column", "Int32Type"));// 6
+    req.add(Operations.setOp("rowa", 1, "wow")); // 7
+    req.add(Operations.setOp("rowa", 2, "wow").set("ttl", 1)); // 8
+    // req.add( Operations.sliceOp("rowa", 1, 5, 4) ); //9
+    IntraClient2 ic2 = new IntraClient2("localhost", 8080);
+    IntraRes res = ic2.sendBlocking(req);
+    Assert.assertEquals("OK", res.getOpsRes().get(8));
+  
+    Thread.sleep(2000);
+    IntraReq r = new IntraReq();
+    r.add(Operations.setKeyspaceOp("ttlks")); // 0
+    r.add(Operations.setColumnFamilyOp("ttlcf")); // 1
+    r.add(Operations.assumeOp("ttlks", "ttlcf", "value", "UTF8Type"));// 2
+    r.add(Operations.assumeOp("ttlks", "ttlcf", "column", "Int32Type"));// 3
+    r.add(Operations.sliceOp("rowa", 1, 5, 4)); // 4
+    IntraRes rs = ic2.sendBlocking(r);
+
+    List<Map> x = (List<Map>) rs.getOpsRes().get(4);
+    System.out.println(x);
+    Assert.assertEquals(1, x.size());
+
 	 }
 
   @Test
@@ -423,9 +379,10 @@ public class IntraServiceITest {
     req.add( Operations.setColumnFamilyOp("mycf") ); //1
     req.add( Operations.setAutotimestampOp(true) ); //2
     req.add( Operations.setOp("rowa", "col1", "7")); //3
-    IntraRes res = new IntraRes();
-    is.handleIntraReq(req, res, x);
-
+    
+    IntraClient2 ic = new IntraClient2("localhost",8080);
+    IntraRes res = ic.sendBlocking(req);
+    
     ThriftClientState tcs = new ThriftClientState();
     tcs.setKeyspace("myks");
     ResultMessage rm = QueryProcessor.process("select * from mycf", ConsistencyLevel.ONE,tcs.getQueryState());
@@ -518,8 +475,9 @@ public class IntraServiceITest {
     rows.add(row2);
     req.add( Operations.batchSetOp(rows));//5
     req.add(Operations.sliceOp("batchkeya", "a", "z", 100));//6
-    IntraRes res = new IntraRes();
-    is.handleIntraReq(req, res, x);
+    
+    IntraClient2 ic2 = new IntraClient2("localhost",8080);
+    IntraRes res = ic2.sendBlocking(req);
     List<Map> x = (List<Map>) res.getOpsRes().get(6);
     Assert.assertEquals(2, x.size());
     Assert.assertEquals("val1", x.get(0).get("value"));
@@ -558,55 +516,7 @@ public class IntraServiceITest {
 	  Assert.assertEquals("bsmith", r.get(0).get("name"));
   }
   
-  @Test
-  @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
-  public void jsonTest() throws Exception {
-	  String array = "[{\"value\": 1},{\"value\": 2}, {\"value\": 3},{\"value\": 4}]";
-    IntraReq req = new IntraReq();
-    req.add( Operations.setKeyspaceOp("myks") ); //0
-    req.add( Operations.setColumnFamilyOp("mycf") ); //1
-    req.add( Operations.setAutotimestampOp(true) ); //2
-    req.add( Operations.assumeOp("myks", "mycf", "value", "UTF8Type")); //3
-    req.add( Operations.assumeOp("myks", "mycf", "column", "UTF8Type")); //4
-    Map row1 = new HashMap();
-    row1.put("rowkey", "jsonkey");
-    row1.put("name", "data");
-    row1.put("value", array);
-    
-    List<Map> rows = new ArrayList<Map>();
-    rows.add(row1);
-
-    req.add( Operations.batchSetOp(rows));//5
-    req.add( Operations.sliceOp("jsonkey", "a", "z", 100));//6
-    req.add( Operations.createProcessorOp("JsonPathEx", "groovy", 
-            "import com.jayway.jsonpath.*; \n" +
-            "public class JsonPathEx implements org.usergrid.vx.experimental.processor.Processor { \n"+
-            "  public List<Map> process(List<Map> input){" +
-            "    List<Map> results = new ArrayList<HashMap>();"+
-            "    for (Map row: input){" +
-            "      Map newRow = new HashMap(); "+
-            // grovvy requires you to escape $
-            "      Integer match = JsonPath.read(row.get(\"value\").toString(), \"\\$.[1].value\"); \n"+
-            "      newRow.put(\"value\",match.toString()); \n "+
-            "      results.add(newRow); \n"+
-            "    } \n" +
-            "    return results;"+
-            "  }"+
-            "}\n"
-        ));//7
-    req.add( Operations.processOp("JsonPathEx", Collections.EMPTY_MAP, 6));//8
-
-    IntraRes res = new IntraRes();
-    is.handleIntraReq(req, res, x);
-    List<Map> x = (List<Map>) res.getOpsRes().get(6);
-    Assert.assertEquals(1, x.size());
-    Assert.assertEquals("data", x.get(0).get("name"));
-    Assert.assertEquals(array, x.get(0).get("value"));
-    
-    List<Map> y = (List<Map>) res.getOpsRes().get(8);
-    Assert.assertEquals(1, y.size());
-    Assert.assertEquals("2", y.get(0).get("value") );
-  }
+ 
   
   @Test
   @Ignore

@@ -6,7 +6,6 @@ import java.util.List;
 import org.apache.cassandra.db.IMutation;
 import org.apache.cassandra.db.RowMutation;
 import org.apache.cassandra.db.filter.QueryPath;
-import org.usergrid.vx.experimental.IntraService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
@@ -20,20 +19,17 @@ public class SetHandler implements Handler<Message<JsonObject>> {
     JsonObject state = event.body.getObject("state");
     System.out.println(params);
     RowMutation rm = new RowMutation(HandlerUtils.determineKs(params, state, null),
-            IntraService.byteBufferForObject(params.getField("rowkey")));
+            HandlerUtils.byteBufferForObject(params.getField("rowkey")));
     QueryPath qp = new QueryPath(HandlerUtils.determineCf(params, state, null), null,
-            IntraService.byteBufferForObject(params.getField("name")));
+            HandlerUtils.byteBufferForObject(params.getField("name")));
 
     Object val = params.getField("value");
-
     Integer ttl = params.getInteger("ttl");
     if (ttl == null) {
       // TODO add autoTimestamp and nanotime to the state object sent in the event bus message
-      rm.add(qp, IntraService.byteBufferForObject(IntraService.resolveObject(val, null, null, null,
-              id)), System.nanoTime());
+      rm.add(qp, HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(val)), System.nanoTime());
     } else {
-      rm.add(qp, IntraService.byteBufferForObject(IntraService.resolveObject(val, null, null, null,
-              id)), System.nanoTime(), ttl);
+      rm.add(qp, HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(val)), System.nanoTime(), ttl);
     }
     List<IMutation> mutations = new ArrayList<IMutation>();
     mutations.add(rm);

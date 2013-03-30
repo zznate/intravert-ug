@@ -6,7 +6,6 @@ import org.apache.cassandra.exceptions.IsBootstrappingException;
 import org.apache.cassandra.exceptions.ReadTimeoutException;
 import org.apache.cassandra.exceptions.UnavailableException;
 import org.apache.cassandra.service.StorageProxy;
-import org.usergrid.vx.experimental.IntraService;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
@@ -36,10 +35,8 @@ public class GetHandler implements Handler<Message<JsonObject>> {
     Object rowKeyParam = paramsMap.get("rowkey");
     Object nameParam = paramsMap.get("name");
 
-    ByteBuffer rowkey = IntraService.byteBufferForObject(IntraService.resolveObject(rowKeyParam, null, null, null,
-        id));
-    ByteBuffer column = IntraService.byteBufferForObject(IntraService.resolveObject(nameParam, null, null, null,
-        id));
+    ByteBuffer rowkey = HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(rowKeyParam));
+    ByteBuffer column = HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(nameParam));
     QueryPath path = new QueryPath(HandlerUtils.determineCf(params, state, null), null);
     List<ByteBuffer> nameAsList = Arrays.asList(column);
     ReadCommand command = new SliceByNamesReadCommand(HandlerUtils.determineKs(params, state, null), rowkey, path, nameAsList);
@@ -50,9 +47,7 @@ public class GetHandler implements Handler<Message<JsonObject>> {
       // since it is also hard coded in IntraState
       rows = StorageProxy.read(Arrays.asList(command), ConsistencyLevel.ONE);
       ColumnFamily cf = rows.get(0).cf;
-
       new ReadHandler(event, eb).handleRead(cf);
-
     } catch (ReadTimeoutException | UnavailableException | IsBootstrappingException | IOException e) {
       event.reply(new JsonObject().putString(id.toString(), e.getMessage()));
     }

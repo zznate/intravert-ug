@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /* class that holds properties for the request lifecycle */
+@Deprecated
 public class IntraState {
 	
 	public IntraState(){

@@ -1,6 +1,7 @@
 package org.usergrid.vx.server.operations;
 
 import org.apache.cassandra.db.*;
+import org.apache.cassandra.db.marshal.Int32Type;
 import org.apache.cassandra.exceptions.OverloadedException;
 import org.apache.cassandra.exceptions.UnavailableException;
 import org.apache.cassandra.exceptions.WriteTimeoutException;
@@ -9,8 +10,11 @@ import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.usergrid.vx.client.IntraClient2;
+import org.usergrid.vx.experimental.CompositeTool;
+import org.usergrid.vx.experimental.IntraOp;
 import org.usergrid.vx.experimental.IntraReq;
 import org.usergrid.vx.experimental.IntraRes;
+import org.usergrid.vx.experimental.IntraState;
 import org.usergrid.vx.experimental.NonAtomicReference;
 import org.usergrid.vx.experimental.TypeHelper;
 import org.vertx.java.core.Handler;
@@ -22,6 +26,7 @@ import org.vertx.java.core.json.JsonObject;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -232,4 +237,80 @@ public class HandlerUtils {
   public static JsonObject buildError(Integer id, String errorMessage) {
     return new JsonObject().putString("exception", errorMessage).putNumber("exceptionId", id);
   }
+  
+  public static ByteBuffer byteBufferForObject(Object o) {
+    if (o instanceof Object[]) {
+      Object[] comp = (Object[]) o;
+      List<byte[]> b = new ArrayList<byte[]>();
+      int[] sep = new int[comp.length / 2];
+      for (int i = 0; i < comp.length; i = i + 2) {
+        // get the element
+        ByteBuffer element = byteBufferForObject(comp[i]);
+        byte[] by = new byte[element.remaining()];
+        element.get(by);
+        b.add(by);
+        // this part must be an unsigned int
+        sep[i / 2] = (Integer) comp[i + 1];
+      }
+      byte[] entireComp = CompositeTool.makeComposite(b, sep);
+      return ByteBuffer.wrap(entireComp);
+    } else if (o instanceof Integer) {
+      return Int32Type.instance.decompose((Integer) o);
+      // return ByteBufferUtil.bytes( ((Integer) o).intValue());
+    } else if (o instanceof String) {
+      return ByteBufferUtil.bytes((String) o);
+    } else if (o instanceof byte[]) {
+      return ByteBuffer.wrap((byte[]) o);
+    } else if (o instanceof ByteBuffer) {
+      return (ByteBuffer) o;
+    } else
+      throw new RuntimeException("can not serializer " + o);
+  }
+  
+  
+  public static Object resolveObject(Object o) {
+    if (o instanceof JsonArray) {
+      return ((JsonArray) o).toArray();
+    } else if (o instanceof Object[]) {
+      return o;
+    } else if (o instanceof Integer) {
+      return o;
+    } else if (o instanceof String) {
+      return o;
+    } else if (o instanceof Map) {
+      Map<String, Object> map = (Map<String, Object>) o;
+      Object typeAttr = map.get("type");
+      if (isGetRef(typeAttr)) {
+        Map<String, Object> op = (Map<String, Object>) map.get("op");
+        Integer resultRef = (Integer) op.get("resultref");
+        String wanted = (String) op.get("wanted");
+        /*
+        List referencedResult = (List) res.getOpsRes().get(resultRef);
+        Map result = (Map) referencedResult.get(0);
+        return result.get(wanted);
+        */
+        return null;
+      } else if (isBind(typeAttr)) {
+        Integer mark = (Integer) map.get("mark");
+        return null;
+        //return state.bindParams.get(mark);
+      } else {
+        throw new IllegalArgumentException("Do not know what todo with " + o);
+      }
+    } else if (o instanceof IntraOp) {
+      IntraOp op = (IntraOp) o;
+      throw new RuntimeException(" do not know what to do with " + op.getType());
+    } else {
+      throw new RuntimeException(" do not know what to do with" + o.getClass());
+    }
+  }
+
+  private static boolean isGetRef(Object typeAttr) {
+    return typeAttr != null && typeAttr instanceof String && typeAttr.equals("GETREF");
+  }
+
+  private static boolean isBind(Object typeAttr) {
+    return typeAttr != null && typeAttr instanceof String && typeAttr.equals("BINDMARKER");
+  }
+
 }
