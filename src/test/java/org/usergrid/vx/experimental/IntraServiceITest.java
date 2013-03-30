@@ -108,7 +108,7 @@ public class IntraServiceITest {
 	}
 	
 	@Test
-	@Ignore 
+	
 	//Tis test now hangs.
   public void exceptionHandleTest() throws Exception{
     IntraReq req = new IntraReq();
