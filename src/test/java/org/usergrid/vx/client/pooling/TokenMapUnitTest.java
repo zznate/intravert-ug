@@ -33,9 +33,10 @@ public class TokenMapUnitTest {
 
   Map<String,Collection<String>> allTokens;
 
+  
   @Before
   public void setupLocal() {
-    allTokens = new HashMap();
+    allTokens = new HashMap<String,Collection<String>> ();
     allTokens.put("host1", Arrays.asList("0","113427455640312821154458202477256070485"));
     allTokens.put("host2", Arrays.asList("56713727820156407428984779325531226112","0"));
     allTokens.put("host3", Arrays.asList("113427455640312821154458202477256070485","56713727820156407428984779325531226112"));

@@ -24,6 +24,7 @@ import static junit.framework.Assert.assertEquals;
  */
 public class TokenUnitTest {
 
+  @SuppressWarnings("unchecked")
   @Test
   public void tokenEnumLookup() {
     Token t = TokenType.RP.fromString("0");

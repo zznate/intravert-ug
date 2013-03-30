@@ -131,7 +131,7 @@ public class CassandraRunner extends BlockJUnit4ClassRunner {
 
   private List<CFMetaData> extractColumnFamily(RequiresColumnFamily rcf) {
     logger.debug("RequiresColumnFamily annotation has name: {} for ks: {}", rcf.cfName(), rcf.ksName());
-    List<CFMetaData> cfms = new ArrayList();
+    List<CFMetaData> cfms = new ArrayList<CFMetaData>();
     if ( rcf != null ) {
       try {
         cfms.add(new CFMetaData(rcf.ksName(), rcf.cfName(),

@@ -27,6 +27,7 @@ import org.vertx.java.core.http.HttpClientRequest;
 import org.vertx.java.core.http.HttpClientResponse;
 
 public class NoMatchClient implements Handler<HttpClientResponse> {
+  @SuppressWarnings("unused")
   private static Logger logger = LoggerFactory.getLogger(HelloClient.class);
   private static Vertx vertx;
   private HttpClient httpClient;

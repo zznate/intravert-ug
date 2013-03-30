@@ -19,7 +19,8 @@ import java.io.OutputStream;
 import java.util.concurrent.CountDownLatch;
 
 public class IntraClient2 {
-	private static Logger logger = LoggerFactory.getLogger(IntraClient.class);
+	@SuppressWarnings("unused")
+  private static Logger logger = LoggerFactory.getLogger(IntraClient2.class);
 	private Vertx vertx;
 	private HttpClient httpClient;
 	private ObjectMapper mapper ;
