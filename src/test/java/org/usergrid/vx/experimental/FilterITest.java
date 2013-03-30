@@ -14,8 +14,10 @@ import org.usergrid.vx.client.IntraClient2;
 @RunWith(CassandraRunner.class)
 @RequiresKeyspace(ksName = "myks")
 @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class FilterITest {
 
+  
   @Test
   public void executeJavaScriptFilter() throws Exception {
       IntraReq req = new IntraReq();
@@ -33,7 +35,6 @@ public class FilterITest {
       req.add(Operations.sliceOp("rowa", "col1", "col3", 10)); //10
       IntraClient2 ic2 = new IntraClient2("localhost", 8080);
       IntraRes res = ic2.sendBlocking(req);
-      System.out.println(res.getException());
       List<Map> results = (List<Map>) res.getOpsRes().get(10);
       Assert.assertEquals("22", results.get(0).get("value"));
       Assert.assertEquals(1, results.size());
@@ -139,8 +140,6 @@ public class FilterITest {
     req.add(Operations.sliceOp("rowa", "col1", "col3", 10)); // 10
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
-    System.out.println(res);
-    System.out.println(res.getException());
     List<Map> results = (List<Map>) res.getOpsRes().get(10);
     Assert.assertEquals("22", results.get(0).get("value"));
     Assert.assertEquals(1, results.size());   

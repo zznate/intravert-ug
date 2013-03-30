@@ -20,15 +20,8 @@ import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Future;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
 
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -45,8 +38,10 @@ import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpClientRequest;
 import org.vertx.java.core.http.HttpClientResponse;
 
+@Deprecated
 public class IntraClient implements Handler<HttpClientResponse> {
-	private static Logger logger = LoggerFactory.getLogger(IntraClient.class);
+	@SuppressWarnings("unused")
+  private static Logger logger = LoggerFactory.getLogger(IntraClient.class);
 	private static Vertx vertx;
 	private String payload;
 	private HttpClient httpClient;
@@ -99,6 +94,7 @@ public class IntraClient implements Handler<HttpClientResponse> {
 					ByteArrayInputStream bi = new ByteArrayInputStream(arg0.getBytes());
 					XMLDecoder d = new XMLDecoder(bi);
 					ir = (IntraRes) d.readObject();
+					d.close();
 				} else if (payload.equalsIgnoreCase("JSON")){
 					try {
 						ir = mapper.readValue(arg0.getBytes(), IntraRes.class);

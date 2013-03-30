@@ -32,7 +32,7 @@ public class IntraReq implements Serializable {
     this.e = e;
   }
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({ "unchecked", "rawtypes" })
   public JsonObject toJson() {
     return new JsonObject().putArray("e", new JsonArray((List) e));
   }

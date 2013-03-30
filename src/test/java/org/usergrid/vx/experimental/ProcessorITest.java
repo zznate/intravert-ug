@@ -1,15 +1,12 @@
 package org.usergrid.vx.experimental;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.cassandra.utils.ByteBufferUtil;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.usergrid.vx.client.IntraClient2;
@@ -19,6 +16,7 @@ import org.usergrid.vx.client.IntraClient2;
 @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
 public class ProcessorITest {
 
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   @Test
   @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
   public void jsonTest() throws Exception {
@@ -29,14 +27,12 @@ public class ProcessorITest {
     req.add( Operations.setAutotimestampOp(true) ); //2
     req.add( Operations.assumeOp("myks", "mycf", "value", "UTF8Type")); //3
     req.add( Operations.assumeOp("myks", "mycf", "column", "UTF8Type")); //4
-    Map row1 = new HashMap();
+    Map<String, String> row1 = new HashMap<String, String>();
     row1.put("rowkey", "jsonkey");
     row1.put("name", "data");
     row1.put("value", array);
-    
     List<Map> rows = new ArrayList<Map>();
     rows.add(row1);
-
     req.add( Operations.batchSetOp(rows));//5
     req.add( Operations.sliceOp("jsonkey", "a", "z", 100));//6
     req.add( Operations.createProcessorOp("JsonPathEx", "groovyclassloader", 
@@ -59,7 +55,7 @@ public class ProcessorITest {
 
     IntraClient2 ic2 = new IntraClient2("localhost",8080);
     IntraRes res = ic2.sendBlocking(req);
-    System.out.println(res);
+    
     List<Map> x = (List<Map>) res.getOpsRes().get(6);
     Assert.assertEquals(1, x.size());
     Assert.assertEquals("data", x.get(0).get("name"));

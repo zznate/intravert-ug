@@ -18,7 +18,6 @@ package org.usergrid.vx.experimental;
 import org.junit.Test;
 import org.usergrid.vx.server.operations.HandlerUtils;
 
-import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
 /**

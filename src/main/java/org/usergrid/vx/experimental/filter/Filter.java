@@ -18,5 +18,5 @@ package org.usergrid.vx.experimental.filter;
 import java.util.Map;
 
 public interface Filter {
-  public Map filter(Map row);
+  public Map<?, ?> filter(Map<?, ?> row);
 }

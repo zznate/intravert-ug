@@ -14,13 +14,13 @@ public class ClojureFilter implements Filter{
   }
   
   @Override
-  public Map filter(Map row) {
+  public Map<?,?> filter(Map<?, ?> row) {
     IPersistentMap m2 = clojure.lang.RT.map(  );
     for (Object pair : row.entrySet()){
-      Map.Entry e = (Map.Entry) pair;
+      Map.Entry<?, ?> e = (Map.Entry<?, ?>) pair;
       m2= m2.assoc(e.getKey(), e.getValue());
     }
-    return (Map) v.invoke(m2);
+    return (Map<?, ?>) v.invoke(m2);
   }
 
 }
