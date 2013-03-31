@@ -43,9 +43,7 @@ public class GetHandler implements Handler<Message<JsonObject>> {
     List<Row> rows = null;
 
     try {
-      // We don't want to hard code the consistency level but letting it slide for
-      // since it is also hard coded in IntraState
-      rows = StorageProxy.read(Arrays.asList(command), ConsistencyLevel.ONE);
+      rows = StorageProxy.read(Arrays.asList(command), HandlerUtils.determineConsistencyLevel(state));
       ColumnFamily cf = rows.get(0).cf;
       new ReadHandler(event, eb).handleRead(cf);
     } catch (ReadTimeoutException | UnavailableException | IsBootstrappingException | IOException e) {

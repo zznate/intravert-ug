@@ -2,7 +2,6 @@ package org.usergrid.vx.server.operations;
 
 import org.apache.cassandra.cql3.ColumnSpecification;
 import org.apache.cassandra.cql3.QueryProcessor;
-import org.apache.cassandra.db.ConsistencyLevel;
 import org.apache.cassandra.exceptions.InvalidRequestException;
 import org.apache.cassandra.exceptions.RequestExecutionException;
 import org.apache.cassandra.exceptions.RequestValidationException;
@@ -30,7 +29,6 @@ public class CqlQueryHandler implements Handler<Message<JsonObject>> {
     Integer id = event.body.getInteger("id");
     JsonObject params = event.body.getObject("op");
     JsonObject state = event.body.getObject("state");
-
     ClientState clientState = new ClientState();
     try {
       clientState.setCQLVersion(params.getString("version"));
@@ -42,9 +40,7 @@ public class CqlQueryHandler implements Handler<Message<JsonObject>> {
     QueryState queryState = new QueryState(clientState);
     ResultMessage rm = null;
     try {
-      // We don't want to hard code the consistency level but letting it slide for
-      // since it is also hard coded in IntraState
-      rm = QueryProcessor.process(params.getString("query"), ConsistencyLevel.ONE, queryState);
+      rm = QueryProcessor.process(params.getString("query"), HandlerUtils.determineConsistencyLevel(state), queryState);
     } catch (RequestExecutionException | RequestValidationException e) {
       event.reply(new JsonObject()
           .putString(id.toString(), "ERROR")
@@ -52,7 +48,7 @@ public class CqlQueryHandler implements Handler<Message<JsonObject>> {
           .putString("exception", e.getMessage()));
       return;
     }
-    List<Map> returnRows = new ArrayList<>();
+    List<Map<String,Object>> returnRows = new ArrayList<>();
     if (rm.kind == ResultMessage.Kind.ROWS) {
       //ToDo maybe processInternal
       if (params.getBoolean("transpose", true)) {
@@ -60,7 +56,7 @@ public class CqlQueryHandler implements Handler<Message<JsonObject>> {
         List<ColumnSpecification> columnSpecs = cqlRows.result.metadata.names;
 
         for (List<ByteBuffer> row : cqlRows.result.rows) {
-          Map map = new HashMap();
+          Map<String,Object> map = new HashMap<String,Object>();
           int i = 0;
           for (ByteBuffer bytes : row) {
             ColumnSpecification specs = columnSpecs.get(i++);
@@ -75,7 +71,7 @@ public class CqlQueryHandler implements Handler<Message<JsonObject>> {
         for (CqlRow row: rows) {
           List<org.apache.cassandra.thrift.Column> columns = row.getColumns();
           for (org.apache.cassandra.thrift.Column c: columns){
-            HashMap m = new HashMap();
+            HashMap<String,Object> m = new HashMap<String,Object>();
             if (convert) {
               m.put("name" , TypeHelper.getCqlTyped(result.schema.name_types.get(c.name), c.name) );
               m.put("value" , TypeHelper.getCqlTyped(result.schema.name_types.get(c.name), c.value) );
@@ -90,7 +86,7 @@ public class CqlQueryHandler implements Handler<Message<JsonObject>> {
     }
     JsonObject response = new JsonObject();
     JsonArray array = new JsonArray();
-    for (Map m : returnRows) {
+    for (Map<String,Object> m : returnRows) {
       array.add(new JsonObject(m));
     }
     response.putString(id.toString(), "OK");

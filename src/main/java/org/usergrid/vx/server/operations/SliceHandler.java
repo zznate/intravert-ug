@@ -41,22 +41,16 @@ public class SliceHandler implements Handler<Message<JsonObject>> {
     ByteBuffer end = HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(endParam));
 
     List<ReadCommand> commands = new ArrayList<ReadCommand>(1);
-
     QueryPath path = new QueryPath(HandlerUtils.determineCf(params, state, null), null);
-
-    SliceFromReadCommand sr = new SliceFromReadCommand(HandlerUtils.determineKs(params, state, null), rowkey, path, start, end,
-        false, 100);
+    SliceFromReadCommand sr = new SliceFromReadCommand(HandlerUtils.determineKs(params, state, null), 
+            rowkey, path, start, end, false, 100);
     commands.add(sr);
 
     List<Row> results = null;
     try {
-      // We don't want to hard code the consistency level but letting it slide for
-      // since it is also hard coded in IntraState
-      results = StorageProxy.read(commands, ConsistencyLevel.ONE);
+      results = StorageProxy.read(commands, HandlerUtils.determineConsistencyLevel(state));
       ColumnFamily cf = results.get(0).cf;
-
       new ReadHandler(event, eb).handleRead(cf);
-
     } catch (ReadTimeoutException | UnavailableException | IsBootstrappingException | IOException e) {
       event.reply(new JsonObject().putString(id.toString(), e.getMessage()));
     }
