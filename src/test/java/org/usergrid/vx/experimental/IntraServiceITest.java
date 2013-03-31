@@ -44,7 +44,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.usergrid.vx.client.IntraClient;
 import org.usergrid.vx.client.IntraClient2;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.impl.ws.Base64;
@@ -535,11 +534,10 @@ public class IntraServiceITest {
     long start = System.currentTimeMillis();
 
     Thread t = new Thread() {
-      IntraClient ic = new IntraClient();
+      IntraClient2 ic = new IntraClient2("localhost", 8080);
 
       public void run() {
         // ic.setPayload("json");
-        ic.setPayload("jsonsmile");
         for (int i = 0; i < ops; ++i) {
           IntraReq req = new IntraReq();
           req.add(Operations.setKeyspaceOp("myks")); // 0
@@ -766,8 +764,7 @@ public class IntraServiceITest {
             .add(Operations.setOp("scannerrow2", "stacey", "NY"))// 15
             .add(Operations.setOp("scannerrow2", "paul", "YO"));// 16
 
-    IntraClient ic = new IntraClient();
-    ic.setPayload("json");
+    IntraClient2 ic = new IntraClient2("localhost", 8080);
     IntraRes res = ic.sendBlocking(req);
     Assert.assertEquals(null, res.getException());
   }
