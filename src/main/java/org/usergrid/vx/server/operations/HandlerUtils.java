@@ -67,6 +67,13 @@ public class HandlerUtils {
     }
   }
 
+  /*determine the consistency level from the state */
+  public static ConsistencyLevel determineConsistencyLevel(JsonObject state){
+    return (state.getString("consistency") == null) ? 
+            ConsistencyLevel.ONE 
+            : ConsistencyLevel.valueOf(state.getString("consistency"));
+  }
+  
   /*
    * Determine columnfamily first look in the row for a string named keyspace, then look in the op,
    * then look in the state. The row is only currently provided in batchset

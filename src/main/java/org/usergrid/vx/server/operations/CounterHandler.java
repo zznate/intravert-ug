@@ -1,11 +1,9 @@
 package org.usergrid.vx.server.operations;
 
-import org.apache.cassandra.db.ConsistencyLevel;
 import org.apache.cassandra.db.CounterMutation;
 import org.apache.cassandra.db.IMutation;
 import org.apache.cassandra.db.RowMutation;
 import org.apache.cassandra.db.filter.QueryPath;
-import org.usergrid.vx.experimental.IntraOp;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
@@ -25,18 +23,15 @@ public class CounterHandler implements Handler<Message<JsonObject>> {
     Integer id = event.body.getInteger("id");
     JsonObject params = event.body.getObject("op");
     JsonObject state = event.body.getObject("state");
-
     RowMutation rm = new RowMutation(HandlerUtils.determineKs(params, state, null),
             HandlerUtils.byteBufferForObject(params.getString("rowkey")));
-
     rm.addCounter(new QueryPath(
             HandlerUtils.determineCf(params, state, null ),
             null,
             HandlerUtils.byteBufferForObject(params.getString("name"))),
             Long.parseLong(params.toMap().get("value").toString()));
-    List<IMutation> mutations = new ArrayList(1);
-    // TODO fix hard-coded consistency
-    mutations.add(new CounterMutation(rm, ConsistencyLevel.ONE));
+    List<IMutation> mutations = new ArrayList<IMutation>(1);
+    mutations.add(new CounterMutation(rm, HandlerUtils.determineConsistencyLevel(state)));
     HandlerUtils.write(mutations, event, id);
   }
 }
