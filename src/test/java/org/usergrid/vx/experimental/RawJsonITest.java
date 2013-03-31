@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.usergrid.vx.client.IntraClient;
+import org.usergrid.vx.client.IntraClient2;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.SimpleHandler;
 import org.vertx.java.core.Vertx;
@@ -52,7 +52,7 @@ import static java.util.Arrays.asList;
 @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
 public class RawJsonITest {
 
-    private static Logger logger = LoggerFactory.getLogger(IntraClient.class);
+    private static Logger logger = LoggerFactory.getLogger(IntraClient2.class);
     private static Vertx vertx;
     private HttpClient httpClient;
 
