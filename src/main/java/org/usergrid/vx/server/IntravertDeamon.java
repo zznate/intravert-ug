@@ -15,14 +15,15 @@
 */
 package org.usergrid.vx.server;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Preconditions;
 import org.apache.cassandra.service.CassandraDaemon;
+import org.apache.cassandra.thrift.ThriftServer;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 public class IntravertDeamon extends CassandraDaemon {
 
@@ -57,11 +58,13 @@ public class IntravertDeamon extends CassandraDaemon {
 
   @Override
   public void start() {
+    super.start();
     intravertServer.start();
   }
 
   @Override
   public void stop() {
+    super.stop();
     logger.info("Stopping IntravertDeamon");
     intravertServer.stop();
   }

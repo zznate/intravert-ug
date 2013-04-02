@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.cassandra.thrift.Cassandra;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -28,6 +29,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.usergrid.vx.client.IntraClient2;
 import org.usergrid.vx.client.IntraClient2.Transport;
+import org.usergrid.vx.client.thrift.FramedConnWrapper;
 import org.vertx.java.core.Vertx;
 
 /* unless testing performance chances this should like be ignored */
