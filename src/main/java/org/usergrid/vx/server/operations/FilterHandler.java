@@ -1,5 +1,6 @@
 package org.usergrid.vx.server.operations;
 
+import org.mozilla.javascript.Context;
 import org.usergrid.vx.experimental.filter.Filter;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
@@ -19,6 +20,7 @@ public class FilterHandler implements Handler<Message<JsonArray>> {
   @Override
   public void handle(Message<JsonArray> event) {
     JsonArray filteredArray = new JsonArray();
+    Context context = Context.enter();
     for (Object obj : event.body) {
       JsonObject jsonObject = (JsonObject) obj;
       Map filtered = filter.filter(jsonObject.toMap());
