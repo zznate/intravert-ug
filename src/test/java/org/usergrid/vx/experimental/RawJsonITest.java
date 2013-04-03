@@ -323,7 +323,7 @@ public class RawJsonITest {
             .putObject("opsRes", new JsonObject()
                 .putString("0", "OK")
                 .putString("1", "OK")
-                .putArray("2", new JsonArray((List) asList("ks2", "myks", "ks1"))))
+                .putArray("2", new JsonArray((List) asList("myks", "ks1","ks2"))))
             .toString();
 
         assertJSONEquals("Failed to get keyspaces", expectedResponse, actualResponse);
