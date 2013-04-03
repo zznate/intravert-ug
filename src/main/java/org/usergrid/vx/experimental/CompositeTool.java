@@ -85,7 +85,7 @@ public class CompositeTool {
     List<byte[]> parts = readComposite(column);
     for (int i =0;i<parts.size();i++){
       try {
-      System.out.println( columnType.get(i).getString(ByteBuffer.wrap(parts.get(i))) );
+        System.out.println( columnType.get(i).getString(ByteBuffer.wrap(parts.get(i))) );
       } catch (Exception ex){}
     }
   }
