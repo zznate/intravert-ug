@@ -16,6 +16,7 @@ import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ColumnParent;
+import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.cassandra.thrift.KsDef;
 import org.apache.cassandra.thrift.SlicePredicate;
@@ -121,17 +122,43 @@ public class ThriftITest {
     col4.setValue("good".getBytes());
     c.insert(ByteBufferUtil.bytes("ed"), cp, col4, ConsistencyLevel.ONE);
     
+    
+    @SuppressWarnings("rawtypes")
+    List<AbstractType> t = new ArrayList<AbstractType>();
+    t.add(UTF8Type.instance);
+    t.add(UTF8Type.instance);
+    t.add(UTF8Type.instance);
+    
     res = c.get_slice(ByteBufferUtil.bytes("ed"), cp, sp, ConsistencyLevel.ONE);
     for (int i =0;i< res.size();i++){
-      @SuppressWarnings("rawtypes")
-      List<AbstractType> t = new ArrayList<AbstractType>();
-      t.add(UTF8Type.instance);
-      t.add(UTF8Type.instance);
-      t.add(UTF8Type.instance);
+
       CompositeTool.prettyPrintComposite(res.get(i).column.getName(), t);
     }
     Assert.assertEquals(3, res.size());
-    wrap.close();
+
+    
+    //so there is a column in there with 2 parts...can delete it?
+    ColumnPath path = new ColumnPath();
+    path.setColumn(CompositeTool.makeComposite(parts2));
+    path.setColumn_family("atest");
+    c.remove(ByteBufferUtil.bytes("ed"), path, System.nanoTime(), ConsistencyLevel.ONE);
+
+    
+    //canwewrite it back?
+    col2.setTimestamp(System.nanoTime());
+    c.insert(ByteBufferUtil.bytes("ed"), cp, col2, ConsistencyLevel.ONE);
+    
+    //can you dig (slice) it!
+    SlicePredicate sp2  = new SlicePredicate();
+    SliceRange sr2 = new SliceRange();
+    sr2.setStart(CompositeTool.makeComposite(parts2));
+    sr2.setFinish( new byte[0]);
+    sr2.setCount(100);
+    sp2.setSlice_range(sr2);
+    List<ColumnOrSuperColumn>res3 = c.get_slice(ByteBufferUtil.bytes("ed"), cp, sp2, ConsistencyLevel.ONE);
+    CompositeTool.prettyPrintComposite(res3.get(0).column.getName(), t);
+    Assert.assertEquals(2, res3.size() );
+    wrap.close();    
   }
   
 }
