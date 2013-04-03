@@ -19,6 +19,8 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.cassandra.db.marshal.AbstractType;
 import org.apache.cassandra.utils.ByteBufferUtil;
 
 public class CompositeTool {
@@ -77,5 +79,14 @@ public class CompositeTool {
       result.add(data);
     }
     return result;
+  }
+  
+  public static void prettyPrintComposite(byte [] column, List<AbstractType> columnType){
+    List<byte[]> parts = readComposite(column);
+    for (int i =0;i<parts.size();i++){
+      try {
+      System.out.println( columnType.get(i).getString(ByteBuffer.wrap(parts.get(i))) );
+      } catch (Exception ex){}
+    }
   }
 }
