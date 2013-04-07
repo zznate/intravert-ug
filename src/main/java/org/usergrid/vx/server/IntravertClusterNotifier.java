@@ -46,27 +46,34 @@ public class IntravertClusterNotifier implements IMigrationListener {
   }
 
   @Override
-  public void onCreateColumnFamly(String ksName, String cfName) {
-    logger.info("onCreateColumnFamily event for ks: {} and cf: {}", ksName, cfName);
-  }
-
-  @Override
   public void onUpdateKeyspace(String ksName) {
     logger.info("onUpdateKeyspace event for ks: {}", ksName);
   }
 
-  @Override
-  public void onUpdateColumnFamly(String ksName, String cfName) {
-    logger.info("onUpdateColumnFamily for ks: {} and cf: {}", ksName, cfName);
-  }
+  
 
   @Override
   public void onDropKeyspace(String ksName) {
     logger.info("onDropKeyspace for ksName: {}", ksName);
   }
 
+  
+
   @Override
-  public void onDropColumnFamly(String ksName, String cfName) {
+  public void onCreateColumnFamily(String ksName, String cfName) {
+     logger.info("onCreateColumnFamily for ksName: {} and cf: {}", ksName, cfName);
+    
+  }
+
+  @Override
+  public void onDropColumnFamily(String ksName, String cfName) {
     logger.info("onDropColumnFamily for ksName: {} and cf: {}", ksName, cfName);
+    
+  }
+
+  @Override
+  public void onUpdateColumnFamily(String ksName, String cfName) {
+    logger.info("onUpdateColumnFamily for ks: {} and cf: {}", ksName, cfName);
+    
   }
 }

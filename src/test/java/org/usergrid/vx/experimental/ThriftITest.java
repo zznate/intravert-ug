@@ -2,6 +2,7 @@ package org.usergrid.vx.experimental;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,10 +19,13 @@ import org.apache.cassandra.thrift.ColumnOrSuperColumn;
 import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ColumnPath;
 import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.Deletion;
 import org.apache.cassandra.thrift.KsDef;
+import org.apache.cassandra.thrift.Mutation;
 import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.utils.ByteBufferUtil;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.usergrid.vx.client.thrift.FramedConnWrapper;
@@ -158,7 +162,48 @@ public class ThriftITest {
     List<ColumnOrSuperColumn>res3 = c.get_slice(ByteBufferUtil.bytes("ed"), cp, sp2, ConsistencyLevel.ONE);
     CompositeTool.prettyPrintComposite(res3.get(0).column.getName(), t);
     Assert.assertEquals(2, res3.size() );
+  
+    
+    
     wrap.close();    
+    
+  }
+  
+  @Ignore
+  @Test
+  @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+  public void deleteByPredicateTEst() throws Exception {
+    FramedConnWrapper wrap = new FramedConnWrapper("localhost",9160);
+    wrap.open();
+    Cassandra.Client c = wrap.getClient();
+    c.set_keyspace("myks");
+    ColumnParent cp = new ColumnParent();
+    cp.setColumn_family("mycf");
+    ByteBuffer key = ByteBuffer.wrap("rangedeletekey".getBytes());
+    for (char a='a'; a < 'g'; a++){
+      Column c1 = new Column();
+      c1.setName((a+"").getBytes());
+      c1.setValue(new byte [0]);
+      c1.setTimestamp(System.nanoTime());
+      c.insert(key, cp, c1, ConsistencyLevel.ONE);
+    }
+    Deletion d1 = new Deletion();
+    SlicePredicate delPred = new SlicePredicate();
+    SliceRange  delSr = new SliceRange();
+    delSr.setStart( "d".getBytes());
+    delSr.setFinish( "f".getBytes());
+    delPred.setSlice_range(delSr);
+    d1.setPredicate(delPred);
+    Mutation m1 = new Mutation();
+    m1.setDeletion(d1);
+    
+    Map<ByteBuffer, Map<String, List<Mutation>>> mutation_map = new HashMap<ByteBuffer, Map<String, List<Mutation>>> ();
+    Map<String, List<Mutation>> mutationsForCf = new HashMap<>();
+    mutationsForCf.put("mycf", (List<Mutation>) Arrays.asList(m1));
+    mutation_map.put(key, mutationsForCf);
+    c.batch_mutate(mutation_map, ConsistencyLevel.ONE);
+    
+    wrap.close();
   }
   
 }
