@@ -606,6 +606,7 @@ public class IntraServiceITest {
     Assert.assertTrue(x.get(0).get("name") == null);
   }
 
+  @Ignore
   @Test
   @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
   public void cql3Schema() throws Exception {

@@ -64,7 +64,7 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
 
     Integer exceptionId = event.body.getInteger("exceptionId");
     String exception = event.body.getString("exception");
-
+    
     if (exception != null || exceptionId != null) {
       
       results.putString("exception", exception);
