@@ -74,6 +74,20 @@ public class HandlerUtils {
             : ConsistencyLevel.valueOf(state.getString("consistency"));
   }
   
+  /*Determine the time for the operation */
+  public static long determineTimestamp(JsonObject params, JsonObject state, JsonObject row){
+    long timestamp = 0;
+    if (row != null && row.getLong("timestamp") != null){
+      timestamp = row.getLong("timestamp");
+    } else if (params.getLong("timestamp") != null){
+      timestamp = params.getLong("timestamp"); 
+    } else if (state.getBoolean("autotimestamp")!= null && state.getBoolean("autotimestamp") == true){
+      timestamp = System.nanoTime();
+    }
+    return timestamp;
+  }
+  
+  
   /*
    * Determine columnfamily first look in the row for a string named keyspace, then look in the op,
    * then look in the state. The row is only currently provided in batchset

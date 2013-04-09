@@ -29,12 +29,11 @@ public class BatchHandler implements Handler<Message<JsonObject>> {
       Object val = row.getField("value");
       Integer ttl = row.getInteger("ttl");
       if (ttl == null) {
-          // TODO add autoTimestamp and nanotime to the state object sent in the event bus message
           rm.add(qp, HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(val)),
-              System.nanoTime());
+                  HandlerUtils.determineTimestamp(params, state, row));
       } else {
           rm.add(qp, HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(val)),
-              System.nanoTime(), ttl);
+                  HandlerUtils.determineTimestamp(params, state, row), ttl);
       }
       mutations.add(rm);
     }
