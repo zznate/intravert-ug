@@ -14,10 +14,11 @@ public class NegativeITest {
   @Test
   public void testBadSlice() throws Exception{
     IntraReq req = new IntraReq();
-    req.add( Operations.setAutotimestampOp(true));
-    req.add( Operations.sliceOp("a", "b", "c", 10));
+    req.add(Operations.setAutotimestampOp(true));
+    req.add(Operations.sliceOp("a", "b", "c", 10));
     IntraClient2 ic2 = new IntraClient2("localhost",8080);
     IntraRes ir = ic2.sendBlocking(req);
     Assert.assertEquals("Exception 1", ir.getException());
   }
+  
 }
