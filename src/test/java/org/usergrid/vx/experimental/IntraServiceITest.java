@@ -795,7 +795,6 @@ public class IntraServiceITest {
   }
 
   @Test
-  @Ignore
   @RequiresColumnFamily(ksName = "myks", cfName = "mycountercf", isCounter = true)
   public void counterNoodling() throws Exception {
     IntraReq req = new IntraReq();
@@ -803,18 +802,19 @@ public class IntraServiceITest {
             .add(Operations.assumeOp("myks", "mycountercf", "column", "UTF8Type"))
             .add(Operations.setKeyspaceOp("myks"))
             .add(Operations.setColumnFamilyOp("mycountercf"))
-            .add(Operations.counter("counter_key", "counter_name_1", 1).set("timeout", 30000))
+            .add(Operations.counter("counter_key", "counter_name_1", 1L).set("timeout", 30000))
             // 4
             .add(Operations.getOp("counter_key", "counter_name_1"))
-            .add(Operations.counter("counter_key", "counter_name_1", 4).set("timeout", 30000))
+            .add(Operations.counter("counter_key", "counter_name_1", new Long((long) Integer.MAX_VALUE+10L)).set("timeout", 30000))
             .add(Operations.getOp("counter_key", "counter_name_1"));
 
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
     List<Map> results = (List<Map>) res.getOpsRes().get(5);
     logger.info("has results {}", results);
-    Assert.assertEquals(1L, results.get(0).get("value"));
-    results = (List<Map>) res.getOpsRes().get(7);
-    Assert.assertEquals(5L, results.get(0).get("value"));
+    Assert.assertEquals(1, results.get(0).get("value"));
+    results = (List<Map>) res.getOpsRes().get(7);   
+    Assert.assertEquals(2147483658L, results.get(0).get("value"));
+    Assert.assertTrue( (Long) results.get(0).get("value") > Integer.MAX_VALUE );
   }
 }
