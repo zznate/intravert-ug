@@ -30,7 +30,11 @@ public class AssumeHandler extends AbstractIntravertHandler {
     JsonObject metaRanged = state.getObject("metaranged");
     if (meta == null) {
       meta = new JsonObject();
+    }
+    if (metaColumn == null){
       metaColumn = new JsonObject();
+    }
+    if (metaRanged == null){
       metaRanged = new JsonObject();
     }
     if (params.getString("type") != null){
@@ -45,8 +49,8 @@ public class AssumeHandler extends AbstractIntravertHandler {
       state.putObject("meta", meta);
       event.reply(new JsonObject().putString(id.toString(), "OK")
         .putObject("state", state));
-    } else if (params.getField("columnname") != null){
-      Object o = params.getField("columnname");
+    } else if (params.getField("name") != null){
+      Object o = params.getField("name");
       ByteBuffer bb = HandlerUtils.byteBufferForObject(o);
       StringBuilder key = new StringBuilder();
       key.append(HandlerUtils.determineKs(params, state, null));

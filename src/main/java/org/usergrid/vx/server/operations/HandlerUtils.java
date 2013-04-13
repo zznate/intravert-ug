@@ -121,7 +121,7 @@ public class HandlerUtils {
   }
 
   public static JsonArray readCf(ColumnFamily columnFamily, JsonObject state, JsonObject params) {
-    System.out.println(state.toString());
+    System.out.println("state1"+ state);
     JsonArray components = state.getArray("components");
     JsonArray array = new JsonArray();
     Iterator<IColumn> it = columnFamily.iterator();
@@ -147,7 +147,10 @@ public class HandlerUtils {
           if (ic instanceof CounterColumn) {
             m.put("value", ((CounterColumn) ic).total());
           } else {
-            JsonObject valueMetadata = findMetaData(columnFamily, state, "value");
+            JsonObject valueMetadata = HandlerUtils.findColumnMetaData(columnFamily, state, ic.name().duplicate());
+            if (valueMetadata == null){
+              valueMetadata = findMetaData(columnFamily, state, "value");
+            }
             if (valueMetadata == null) {
               m.put("value", TypeHelper.getBytes(ic.value()));
             } else {
@@ -187,10 +190,26 @@ public class HandlerUtils {
       return meta.getObject(key.toString());
     }
   }
-
+  
+  public static JsonObject findColumnMetaData(ColumnFamily cf, JsonObject state, ByteBuffer name) {
+    StringBuilder key = new StringBuilder();
+    key.append(cf.metadata().ksName);
+    key.append(' ');
+    key.append(cf.metadata().cfName);
+    key.append(' ');
+    key.append(ByteBufferUtil.bytesToHex(name));
+    JsonObject meta = state.getObject("metaColumn");
+    if (meta!=null) {
+      return meta.getObject(key.toString());
+    } else {
+      return null;
+    }
+  }
+  
   public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus eb,
           Handler<Message<JsonArray>> filterReplyHandler) {
     JsonArray components = state.getArray("components");
+    System.out.println("state" + state);
     JsonArray array = new JsonArray();
 
     for (IColumn column : columnFamily) {
@@ -210,11 +229,14 @@ public class HandlerUtils {
           if (column instanceof CounterColumn) {
             m.put("value", ((CounterColumn) column).total());
           } else {
-            JsonObject valueMetadata = findMetaData(columnFamily, state, "value");
-            if (valueMetadata == null) {
+            JsonObject valueMetaData = HandlerUtils.findColumnMetaData(columnFamily, state, column.name().duplicate());
+            if (valueMetaData == null){
+              valueMetaData = findMetaData(columnFamily, state, "value");
+            }
+            if (valueMetaData == null) {
               m.put("value", ByteBufferUtil.getArray(column.value()));
             } else {
-              String clazz = valueMetadata.getString("clazz");
+              String clazz = valueMetaData.getString("clazz");
               m.put("value", TypeHelper.getTyped(clazz, column.value()));
             }
           }

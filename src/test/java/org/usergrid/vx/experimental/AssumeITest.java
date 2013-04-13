@@ -65,5 +65,23 @@ public class AssumeITest {
     System.out.println(res);
 
   }
-  
+
+  @Test
+  @RequiresColumnFamily(ksName = "myks", cfName = "columnasscf")
+  public void columnAssumeTest() throws Exception{
+    IntraReq r = new IntraReq();
+    r.add( Operations.assumeColumnOp("myks", "columnasscf", "astring", "UTF8Type"))
+     .add( Operations.assumeColumnOp("myks", "columnasscf", "aint", "Int32Type"))
+     .add( Operations.setKeyspaceOp("myks"))
+     .add( Operations.setColumnFamilyOp("columnasscf"))
+     .add( Operations.setOp("arow", "astring", "wow") )
+     .add( Operations.setOp("arow", "aint", 5) )
+     .add( Operations.sliceOp("arow", "a", "b", 2));
+    IntraClient2 ic2 = new IntraClient2("localhost", 8080);
+    IntraRes res = ic2.sendBlocking(r);
+    System.out.println(res);
+    List<Map> x = (List<Map>) res.getOpsRes().get(6);
+    Assert.assertEquals(5, x.get(0).get("value"));
+    Assert.assertEquals("wow", x.get(1).get("value"));
+  }
 }
