@@ -171,6 +171,16 @@ public class Operations {
             .set(CLAZZ, clazz );
   }
 
+  
+  
+  public static IntraOp assumeColumnOp(String keyspace , String columnfamily, Object column, String clazz){
+    return new IntraOp(IntraOp.Type.ASSUME)
+    .set(KEYSPACE, keyspace)
+    .set(COLUMN_FAMILY, columnfamily)
+    .set(NAME, column) //should be column rowkey value
+    .set(CLAZZ, clazz );
+  }
+  
   public static IntraOp createProcessorOp(String name, String spec, String value){
     return new IntraOp(IntraOp.Type.CREATEPROCESSOR)
             .set(NAME,name)
