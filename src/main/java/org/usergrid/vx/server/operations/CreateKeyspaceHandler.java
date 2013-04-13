@@ -14,10 +14,10 @@ import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
 
-public class CreateKeyspaceHandler implements Handler<Message<JsonObject>> {
+public class CreateKeyspaceHandler extends AbstractIntravertHandler {
 
     @Override
-    public void handle(Message<JsonObject> event) {
+    public void handleUser(Message<JsonObject> event) {
         JsonObject params = event.body.getObject("op");
         Integer id = event.body.getInteger("id");
         JsonObject state = event.body.getObject("state");
@@ -39,19 +39,13 @@ public class CreateKeyspaceHandler implements Handler<Message<JsonObject>> {
             ksm = KSMetaData.fromThrift(def,
                 cfDefs.toArray(new CFMetaData[cfDefs.size()]));
         } catch (ConfigurationException e) {
-            response.putString("exception", e.getMessage());
-            response.putNumber("exceptionId", id);
-            event.reply(response);
-            return;
+            throw new RuntimeException(e);
         }
 
         try {
             MigrationManager.announceNewKeyspace(ksm);
         } catch ( ConfigurationException e ) {
-            response.putString("exception", e.getMessage());
-            response.putNumber("exceptionId", id);
-            event.reply(response);
-            return;
+            throw new RuntimeException(e);
         }
 
         response.putString(id.toString(), "OK");
