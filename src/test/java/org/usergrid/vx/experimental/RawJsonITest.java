@@ -412,6 +412,7 @@ public class RawJsonITest {
   }
 
     @Test
+    
     public void handleBadRequest() throws Exception {
         String actualResponse = submitRequest(loadJSON("bad_request.json"));
         String expectedResponse = loadJSON("response_for_bad_request.json");
