@@ -151,6 +151,9 @@ public class HandlerUtils {
             if (valueMetadata == null){
               valueMetadata = findMetaData(columnFamily, state, "value");
             }
+            if (valueMetadata == null){
+              valueMetadata = findRangedMetaData(columnFamily, state, ic.name().duplicate());
+            }
             if (valueMetadata == null) {
               m.put("value", TypeHelper.getBytes(ic.value()));
             } else {
@@ -190,6 +193,34 @@ public class HandlerUtils {
       return meta.getObject(key.toString());
     }
   }
+  public static JsonObject findRangedMetaData(ColumnFamily cf, JsonObject state, ByteBuffer name) {
+    //System.out.println();
+    //System.out.println("ranged meta data");
+    StringBuilder key = new StringBuilder();
+    key.append(cf.metadata().ksName);
+    key.append(' ');
+    key.append(cf.metadata().cfName);
+    key.append(' ');
+    key.append(ByteBufferUtil.bytesToHex(name));
+    String skey = key.toString();
+    JsonObject meta = state.getObject("metaRanged");
+    Set<String> names = meta.getFieldNames();
+    for (String s: names){
+      //System.out.println("compare "+skey+ " to "+s);
+      if (skey.compareTo(s)>-1){
+        //System.out.println(skey+ " greater then "+s);
+        JsonObject value = meta.getObject(s);
+        String end = cf.metadata().ksName+' '+cf.metadata().cfName+' '+value.getString("end");
+        //System.out.println("compare "+skey+ " to "+end);
+        if (skey.compareToIgnoreCase(end)<0){
+          //System.out.println("matched!");
+          return value;
+        }
+      }
+    }
+    //System.out.println();
+    return null;
+  }
   
   public static JsonObject findColumnMetaData(ColumnFamily cf, JsonObject state, ByteBuffer name) {
     StringBuilder key = new StringBuilder();
@@ -209,7 +240,6 @@ public class HandlerUtils {
   public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus eb,
           Handler<Message<JsonArray>> filterReplyHandler) {
     JsonArray components = state.getArray("components");
-    System.out.println("state" + state);
     JsonArray array = new JsonArray();
 
     for (IColumn column : columnFamily) {
@@ -218,6 +248,7 @@ public class HandlerUtils {
 
         if (components.contains("name")) {
           JsonObject columnMetadata = findMetaData(columnFamily, state, "column");
+         
           if (columnMetadata == null) {
             m.put("name", ByteBufferUtil.getArray(column.name()));
           } else {
@@ -232,6 +263,9 @@ public class HandlerUtils {
             JsonObject valueMetaData = HandlerUtils.findColumnMetaData(columnFamily, state, column.name().duplicate());
             if (valueMetaData == null){
               valueMetaData = findMetaData(columnFamily, state, "value");
+            } 
+            if (valueMetaData == null){
+              valueMetaData = findRangedMetaData(columnFamily, state, column.name().duplicate());
             }
             if (valueMetaData == null) {
               m.put("value", ByteBufferUtil.getArray(column.value()));

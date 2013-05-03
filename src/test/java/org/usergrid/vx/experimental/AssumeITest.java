@@ -84,4 +84,27 @@ public class AssumeITest {
     Assert.assertEquals(5, x.get(0).get("value"));
     Assert.assertEquals("wow", x.get(1).get("value"));
   }
+  
+  @Test
+  @RequiresColumnFamily(ksName = "myks", cfName = "columnasscf")
+  public void rangedAssumeTest() throws Exception{
+    IntraReq r = new IntraReq();
+    r.add( Operations.assumeRangedOp("myks", "columnasscf", "e", "f", "Int32Type") )
+     .add( Operations.assumeRangedOp("myks", "columnasscf", "y", "z", "UTF8Type") )
+     .add( Operations.setKeyspaceOp("myks"))
+     .add( Operations.setColumnFamilyOp("columnasscf"))
+     .add( Operations.setOp("darow", "e", 10) )
+     .add( Operations.setOp("darow", "e1", 11) )
+     .add( Operations.setOp("darow", "e5", 9) )
+     .add( Operations.setOp("darow", "y", "nice") )
+     .add( Operations.setOp("darow", "y1", "dude") )
+     .add( Operations.sliceOp("darow", "e", "z", 10));
+    IntraClient2 ic2 = new IntraClient2("localhost", 8080);
+    IntraRes res = ic2.sendBlocking(r);
+    List<Map> x = (List<Map>) res.getOpsRes().get(9);
+    Assert.assertEquals(10, x.get(0).get("value"));
+    Assert.assertEquals(11, x.get(1).get("value"));
+    Assert.assertEquals("nice", x.get(3).get("value"));
+  }
+
 }

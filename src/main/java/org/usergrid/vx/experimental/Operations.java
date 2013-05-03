@@ -58,6 +58,8 @@ public class Operations {
   private static final String MODE = "mode";
   private static final String SAVE = "save";
   private static final String GET = "get";
+  public static final String RANGE_START="range_start";
+  public static final String RANGE_END="range_end";
 
   private Operations() {}
 
@@ -177,9 +179,19 @@ public class Operations {
     return new IntraOp(IntraOp.Type.ASSUME)
     .set(KEYSPACE, keyspace)
     .set(COLUMN_FAMILY, columnfamily)
-    .set(NAME, column) //should be column rowkey value
+    .set(NAME, column) //name of column
     .set(CLAZZ, clazz );
   }
+  
+  public static IntraOp assumeRangedOp(String keyspace , String columnfamily, Object rangeStart, Object rangeEnd, String clazz){
+    return new IntraOp(IntraOp.Type.ASSUME)
+    .set(KEYSPACE, keyspace)
+    .set(COLUMN_FAMILY, columnfamily)
+    .set(RANGE_START, rangeStart)
+    .set(RANGE_END, rangeEnd) 
+    .set(CLAZZ, clazz );
+  }
+  
   
   public static IntraOp createProcessorOp(String name, String spec, String value){
     return new IntraOp(IntraOp.Type.CREATEPROCESSOR)

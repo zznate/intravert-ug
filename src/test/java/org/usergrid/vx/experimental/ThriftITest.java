@@ -10,6 +10,7 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.apache.cassandra.db.marshal.AbstractType;
+import org.apache.cassandra.db.marshal.Int32Type;
 import org.apache.cassandra.db.marshal.UTF8Type;
 import org.apache.cassandra.locator.SimpleStrategy;
 import org.apache.cassandra.thrift.Cassandra;
@@ -204,6 +205,16 @@ public class ThriftITest {
     c.batch_mutate(mutation_map, ConsistencyLevel.ONE);
     
     wrap.close();
+  }
+  
+  @Test
+  public void testWriteReadComposites(){
+    byte [] bob = "bob".getBytes();
+    byte [] tall = ByteBufferUtil.getArray(Int32Type.instance.decompose(5));
+    byte [] composite = CompositeTool.makeComposite(Arrays.asList(bob,tall));
+    List<byte[]> results = CompositeTool.readComposite(composite);
+    Assert.assertEquals(new String (bob), new String(results.get(0)));
+    Assert.assertEquals(new Integer(5), Int32Type.instance.compose(ByteBuffer.wrap(results.get(1))) );
   }
   
 }
