@@ -1,6 +1,7 @@
 package org.usergrid.vx.handler.http;
 
 import org.usergrid.vx.experimental.IntraOp;
+import org.usergrid.vx.experimental.Operations;
 import org.usergrid.vx.experimental.multiprocessor.MultiProcessor;
 import org.usergrid.vx.experimental.processor.Processor;
 import org.usergrid.vx.server.operations.HandlerUtils;
@@ -76,7 +77,10 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
 
     Map<String, Object> map = event.body.toMap();
     Object opResult = map.get(opId.toString());
-
+    String userId = ((JsonObject) operations.get(opId)).getObject("op").getString(Operations.USER_OP_ID)  ;
+    if (userId == null){
+      userId = String.valueOf(opId);
+    }
     // Doing the instanceof check here sucks but there are two reasons why it is
     // here at least for now. First, with this refactoring I do not want to change
     // behavior. To the greatest extent possible, I want integration tests to pass
@@ -88,13 +92,13 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
     //
     // John Sanda
     if (opResult instanceof String) {
-      results.getObject("opsRes").putString(opId.toString(), (String) opResult);
+      results.getObject("opsRes").putString(userId, (String) opResult);
     } else if (opResult instanceof Number) {
-      results.getObject("opsRes").putNumber(opId.toString(), (Number) opResult);
+      results.getObject("opsRes").putNumber(userId, (Number) opResult);
     } else if (opResult instanceof JsonObject) {
-      results.getObject("opsRes").putObject(opId.toString(), (JsonObject) opResult);
+      results.getObject("opsRes").putObject(userId, (JsonObject) opResult);
     } else if (opResult instanceof List) {
-      results.getObject("opsRes").putArray(opId.toString(), new JsonArray((List) opResult));
+      results.getObject("opsRes").putArray(userId, new JsonArray((List) opResult));
     } else {
       if (opResult != null){
         throw new IllegalArgumentException(opResult.getClass() + " is not a supported result type");

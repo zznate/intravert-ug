@@ -30,17 +30,17 @@ public class IntraRes implements Serializable {
 
   private Integer exceptionId;
 
-  private SortedMap<Integer, Object> opsRes;
+  private SortedMap<Object, Object> opsRes;
 
   public IntraRes() {
-    opsRes = new TreeMap<Integer, Object>();
+    opsRes = new TreeMap<Object, Object>();
   }
 
-  public SortedMap<Integer, Object> getOpsRes() {
+  public SortedMap<Object, Object> getOpsRes() {
     return opsRes;
   }
 
-  public void setOpsRes(SortedMap<Integer, Object> opsRes) {
+  public void setOpsRes(SortedMap<Object, Object> opsRes) {
     this.opsRes = opsRes;
   }
 

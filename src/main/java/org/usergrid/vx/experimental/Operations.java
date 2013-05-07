@@ -58,8 +58,9 @@ public class Operations {
   private static final String MODE = "mode";
   private static final String SAVE = "save";
   private static final String GET = "get";
-  public static final String RANGE_START="range_start";
-  public static final String RANGE_END="range_end";
+  public static final String RANGE_START = "range_start";
+  public static final String RANGE_END = "range_end";
+  public static final String USER_OP_ID = "opid";
 
   private Operations() {}
 
