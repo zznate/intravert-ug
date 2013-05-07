@@ -35,7 +35,7 @@ public class FilterITest {
       req.add(Operations.sliceOp("rowa", "col1", "col3", 10)); //10
       IntraClient2 ic2 = new IntraClient2("localhost", 8080);
       IntraRes res = ic2.sendBlocking(req);
-      List<Map> results = (List<Map>) res.getOpsRes().get(10);
+      List<Map> results = (List<Map>) res.getOpsRes().get("10");
       Assert.assertEquals("22", results.get(0).get("value"));
       Assert.assertEquals(1, results.size());
   }
@@ -60,7 +60,7 @@ public class FilterITest {
     IntraRes res = ic2.sendBlocking(req);
     System.out.println(res.getException());
     System.out.println(res);
-    List<Map> results = (List<Map>) res.getOpsRes().get(10);
+    List<Map> results = (List<Map>) res.getOpsRes().get("10");
     Assert.assertEquals("y", results.get(0).get("value"));
     Assert.assertEquals(1, results.size());
 }
@@ -85,10 +85,8 @@ public class FilterITest {
       req.add(Operations.filterModeOp("over22", true)); //9
       req.add(Operations.sliceOp("rowa", "col1", "col3", 10)); //10
       IntraClient2 ic2 = new IntraClient2("localhost", 8080);
-      IntraRes res = ic2.sendBlocking(req);
-      System.out.println(res.getException());
-      
-      List<Map> results = (List<Map>) res.getOpsRes().get(10);
+      IntraRes res = ic2.sendBlocking(req);      
+      List<Map> results = (List<Map>) res.getOpsRes().get("10");
       System.out.println(results);
       Assert.assertEquals("{ \"last\" : \"Peters\", \"first\" : \"john\", \"pnumber\": \"914-555-5555\" }", results.get(0).get("value"));
       Assert.assertEquals(1, results.size());
@@ -135,7 +133,7 @@ public class FilterITest {
     req.add(Operations.sliceOp("rowa", "col1", "col3", 10)); // 10
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
-    List<Map> results = (List<Map>) res.getOpsRes().get(10);
+    List<Map> results = (List<Map>) res.getOpsRes().get("10");
     Assert.assertEquals("22", results.get(0).get("value"));
     Assert.assertEquals(1, results.size());   
   }

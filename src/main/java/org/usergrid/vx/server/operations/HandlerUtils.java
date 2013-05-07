@@ -204,6 +204,10 @@ public class HandlerUtils {
     key.append(ByteBufferUtil.bytesToHex(name));
     String skey = key.toString();
     JsonObject meta = state.getObject("metaRanged");
+    if (meta==null){
+      return null;
+      //TODO why is this.
+    }
     Set<String> names = meta.getFieldNames();
     for (String s: names){
       //System.out.println("compare "+skey+ " to "+s);
