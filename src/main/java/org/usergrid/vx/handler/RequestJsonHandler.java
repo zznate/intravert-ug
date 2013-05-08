@@ -1,5 +1,6 @@
 package org.usergrid.vx.handler;
 
+import org.usergrid.vx.experimental.Operations;
 import org.usergrid.vx.handler.http.OperationsRequestHandler;
 import org.usergrid.vx.handler.http.TimeoutHandler;
 import org.usergrid.vx.server.operations.HandlerUtils;
@@ -29,10 +30,10 @@ public class RequestJsonHandler implements Handler<Message<JsonObject>> {
     AtomicInteger idGenerator = new AtomicInteger(0);
     JsonArray operations = event.body.getArray("e");
     JsonObject operation = (JsonObject) operations.get(idGenerator.get());
-    Long timeout = HandlerUtils.getOperationTime(operation);
+    Long timeout = HandlerUtils.getOperationTimeout(operation);
 
-    operation.putNumber("id", idGenerator.get());
-    operation.putObject("state", new JsonObject()
+    operation.putNumber(Operations.ID, idGenerator.get());
+    operation.putObject(Operations.STATE, new JsonObject()
         .putArray("components", new JsonArray()
                 .add("name")
                 .add("value")));

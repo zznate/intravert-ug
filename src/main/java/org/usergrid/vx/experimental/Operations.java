@@ -54,14 +54,21 @@ public class Operations {
   private static final String QUERY = "query";
   private static final String VERSION = "version";
   private static final String TRANSPOSE = "transpose";
-  private static final String ID = "id";
+  public static final String ID = "id";
   private static final String MODE = "mode";
   private static final String SAVE = "save";
   private static final String GET = "get";
   public static final String RANGE_START = "range_start";
   public static final String RANGE_END = "range_end";
   public static final String USER_OP_ID = "opid";
-
+  public static final String EXCEPTION = "exception";
+  public static final String EXCEPTION_ID = "exceptionId";
+  public static final String OPS_RES = "opsRes";
+  public static final String STATE = "state";
+  public static final String OP = "op";
+  public static final String TIMEOUT= "timeout";
+  
+  
   private Operations() {}
 
   public static IntraOp setKeyspaceOp(String keyspace){

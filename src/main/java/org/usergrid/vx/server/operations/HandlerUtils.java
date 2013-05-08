@@ -16,6 +16,7 @@ import org.usergrid.vx.experimental.IntraReq;
 import org.usergrid.vx.experimental.IntraRes;
 import org.usergrid.vx.experimental.IntraState;
 import org.usergrid.vx.experimental.NonAtomicReference;
+import org.usergrid.vx.experimental.Operations;
 import org.usergrid.vx.experimental.TypeHelper;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
@@ -306,9 +307,9 @@ public class HandlerUtils {
     }
   }
 
-  public static Long getOperationTime(JsonObject operation) {
-    JsonObject params = operation.getObject("op");
-    Long timeout = params.getLong("timeout");
+  public static Long getOperationTimeout(JsonObject operation) {
+    JsonObject params = operation.getObject(Operations.OP);
+    Long timeout = params.getLong(Operations.TIMEOUT);
     if (timeout == null) {
       timeout = 10000L;
     }
