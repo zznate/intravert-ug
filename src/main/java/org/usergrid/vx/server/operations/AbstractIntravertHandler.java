@@ -16,6 +16,7 @@ public abstract class AbstractIntravertHandler implements Handler<Message<JsonOb
       String message = ex.getMessage() ==null ? "Exception "+id : ex.getMessage() ;
       event.reply(new JsonObject().putString("exceptionId", id+"")
               .putString("exception", message));
+      ex.printStackTrace();
     }
   }
   

@@ -56,12 +56,12 @@ public class ProcessorITest {
     IntraClient2 ic2 = new IntraClient2("localhost",8080);
     IntraRes res = ic2.sendBlocking(req);
     
-    List<Map> x = (List<Map>) res.getOpsRes().get(6);
+    List<Map> x = (List<Map>) res.getOpsRes().get("6");
     Assert.assertEquals(1, x.size());
     Assert.assertEquals("data", x.get(0).get("name"));
     Assert.assertEquals(array, x.get(0).get("value"));
     
-    List<Map> y = (List<Map>) res.getOpsRes().get(8);
+    List<Map> y = (List<Map>) res.getOpsRes().get("8");
     Assert.assertEquals(1, y.size());
     Assert.assertEquals("2", y.get(0).get("value") );
   }

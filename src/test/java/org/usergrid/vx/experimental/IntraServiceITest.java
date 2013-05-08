@@ -60,6 +60,7 @@ public class IntraServiceITest {
 
   @DataLoader(dataset = "mydata.txt")
   @Test
+  @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
   public void atest() throws Exception {
     IntraReq req = new IntraReq();
     req.add(Operations.setKeyspaceOp("myks")); // 0
@@ -82,25 +83,25 @@ public class IntraServiceITest {
 
     System.out.println(res);
 
-    Assert.assertEquals("OK", res.getOpsRes().get(0));
-    Assert.assertEquals("OK", res.getOpsRes().get(1));
-    Assert.assertEquals("OK", res.getOpsRes().get(2));
-    Assert.assertEquals("OK", res.getOpsRes().get(3));
-    List<Map> x = (List<Map>) res.getOpsRes().get(4);
+    Assert.assertEquals("OK", res.getOpsRes().get("0"));
+    Assert.assertEquals("OK", res.getOpsRes().get("1"));
+    Assert.assertEquals("OK", res.getOpsRes().get("2"));
+    Assert.assertEquals("OK", res.getOpsRes().get("3"));
+    List<Map> x = (List<Map>) res.getOpsRes().get("4");
     Assert.assertEquals("Y29sMQ==", x.get(0).get("name"));
     Assert.assertEquals("Nw==", x.get(0).get("value"));
 
-    x = (List<Map>) res.getOpsRes().get(5);
+    x = (List<Map>) res.getOpsRes().get("5");
     Assert.assertEquals("Nw==", x.get(0).get("value"));
 
-    Assert.assertEquals("OK", res.getOpsRes().get(6));
+    Assert.assertEquals("OK", res.getOpsRes().get("6"));
 
-    x = (List<Map>) res.getOpsRes().get(7);
+    x = (List<Map>) res.getOpsRes().get("7");
     Assert.assertEquals("Tnc9PQ==", x.get(0).get("value"));
     // TODO theseused ot be byte buffers...now theyare encoded strings...what happened
 
-    Assert.assertEquals("OK", res.getOpsRes().get(8));
-    Assert.assertEquals(true, ((List<String>) res.getOpsRes().get(9)).contains("myks"));
+    Assert.assertEquals("OK", res.getOpsRes().get("8"));
+    Assert.assertEquals(true, ((List<String>) res.getOpsRes().get("9")).contains("myks"));
 
   }
 
@@ -113,7 +114,7 @@ public class IntraServiceITest {
     req.add(Operations.createKsOp("makeksagain", 1)); // 2
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
-    Assert.assertEquals("OK", res.getOpsRes().get(0));
+    Assert.assertEquals("OK", res.getOpsRes().get("0"));
     Assert.assertEquals(1, res.getOpsRes().size());
     Assert.assertNotNull(res.getException());
     Assert.assertEquals(new Integer(1), res.getExceptionId());
@@ -144,11 +145,11 @@ public class IntraServiceITest {
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
     System.out.println(res);
-    List<Map> x = (List<Map>) res.getOpsRes().get(7);
+    List<Map> x = (List<Map>) res.getOpsRes().get("7");
     Assert.assertEquals("wow", x.get(0).get("value"));
     System.out.println(res.getException());
     Assert.assertNull(res.getException());
-    x = (List<Map>) res.getOpsRes().get(9);
+    x = (List<Map>) res.getOpsRes().get("9");
     Assert.assertEquals("WOW", x.get(0).get("value"));
   }
 
@@ -167,7 +168,7 @@ public class IntraServiceITest {
 
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
-    List<Map> x = (List<Map>) res.getOpsRes().get(8);
+    List<Map> x = (List<Map>) res.getOpsRes().get("8");
     System.out.println(res);
     Assert.assertEquals("wow", x.get(0).get("value"));
     Assert.assertEquals(1, x.get(0).get("name"));
@@ -188,7 +189,7 @@ public class IntraServiceITest {
     // req.add( Operations.sliceOp("rowa", 1, 5, 4) ); //9
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
-    Assert.assertEquals("OK", res.getOpsRes().get(8));
+    Assert.assertEquals("OK", res.getOpsRes().get("8"));
 
     Thread.sleep(2000);
     IntraReq r = new IntraReq();
@@ -198,9 +199,7 @@ public class IntraServiceITest {
     r.add(Operations.assumeOp("ttlks", "ttlcf", "column", "Int32Type"));// 3
     r.add(Operations.sliceOp("rowa", 1, 5, 4)); // 4
     IntraRes rs = ic2.sendBlocking(r);
-
-    List<Map> x = (List<Map>) rs.getOpsRes().get(4);
-    System.out.println(x);
+    List<Map> x = (List<Map>) rs.getOpsRes().get("4");
     Assert.assertEquals(1, x.size());
 
   }
@@ -220,7 +219,7 @@ public class IntraServiceITest {
 
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
-    List<Map> x = (List<Map>) res.getOpsRes().get(8);
+    List<Map> x = (List<Map>) res.getOpsRes().get("8");
     Assert.assertEquals(1, x.get(0).get("name"));
 
     // ByteBuffer bytes = (ByteBuffer) x.get(0).get("value");
@@ -257,11 +256,11 @@ public class IntraServiceITest {
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
     System.out.println(res);
-    List<Map> x = (List<Map>) res.getOpsRes().get(8);
+    List<Map> x = (List<Map>) res.getOpsRes().get("8");
 
     Assert.assertEquals(1, x.get(0).get("name"));
     Assert.assertEquals(2, x.get(0).get("value"));
-    x = (List<Map>) res.getOpsRes().get(9);
+    x = (List<Map>) res.getOpsRes().get("9");
     String value = (String) x.get(2).get("value");
     ByteBuffer bytes = ByteBuffer.wrap(Base64.decode(value));
     // Assert.assertEquals( 2, ((ByteBuffer)x.get(2).get("value")).getInt() );
@@ -278,7 +277,6 @@ public class IntraServiceITest {
                     "3.0.0"));// 0
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
-    res.getOpsRes().get(1);
     Assert.assertEquals(2, res.getOpsRes().size());
   }
 
@@ -374,7 +372,7 @@ public class IntraServiceITest {
     IntraClient2 ic = new IntraClient2("localhost", 8080);
     IntraRes res = ic.sendBlocking(req);
 
-    List<Map> x = (List<Map>) res.getOpsRes().get(11);
+    List<Map> x = (List<Map>) res.getOpsRes().get("11");
 
     Set<String> expectedResults = new HashSet<String>();
     expectedResults.addAll(Arrays.asList(new String[] { "7", "8", "9" }));
@@ -410,7 +408,7 @@ public class IntraServiceITest {
 
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
-    List<Map> x = (List<Map>) res.getOpsRes().get(6);
+    List<Map> x = (List<Map>) res.getOpsRes().get("6");
     Assert.assertEquals(2, x.size());
     Assert.assertEquals("val1", x.get(0).get("value"));
     Assert.assertEquals("val2", x.get(1).get("value"));
@@ -442,7 +440,7 @@ public class IntraServiceITest {
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
     System.out.println(res);
-    List<Map> r = (List<Map>) res.getOpsRes().get(9);
+    List<Map> r = (List<Map>) res.getOpsRes().get("9");
     Assert.assertEquals("bsmith", r.get(0).get("name"));
   }
 
@@ -504,7 +502,6 @@ public class IntraServiceITest {
     t.start();
     t.join();
     long end = System.currentTimeMillis();
-    System.out.println(end - start);
   }
 
   @Test
@@ -523,7 +520,7 @@ public class IntraServiceITest {
     req.add(Operations.getOp("optional", 1).set("keyspace", "myks").set("columnfamily", "mycf")); // 4
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
-    List<Map> x = (List<Map>) res.getOpsRes().get(4);
+    List<Map> x = (List<Map>) res.getOpsRes().get("4");
 
     Assert.assertEquals("wow", x.get(0).get("value"));
     Assert.assertEquals(1, x.get(0).get("name"));
@@ -547,7 +544,7 @@ public class IntraServiceITest {
     req.add(Operations.getOp("optional", 1).set("keyspace", "myks").set("columnfamily", "mycf")); // 5
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
-    List<Map> x = (List<Map>) res.getOpsRes().get(5);
+    List<Map> x = (List<Map>) res.getOpsRes().get("5");
 
     Assert.assertEquals("wow", x.get(0).get("value"));
     Assert.assertEquals(true, x.get(0).containsKey("timestamp"));
@@ -646,11 +643,11 @@ public class IntraServiceITest {
     IntraRes res = ic2.sendBlocking(req);
     System.out.println(res.getException());
     System.out.println(res.getExceptionId());
-    List<Map> x = (List<Map>) res.getOpsRes().get(10);
+    List<Map> x = (List<Map>) res.getOpsRes().get("10");
     System.out.println(res);
     Assert.assertEquals("myvalue", x.get(0).get("value"));
 
-    x = (List<Map>) res.getOpsRes().get(11);
+    x = (List<Map>) res.getOpsRes().get("11");
     Assert.assertEquals("myvalue2", x.get(0).get("value"));
 
   }
@@ -759,10 +756,10 @@ public class IntraServiceITest {
 
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
-    List<Map> results = (List<Map>) res.getOpsRes().get(5);
+    List<Map> results = (List<Map>) res.getOpsRes().get("5");
     logger.info("has results {}", results);
     Assert.assertEquals(1, results.get(0).get("value"));
-    results = (List<Map>) res.getOpsRes().get(7);   
+    results = (List<Map>) res.getOpsRes().get("7");   
     Assert.assertEquals(2147483658L, results.get(0).get("value"));
     Assert.assertTrue( (Long) results.get(0).get("value") > Integer.MAX_VALUE );
   }

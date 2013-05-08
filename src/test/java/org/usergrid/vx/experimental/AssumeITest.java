@@ -27,7 +27,7 @@ public class AssumeITest {
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(req);
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    List<Map> x = (List<Map>) res.getOpsRes().get(7);
+    List<Map> x = (List<Map>) res.getOpsRes().get("7");
     System.out.println(res);
     Assert.assertEquals("wow", x.get(0).get("value"));
   }
@@ -80,7 +80,7 @@ public class AssumeITest {
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(r);
     System.out.println(res);
-    List<Map> x = (List<Map>) res.getOpsRes().get(6);
+    List<Map> x = (List<Map>) res.getOpsRes().get("6");
     Assert.assertEquals(5, x.get(0).get("value"));
     Assert.assertEquals("wow", x.get(1).get("value"));
   }
@@ -101,7 +101,7 @@ public class AssumeITest {
      .add( Operations.sliceOp("darow", "e", "z", 10));
     IntraClient2 ic2 = new IntraClient2("localhost", 8080);
     IntraRes res = ic2.sendBlocking(r);
-    List<Map> x = (List<Map>) res.getOpsRes().get(9);
+    List<Map> x = (List<Map>) res.getOpsRes().get("9");
     Assert.assertEquals(10, x.get(0).get("value"));
     Assert.assertEquals(11, x.get(1).get("value"));
     Assert.assertEquals("nice", x.get(3).get("value"));
