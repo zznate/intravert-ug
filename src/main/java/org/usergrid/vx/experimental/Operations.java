@@ -34,8 +34,8 @@ public class Operations {
   private static final String KEYSPACE = "keyspace";
   private static final String COLUMN_FAMILY = "columnfamily";
   private static final String ROWKEY = "rowkey";
-  private static final String NAME = "name";
-  private static final String VALUE = "value";
+  public static final String NAME = "name";
+  public static final String VALUE = "value";
   private static final String ROWS = "rows";
   private static final String START = "start";
   private static final String END = "end";
@@ -44,7 +44,7 @@ public class Operations {
   private static final String ACTION = "action";
   private static final String REPLICATION = "replication";
   private static final String LEVEL = "level";
-  private static final String TYPE = "type";
+  public static final String TYPE = "type";
   private static final String CLAZZ = "clazz";
   private static final String SPEC = "spec";
   private static final String PROCESSORNAME = "processorname";
@@ -67,6 +67,8 @@ public class Operations {
   public static final String STATE = "state";
   public static final String OP = "op";
   public static final String TIMEOUT= "timeout";
+  public static final String COMPONENTS = "components";
+  public static final String E = "e";
   
   
   private Operations() {}
