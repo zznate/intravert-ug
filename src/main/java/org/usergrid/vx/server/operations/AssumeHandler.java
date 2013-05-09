@@ -40,9 +40,9 @@ public class AssumeHandler extends AbstractIntravertHandler {
     }
     if (params.getString("type") != null){
       StringBuilder key = new StringBuilder();
-      key.append(HandlerUtils.determineKs(params, state, null));
+      key.append(HandlerUtils.instance.determineKs(params, state, null));
       key.append(' ');
-      key.append(HandlerUtils.determineCf(params, state, null));
+      key.append(HandlerUtils.instance.determineCf(params, state, null));
       key.append(' ');
       key.append(params.getString("type"));
       meta.putObject(key.toString(), new JsonObject()
@@ -52,11 +52,11 @@ public class AssumeHandler extends AbstractIntravertHandler {
         .putObject("state", state));
     } else if (params.getField("name") != null){
       Object o = params.getField("name");
-      ByteBuffer bb = HandlerUtils.byteBufferForObject(o);
+      ByteBuffer bb = HandlerUtils.instance.byteBufferForObject(o);
       StringBuilder key = new StringBuilder();
-      key.append(HandlerUtils.determineKs(params, state, null));
+      key.append(HandlerUtils.instance.determineKs(params, state, null));
       key.append(' ');
-      key.append(HandlerUtils.determineCf(params, state, null));
+      key.append(HandlerUtils.instance.determineCf(params, state, null));
       key.append(' ');
       key.append(ByteBufferUtil.bytesToHex(bb));
       metaColumn.putObject(key.toString(), new JsonObject()
@@ -67,12 +67,12 @@ public class AssumeHandler extends AbstractIntravertHandler {
     } else if (params.getField(Operations.RANGE_START) !=null) {
       Object start = params.getField(Operations.RANGE_START);
       Object end = params.getField(Operations.RANGE_END);
-      ByteBuffer sbuf = HandlerUtils.byteBufferForObject(start);
-      ByteBuffer ebuf = HandlerUtils.byteBufferForObject(end);
+      ByteBuffer sbuf = HandlerUtils.instance.byteBufferForObject(start);
+      ByteBuffer ebuf = HandlerUtils.instance.byteBufferForObject(end);
       StringBuilder key = new StringBuilder();
-      key.append(HandlerUtils.determineKs(params, state, null));
+      key.append(HandlerUtils.instance.determineKs(params, state, null));
       key.append(' ');
-      key.append(HandlerUtils.determineCf(params, state, null));
+      key.append(HandlerUtils.instance.determineCf(params, state, null));
       key.append(' ');
       key.append(ByteBufferUtil.bytesToHex(sbuf));
       JsonObject value = new JsonObject();

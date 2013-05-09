@@ -22,18 +22,18 @@ public class BatchHandler implements Handler<Message<JsonObject>> {
     List<IMutation> mutations = new ArrayList<IMutation>();
     for (int i =0;i<array.size();i++){
       JsonObject row = (JsonObject) array.get(i);
-      RowMutation rm = new RowMutation(HandlerUtils.determineKs(params, state, row),
-              HandlerUtils.byteBufferForObject(row.getField("rowkey")));
-      QueryPath qp = new QueryPath(HandlerUtils.determineCf(params, state, row),
-              null, HandlerUtils.byteBufferForObject(row.getField("name")));
+      RowMutation rm = new RowMutation(HandlerUtils.instance.determineKs(params, state, row),
+              HandlerUtils.instance.byteBufferForObject(row.getField("rowkey")));
+      QueryPath qp = new QueryPath(HandlerUtils.instance.determineCf(params, state, row),
+              null, HandlerUtils.instance.byteBufferForObject(row.getField("name")));
       Object val = row.getField("value");
       Integer ttl = row.getInteger("ttl");
       if (ttl == null) {
-          rm.add(qp, HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(val)),
-                  HandlerUtils.determineTimestamp(params, state, row));
+          rm.add(qp, HandlerUtils.instance.byteBufferForObject(HandlerUtils.instance.resolveObject(val)),
+                  HandlerUtils.instance.determineTimestamp(params, state, row));
       } else {
-          rm.add(qp, HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(val)),
-                  HandlerUtils.determineTimestamp(params, state, row), ttl);
+          rm.add(qp, HandlerUtils.instance.byteBufferForObject(HandlerUtils.instance.resolveObject(val)),
+                  HandlerUtils.instance.determineTimestamp(params, state, row), ttl);
       }
       mutations.add(rm);
     }

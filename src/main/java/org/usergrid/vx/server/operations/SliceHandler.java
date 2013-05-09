@@ -34,17 +34,17 @@ public class SliceHandler extends AbstractIntravertHandler {
     Object rowKeyParam = paramsMap.get("rowkey");
     Object startParam = paramsMap.get("start");
     Object endParam = paramsMap.get("end");
-    ByteBuffer rowkey = HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(rowKeyParam));
-    ByteBuffer start = HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(startParam));
-    ByteBuffer end = HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(endParam));
+    ByteBuffer rowkey = HandlerUtils.instance.byteBufferForObject(HandlerUtils.instance.resolveObject(rowKeyParam));
+    ByteBuffer start = HandlerUtils.instance.byteBufferForObject(HandlerUtils.instance.resolveObject(startParam));
+    ByteBuffer end = HandlerUtils.instance.byteBufferForObject(HandlerUtils.instance.resolveObject(endParam));
     List<ReadCommand> commands = new ArrayList<ReadCommand>(1);
-    QueryPath path = new QueryPath(HandlerUtils.determineCf(params, state, null), null);
-    SliceFromReadCommand sr = new SliceFromReadCommand(HandlerUtils.determineKs(params, state, null), 
+    QueryPath path = new QueryPath(HandlerUtils.instance.determineCf(params, state, null), null);
+    SliceFromReadCommand sr = new SliceFromReadCommand(HandlerUtils.instance.determineKs(params, state, null), 
             rowkey, path, start, end, false, 100);
     commands.add(sr);
     List<Row> results = null;
     try {
-      results = StorageProxy.read(commands, HandlerUtils.determineConsistencyLevel(state));
+      results = StorageProxy.read(commands, HandlerUtils.instance.determineConsistencyLevel(state));
       ColumnFamily cf = results.get(0).cf;
       new ReadHandler(event, eb).handleRead(cf);
     } catch (ReadTimeoutException | UnavailableException | IsBootstrappingException | IOException e) {
