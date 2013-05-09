@@ -122,7 +122,6 @@ public class HandlerUtils {
   }
 
   public static JsonArray readCf(ColumnFamily columnFamily, JsonObject state, JsonObject params) {
-    System.out.println("state1"+ state);
     JsonArray components = state.getArray("components");
     JsonArray array = new JsonArray();
     Iterator<IColumn> it = columnFamily.iterator();

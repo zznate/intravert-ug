@@ -15,10 +15,7 @@ public class CreateColumnFamilyHandler implements Handler<Message<JsonObject>> {
         JsonObject params = event.body.getObject("op");
         Integer id = event.body.getInteger("id");
         JsonObject state = event.body.getObject("state");
-
-        System.out.println(state.toString());
         JsonObject response = new JsonObject();
-
         String cf = params.getString("name");
         CfDef def = new CfDef();
         def.setName(cf);

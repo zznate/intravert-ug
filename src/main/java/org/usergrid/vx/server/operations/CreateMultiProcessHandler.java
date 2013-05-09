@@ -30,7 +30,6 @@ public class CreateMultiProcessHandler implements Handler<Message<JsonObject>>{
       MultiProcessorFactory processorFactory = factoryProvider.getFilterFactory(lang);
       MultiProcessor processor = processorFactory.createMultiProcessor(scriptSource);
       eb.registerHandler("multiprocessors." + name, new MultiProcessorHandler(processor));
-      System.out.println("created multprocessor "+name);
       event.reply(new JsonObject().putString(id.toString(), "OK"));
     } catch (IllegalArgumentException e) {
       event.reply(new JsonObject()
