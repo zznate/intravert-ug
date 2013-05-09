@@ -162,7 +162,7 @@ public class PerfTestingITest {
 			IntraClient2 ic = new IntraClient2("localhost", 8080);
 			for (i=start;i<end;i++){
 				IntraReq req = new IntraReq();
-				req.add(Operations.setOp(i+"", i+"", "" ).set("keyspace", "myks")
+				req.add(Operations.setOp(String.valueOf(i), String.valueOf(i), "" ).set("keyspace", "myks")
 						.set("columnfamily", "mycf")); // 1
 				IntraRes res = null;
 				try {

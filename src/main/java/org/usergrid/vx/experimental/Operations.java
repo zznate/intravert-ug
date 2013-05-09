@@ -33,7 +33,7 @@ public class Operations {
 
   private static final String KEYSPACE = "keyspace";
   private static final String COLUMN_FAMILY = "columnfamily";
-  private static final String ROWKEY = "rowkey";
+  public static final String ROWKEY = "rowkey";
   public static final String NAME = "name";
   public static final String VALUE = "value";
   private static final String ROWS = "rows";
@@ -69,7 +69,7 @@ public class Operations {
   public static final String TIMEOUT= "timeout";
   public static final String COMPONENTS = "components";
   public static final String E = "e";
-  
+  public static final String TTL = "ttl";
   
   private Operations() {}
 
