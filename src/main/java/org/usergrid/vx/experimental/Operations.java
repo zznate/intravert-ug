@@ -70,6 +70,8 @@ public class Operations {
   public static final String COMPONENTS = "components";
   public static final String E = "e";
   public static final String TTL = "ttl";
+  public static final String TIMESTAMP = "timestamp";
+  public static final String AUTOTIMESTAMP = "autotimestamp";
   
   private Operations() {}
 
