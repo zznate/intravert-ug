@@ -34,8 +34,8 @@ public class Operations {
   private static final String KEYSPACE = "keyspace";
   private static final String COLUMN_FAMILY = "columnfamily";
   private static final String ROWKEY = "rowkey";
-  private static final String NAME = "name";
-  private static final String VALUE = "value";
+  public static final String NAME = "name";
+  public static final String VALUE = "value";
   private static final String ROWS = "rows";
   private static final String START = "start";
   private static final String END = "end";
@@ -44,7 +44,7 @@ public class Operations {
   private static final String ACTION = "action";
   private static final String REPLICATION = "replication";
   private static final String LEVEL = "level";
-  private static final String TYPE = "type";
+  public static final String TYPE = "type";
   private static final String CLAZZ = "clazz";
   private static final String SPEC = "spec";
   private static final String PROCESSORNAME = "processorname";
@@ -54,14 +54,23 @@ public class Operations {
   private static final String QUERY = "query";
   private static final String VERSION = "version";
   private static final String TRANSPOSE = "transpose";
-  private static final String ID = "id";
+  public static final String ID = "id";
   private static final String MODE = "mode";
   private static final String SAVE = "save";
   private static final String GET = "get";
   public static final String RANGE_START = "range_start";
   public static final String RANGE_END = "range_end";
   public static final String USER_OP_ID = "opid";
-
+  public static final String EXCEPTION = "exception";
+  public static final String EXCEPTION_ID = "exceptionId";
+  public static final String OPS_RES = "opsRes";
+  public static final String STATE = "state";
+  public static final String OP = "op";
+  public static final String TIMEOUT= "timeout";
+  public static final String COMPONENTS = "components";
+  public static final String E = "e";
+  
+  
   private Operations() {}
 
   public static IntraOp setKeyspaceOp(String keyspace){

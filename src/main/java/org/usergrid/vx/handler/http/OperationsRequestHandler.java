@@ -1,9 +1,6 @@
 package org.usergrid.vx.handler.http;
 
-import org.usergrid.vx.experimental.IntraOp;
 import org.usergrid.vx.experimental.Operations;
-import org.usergrid.vx.experimental.multiprocessor.MultiProcessor;
-import org.usergrid.vx.experimental.processor.Processor;
 import org.usergrid.vx.server.operations.HandlerUtils;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -19,19 +16,12 @@ import java.util.concurrent.locks.ReentrantLock;
 public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
 
   private AtomicInteger idGenerator;
-
   private JsonArray operations;
-
   private Message<JsonObject> originalMessage;
-
   private JsonObject results;
-
   private JsonObject state;
-
   private boolean timedOut = false;
-
   private ReentrantLock timeoutLock = new ReentrantLock();
-
   private long timerId;
 
   //TODO static ?
@@ -43,12 +33,10 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
     this.operations = operations;
     this.originalMessage = originalMessage;
     this.vertx = vertx;
-
     results = new JsonObject();
     results.putObject("opsRes", new JsonObject());
     results.putString("exception", null);
     results.putString("exceptionId", null);
-
     state = new JsonObject();
   }
 
@@ -56,27 +44,26 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
     this.timerId = timerId;
   }
 
+  
+  @SuppressWarnings("unchecked")
   @Override
   public void handle(Message<JsonObject> event) {
     vertx.cancelTimer(timerId);
 
     Integer currentId = idGenerator.get();
     Integer opId = currentId - 1;
-
-    String exceptionId = event.body.getString("exceptionId");
-    String exception = event.body.getString("exception");
+    String exceptionId = event.body.getString(Operations.EXCEPTION_ID);
+    String exception = event.body.getString(Operations.EXCEPTION);
     
-    if (exception != null || exceptionId != null) {
-      
-      results.putString("exception", exception);
-      results.putString("exceptionId", exceptionId);
-
+    if (exception != null || exceptionId != null) {      
+      results.putString(Operations.EXCEPTION, exception);
+      results.putString(Operations.EXCEPTION_ID, exceptionId);
       sendResults();
       return;
     }
 
     Map<String, Object> map = event.body.toMap();
-    Object opResult = map.get(opId.toString());
+    Object opResult = map.get(String.valueOf(opId));
     String userId = ((JsonObject) operations.get(opId)).getObject("op").getString(Operations.USER_OP_ID)  ;
     if (userId == null){
       userId = String.valueOf(opId);
@@ -92,13 +79,13 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
     //
     // John Sanda
     if (opResult instanceof String) {
-      results.getObject("opsRes").putString(userId, (String) opResult);
+      results.getObject(Operations.OPS_RES).putString(userId, (String) opResult);
     } else if (opResult instanceof Number) {
-      results.getObject("opsRes").putNumber(userId, (Number) opResult);
+      results.getObject(Operations.OPS_RES).putNumber(userId, (Number) opResult);
     } else if (opResult instanceof JsonObject) {
-      results.getObject("opsRes").putObject(userId, (JsonObject) opResult);
+      results.getObject(Operations.OPS_RES).putObject(userId, (JsonObject) opResult);
     } else if (opResult instanceof List) {
-      results.getObject("opsRes").putArray(userId, new JsonArray((List) opResult));
+      results.getObject(Operations.OPS_RES).putArray(userId, new JsonArray((List<Object>) opResult));
     } else {
       if (opResult != null){
         throw new IllegalArgumentException(opResult.getClass() + " is not a supported result type");
@@ -109,19 +96,16 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
 
     if (idGenerator.get() < operations.size()) {
       JsonObject operation = (JsonObject) operations.get(idGenerator.get());
-      operation.putNumber("id", idGenerator.get());
-
-      Long timeout = getOperationTimeout(operation);
-
-      if (event.body.getObject("state") != null) {
-        state.mergeIn(event.body.getObject("state"));
+      operation.putNumber(Operations.ID, idGenerator.get());
+      if (event.body.getObject(Operations.STATE) != null) {
+        state.mergeIn(event.body.getObject(Operations.STATE));
       }
-      operation.putObject("state", state.copy());
+      operation.putObject(Operations.STATE, state.copy());
       idGenerator.incrementAndGet();
       TimeoutHandler timeoutHandler = new TimeoutHandler(this);
-      timerId = vertx.setTimer(timeout, timeoutHandler);
+      timerId = vertx.setTimer(HandlerUtils.getOperationTimeout(operation), timeoutHandler);
       
-      HandlerUtils.resolveRefs( operation, results.getObject("opsRes") );
+      HandlerUtils.resolveRefs( operation, results.getObject(Operations.OPS_RES) );
       
       if (operation.getString("type").equalsIgnoreCase("serviceprocess")) {
         JsonObject params = operation.getObject("op");
@@ -146,19 +130,6 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
     } else {
       sendResults();
     }
-  }
-
-  // This method is currently duplicated in IntraHandlerJson. We could move it to
-  // HandlerUtils but I am holding off for now because if/when we start using strongly
-  // typed objects again for the request, response, etc., this method would make sense
-  // as a property if a parameters object if a such a class is introduced.
-  private Long getOperationTimeout(JsonObject operation) {
-    JsonObject params = operation.getObject("op");
-    Long timeout = params.getLong("timeout");
-    if (timeout == null) {
-      timeout = 10000L;
-    }
-    return timeout;
   }
 
   private void sendResults() {

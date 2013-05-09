@@ -19,7 +19,6 @@ public class CreateServiceProcessHandler implements Handler<Message<JsonObject>>
   
   @Override
   public void handle(Message<JsonObject> event) {
-    System.out.println("create service p" + event.body.toString());
     Integer id = event.body.getInteger("id");
     JsonObject params = event.body.getObject("op");
     String name = params.getString("name");

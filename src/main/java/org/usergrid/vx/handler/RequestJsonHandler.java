@@ -1,5 +1,6 @@
 package org.usergrid.vx.handler;
 
+import org.usergrid.vx.experimental.Operations;
 import org.usergrid.vx.handler.http.OperationsRequestHandler;
 import org.usergrid.vx.handler.http.TimeoutHandler;
 import org.usergrid.vx.server.operations.HandlerUtils;
@@ -17,7 +18,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RequestJsonHandler implements Handler<Message<JsonObject>> {
 
   public static final String IHJSON_HANDLER_TOPIC = "request.json";
-
+  public static final String REQUEST_HANDLER_HEADER = "request.";
+  
   private final Vertx vertx;
 
   public RequestJsonHandler(Vertx vertx) {
@@ -27,24 +29,18 @@ public class RequestJsonHandler implements Handler<Message<JsonObject>> {
   @Override
   public void handle(Message<JsonObject> event) {
     AtomicInteger idGenerator = new AtomicInteger(0);
-    JsonArray operations = event.body.getArray("e");
+    JsonArray operations = event.body.getArray(Operations.E);
     JsonObject operation = (JsonObject) operations.get(idGenerator.get());
-    Long timeout = HandlerUtils.getOperationTime(operation);
-
-    operation.putNumber("id", idGenerator.get());
-    operation.putObject("state", new JsonObject()
-        .putArray("components", new JsonArray()
-                .add("name")
-                .add("value")));
+    operation.putNumber(Operations.ID, idGenerator.get());
+    operation.putObject(Operations.STATE, new JsonObject().putArray(Operations.COMPONENTS,
+            new JsonArray().add(Operations.NAME).add(Operations.VALUE)));
     idGenerator.incrementAndGet();
-
     OperationsRequestHandler operationsRequestHandler = new OperationsRequestHandler(idGenerator,
         operations, event, vertx);
     TimeoutHandler timeoutHandler = new TimeoutHandler(operationsRequestHandler);
-    long timerId = vertx.setTimer(timeout, timeoutHandler);
+    long timerId = vertx.setTimer(HandlerUtils.getOperationTimeout(operation), timeoutHandler);
     operationsRequestHandler.setTimerId(timerId);
-
-    vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation,
+    vertx.eventBus().send(new StringBuilder(REQUEST_HANDLER_HEADER).append( operation.getString(Operations.TYPE).toLowerCase()).toString(), operation,
         operationsRequestHandler);
   }
 }
