@@ -35,15 +35,15 @@ public class GetHandler implements Handler<Message<JsonObject>> {
     Object rowKeyParam = paramsMap.get("rowkey");
     Object nameParam = paramsMap.get("name");
 
-    ByteBuffer rowkey = HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(rowKeyParam));
-    ByteBuffer column = HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(nameParam));
-    QueryPath path = new QueryPath(HandlerUtils.determineCf(params, state, null), null);
+    ByteBuffer rowkey = HandlerUtils.instance.byteBufferForObject(HandlerUtils.instance.resolveObject(rowKeyParam));
+    ByteBuffer column = HandlerUtils.instance.byteBufferForObject(HandlerUtils.instance.resolveObject(nameParam));
+    QueryPath path = new QueryPath(HandlerUtils.instance.determineCf(params, state, null), null);
     List<ByteBuffer> nameAsList = Arrays.asList(column);
-    ReadCommand command = new SliceByNamesReadCommand(HandlerUtils.determineKs(params, state, null), rowkey, path, nameAsList);
+    ReadCommand command = new SliceByNamesReadCommand(HandlerUtils.instance.determineKs(params, state, null), rowkey, path, nameAsList);
     List<Row> rows = null;
-
+ 
     try {
-      rows = StorageProxy.read(Arrays.asList(command), HandlerUtils.determineConsistencyLevel(state));
+      rows = StorageProxy.read(Arrays.asList(command), HandlerUtils.instance.determineConsistencyLevel(state));
       ColumnFamily cf = rows.get(0).cf;
       new ReadHandler(event, eb).handleRead(cf);
     } catch (ReadTimeoutException | UnavailableException | IsBootstrappingException | IOException e) {

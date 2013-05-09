@@ -103,9 +103,9 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
       operation.putObject(Operations.STATE, state.copy()); 
       idGenerator.incrementAndGet();
       TimeoutHandler timeoutHandler = new TimeoutHandler(this);
-      timerId = vertx.setTimer(HandlerUtils.getOperationTimeout(operation), timeoutHandler);
+      timerId = vertx.setTimer(HandlerUtils.instance.getOperationTimeout(operation), timeoutHandler);
       
-      HandlerUtils.resolveRefs( operation, results.getObject(Operations.OPS_RES) );
+      HandlerUtils.instance.resolveRefs( operation, results.getObject(Operations.OPS_RES) );
       
       if (operation.getString(Operations.TYPE).equalsIgnoreCase("serviceprocess")) {
         JsonObject params = operation.getObject("op");

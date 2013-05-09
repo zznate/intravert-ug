@@ -33,12 +33,12 @@ public class ReadHandler {
     } else {
       String filter = state.getString("currentFilter");
       if (filter == null) {
-        array = HandlerUtils.readCf(cf, state, params);
+        array = HandlerUtils.instance.readCf(cf, state, params);
         JsonObject response = new JsonObject();
         response.putArray(id.toString(), array);
         event.reply(response);
       } else {
-        HandlerUtils.readCf(cf, state, eb, new Handler<Message<JsonArray>>() {
+        HandlerUtils.instance.readCf(cf, state, eb, new Handler<Message<JsonArray>>() {
           @Override
           public void handle(Message<JsonArray> filterEvent) {
             event.reply(new JsonObject().putArray(id.toString(), filterEvent.body));

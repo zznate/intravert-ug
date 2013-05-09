@@ -26,14 +26,14 @@ public class ListColumnFamilyHandler  implements Handler<Message<JsonObject>> {
     JsonObject params = event.body.getObject("op");
     JsonObject state = event.body.getObject("state");
 
-    String keyspace = HandlerUtils.determineKs(params, state, null);
+    String keyspace = HandlerUtils.instance.determineKs(params, state, null);
     if (StringUtils.isBlank(keyspace)) {
-      event.reply(HandlerUtils.buildError(id, "keyspace cannot be blank"));
+      event.reply(HandlerUtils.instance.buildError(id, "keyspace cannot be blank"));
       return;
     }
     KSMetaData ks = Schema.instance.getKSMetaData(keyspace);
     if ( ks == null ) {
-      event.reply(HandlerUtils.buildError(id, String.format("Keyspace %s did not exist", keyspace)));
+      event.reply(HandlerUtils.instance.buildError(id, String.format("Keyspace %s did not exist", keyspace)));
       return;
     }
     JsonObject response = new JsonObject().putArray(id.toString(), new JsonArray(ks.cfMetaData().keySet().toArray()));

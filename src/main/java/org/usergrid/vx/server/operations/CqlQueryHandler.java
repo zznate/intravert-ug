@@ -32,7 +32,7 @@ public class CqlQueryHandler implements Handler<Message<JsonObject>> {
     ClientState clientState = new ClientState();
     try {
       clientState.setCQLVersion(params.getString("version"));
-      clientState.setKeyspace(HandlerUtils.determineKs(params, state, null));
+      clientState.setKeyspace(HandlerUtils.instance.determineKs(params, state, null));
     } catch (InvalidRequestException e) {
       event.reply(new JsonObject().putString(id.toString(), e.getMessage()));
       return;
@@ -40,7 +40,7 @@ public class CqlQueryHandler implements Handler<Message<JsonObject>> {
     QueryState queryState = new QueryState(clientState);
     ResultMessage rm = null;
     try {
-      rm = QueryProcessor.process(params.getString("query"), HandlerUtils.determineConsistencyLevel(state), queryState);
+      rm = QueryProcessor.process(params.getString("query"), HandlerUtils.instance.determineConsistencyLevel(state), queryState);
     } catch (RequestExecutionException | RequestValidationException e) {
       event.reply(new JsonObject()
           .putString(id.toString(), "ERROR")

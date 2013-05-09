@@ -40,11 +40,20 @@ import java.util.concurrent.CountDownLatch;
  */
 public class HandlerUtils {
 
+  //todo will this be reloadable?
+  public static HandlerUtils instance;
+  static {
+    instance = new HandlerUtils();
+  }
+  
+  public HandlerUtils(){
+    
+  }
   /*
    * because handlers can not see the responses of other steps easily anymore we move this logic
    * here. Essentially find all res ref objects and replace them
    */
-  public static void resolveRefs(JsonObject operation, JsonObject results) {
+  public void resolveRefs(JsonObject operation, JsonObject results) {
     JsonObject params = operation.getObject(Operations.OP);
     Set<String> names = params.getFieldNames();
     for (String name : names) {
@@ -69,14 +78,14 @@ public class HandlerUtils {
   }
 
   /*determine the consistency level from the state */
-  public static ConsistencyLevel determineConsistencyLevel(JsonObject state){
+  public ConsistencyLevel determineConsistencyLevel(JsonObject state){
     return (state.getString("consistency") == null) ? 
             ConsistencyLevel.ONE 
             : ConsistencyLevel.valueOf(state.getString("consistency"));
   }
   
   /*Determine the time for the operation */
-  public static long determineTimestamp(JsonObject params, JsonObject state, JsonObject row){
+  public long determineTimestamp(JsonObject params, JsonObject state, JsonObject row){
     long timestamp = 0;
     if (row != null && row.getLong(Operations.TIMESTAMP) != null){
       timestamp = row.getLong(Operations.TIMESTAMP);
@@ -93,7 +102,7 @@ public class HandlerUtils {
    * Determine columnfamily first look in the row for a string named keyspace, then look in the op,
    * then look in the state. The row is only currently provided in batchset
    */
-  public static String determineCf(JsonObject params, JsonObject state, JsonObject row) {
+  public String determineCf(JsonObject params, JsonObject state, JsonObject row) {
     String cf = null;
     if (row != null && row.getString("columnfamily") != null) {
       cf = row.getString("columnfamily");
@@ -109,7 +118,7 @@ public class HandlerUtils {
    * Determine keyspace first look in the row for a string named keyspace, then look in the op, then
    * look in the state. The row is only currently provided in batchset
    */
-  public static String determineKs(JsonObject params, JsonObject state, JsonObject row) {
+  public String determineKs(JsonObject params, JsonObject state, JsonObject row) {
     String ks = null;
     if (row != null && row.getString("keyspace") != null) {
       ks = row.getString("keyspace");
@@ -121,7 +130,7 @@ public class HandlerUtils {
     return ks;
   }
 
-  public static JsonArray readCf(ColumnFamily columnFamily, JsonObject state, JsonObject params) {
+  public JsonArray readCf(ColumnFamily columnFamily, JsonObject state, JsonObject params) {
     JsonArray components = state.getArray("components");
     JsonArray array = new JsonArray();
     Iterator<IColumn> it = columnFamily.iterator();
@@ -147,7 +156,7 @@ public class HandlerUtils {
           if (ic instanceof CounterColumn) {
             m.put("value", ((CounterColumn) ic).total());
           } else {
-            JsonObject valueMetadata = HandlerUtils.findColumnMetaData(columnFamily, state, ic.name().duplicate());
+            JsonObject valueMetadata = findColumnMetaData(columnFamily, state, ic.name().duplicate());
             if (valueMetadata == null){
               valueMetadata = findMetaData(columnFamily, state, "value");
             }
@@ -179,7 +188,7 @@ public class HandlerUtils {
     return array;
   }
 
-  public static JsonObject findMetaData(ColumnFamily cf, JsonObject state, String type) {
+  public JsonObject findMetaData(ColumnFamily cf, JsonObject state, String type) {
     JsonObject meta = state.getObject("meta");
     if (meta == null) {
       return null;
@@ -193,9 +202,7 @@ public class HandlerUtils {
       return meta.getObject(key.toString());
     }
   }
-  public static JsonObject findRangedMetaData(ColumnFamily cf, JsonObject state, ByteBuffer name) {
-    //System.out.println();
-    //System.out.println("ranged meta data");
+  public JsonObject findRangedMetaData(ColumnFamily cf, JsonObject state, ByteBuffer name) {
     StringBuilder key = new StringBuilder();
     key.append(cf.metadata().ksName);
     key.append(' ');
@@ -226,7 +233,7 @@ public class HandlerUtils {
     return null;
   }
   
-  public static JsonObject findColumnMetaData(ColumnFamily cf, JsonObject state, ByteBuffer name) {
+  public JsonObject findColumnMetaData(ColumnFamily cf, JsonObject state, ByteBuffer name) {
     StringBuilder key = new StringBuilder();
     key.append(cf.metadata().ksName);
     key.append(' ');
@@ -241,7 +248,7 @@ public class HandlerUtils {
     }
   }
   
-  public static void readCf(ColumnFamily columnFamily, JsonObject state, EventBus eb,
+  public void readCf(ColumnFamily columnFamily, JsonObject state, EventBus eb,
           Handler<Message<JsonArray>> filterReplyHandler) {
     JsonArray components = state.getArray("components");
     JsonArray array = new JsonArray();
@@ -264,7 +271,7 @@ public class HandlerUtils {
           if (column instanceof CounterColumn) {
             m.put("value", ((CounterColumn) column).total());
           } else {
-            JsonObject valueMetaData = HandlerUtils.findColumnMetaData(columnFamily, state, column.name().duplicate());
+            JsonObject valueMetaData = findColumnMetaData(columnFamily, state, column.name().duplicate());
             if (valueMetaData == null){
               valueMetaData = findMetaData(columnFamily, state, "value");
             } 
@@ -306,7 +313,7 @@ public class HandlerUtils {
     }
   }
 
-  public static Long getOperationTimeout(JsonObject operation) {
+  public Long getOperationTimeout(JsonObject operation) {
     JsonObject params = operation.getObject(Operations.OP);
     Long timeout = params.getLong(Operations.TIMEOUT);
     if (timeout == null) {
@@ -315,11 +322,11 @@ public class HandlerUtils {
     return timeout;
   }
 
-  public static JsonObject buildError(Integer id, String errorMessage) {
+  public JsonObject buildError(Integer id, String errorMessage) {
     return new JsonObject().putString("exception", errorMessage).putNumber("exceptionId", id);
   }
   
-  public static ByteBuffer byteBufferForObject(Object o) {
+  public ByteBuffer byteBufferForObject(Object o) {
     if (o instanceof Object[]) {
       Object[] comp = (Object[]) o;
       List<byte[]> b = new ArrayList<byte[]>();
@@ -349,7 +356,7 @@ public class HandlerUtils {
   }
   
   
-  public static Object resolveObject(Object o) {
+  public Object resolveObject(Object o) {
     if (o instanceof JsonArray) {
       return ((JsonArray) o).toArray();
     } else if (o instanceof Object[]) {
@@ -386,11 +393,11 @@ public class HandlerUtils {
     }
   }
 
-  private static boolean isGetRef(Object typeAttr) {
+  private boolean isGetRef(Object typeAttr) {
     return typeAttr != null && typeAttr instanceof String && typeAttr.equals("GETREF");
   }
 
-  private static boolean isBind(Object typeAttr) {
+  private boolean isBind(Object typeAttr) {
     return typeAttr != null && typeAttr instanceof String && typeAttr.equals("BINDMARKER");
   }
 

@@ -38,7 +38,7 @@ public class RequestJsonHandler implements Handler<Message<JsonObject>> {
     OperationsRequestHandler operationsRequestHandler = new OperationsRequestHandler(idGenerator,
         operations, event, vertx);
     TimeoutHandler timeoutHandler = new TimeoutHandler(operationsRequestHandler);
-    long timerId = vertx.setTimer(HandlerUtils.getOperationTimeout(operation), timeoutHandler);
+    long timerId = vertx.setTimer(HandlerUtils.instance.getOperationTimeout(operation), timeoutHandler);
     operationsRequestHandler.setTimerId(timerId);
     vertx.eventBus().send(new StringBuilder(REQUEST_HANDLER_HEADER).append( operation.getString(Operations.TYPE).toLowerCase()).toString(), operation,
         operationsRequestHandler);

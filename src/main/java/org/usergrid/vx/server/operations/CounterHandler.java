@@ -21,15 +21,15 @@ public class CounterHandler extends AbstractIntravertHandler {
     Integer id = event.body.getInteger("id");
     JsonObject params = event.body.getObject("op");
     JsonObject state = event.body.getObject("state");
-    RowMutation rm = new RowMutation(HandlerUtils.determineKs(params, state, null),
-            HandlerUtils.byteBufferForObject(params.getString("rowkey")));
+    RowMutation rm = new RowMutation(HandlerUtils.instance.determineKs(params, state, null),
+            HandlerUtils.instance.byteBufferForObject(params.getString("rowkey")));
     rm.addCounter(new QueryPath(
-            HandlerUtils.determineCf(params, state, null ),
+            HandlerUtils.instance.determineCf(params, state, null ),
             null,
-            HandlerUtils.byteBufferForObject(params.getString("name"))),
+            HandlerUtils.instance.byteBufferForObject(params.getString("name"))),
             Long.parseLong(params.toMap().get("value").toString()));
     List<IMutation> mutations = new ArrayList<IMutation>(1);
-    mutations.add(new CounterMutation(rm, HandlerUtils.determineConsistencyLevel(state)));
+    mutations.add(new CounterMutation(rm, HandlerUtils.instance.determineConsistencyLevel(state)));
     HandlerUtils.write(mutations, event, id);
   }
 }

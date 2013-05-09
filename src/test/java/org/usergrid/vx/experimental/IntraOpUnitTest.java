@@ -50,6 +50,6 @@ public class IntraOpUnitTest {
 
   @Test
   public void compositeBBTest(){
-    HandlerUtils.byteBufferForObject(new Object[] {"yo",0, 2,0});
+    HandlerUtils.instance.byteBufferForObject(new Object[] {"yo",0, 2,0});
   }
 }

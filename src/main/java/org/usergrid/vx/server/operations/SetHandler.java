@@ -18,17 +18,17 @@ public class SetHandler extends AbstractIntravertHandler{
     Integer id = event.body.getInteger(Operations.ID);
     JsonObject params = event.body.getObject(Operations.OP);
     JsonObject state = event.body.getObject(Operations.STATE);
-    RowMutation rm = new RowMutation(HandlerUtils.determineKs(params, state, null),
-            HandlerUtils.byteBufferForObject(params.getField(Operations.ROWKEY)));
-    QueryPath qp = new QueryPath(HandlerUtils.determineCf(params, state, null), null,
-            HandlerUtils.byteBufferForObject(params.getField(Operations.NAME)));
+    RowMutation rm = new RowMutation(HandlerUtils.instance.determineKs(params, state, null),
+            HandlerUtils.instance.byteBufferForObject(params.getField(Operations.ROWKEY)));
+    QueryPath qp = new QueryPath(HandlerUtils.instance.determineCf(params, state, null), null,
+            HandlerUtils.instance.byteBufferForObject(params.getField(Operations.NAME)));
     Object val = params.getField(Operations.VALUE);
     Integer ttl = params.getInteger(Operations.TTL);
     if (ttl == null) {
       // TODO add autoTimestamp and nanotime to the state object sent in the event bus message
-      rm.add(qp, HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(val)), System.nanoTime());
+      rm.add(qp, HandlerUtils.instance.byteBufferForObject(HandlerUtils.instance.resolveObject(val)), System.nanoTime());
     } else {
-      rm.add(qp, HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(val)), System.nanoTime(), ttl);
+      rm.add(qp, HandlerUtils.instance.byteBufferForObject(HandlerUtils.instance.resolveObject(val)), System.nanoTime(), ttl);
     }
     List<IMutation> mutations = new ArrayList<IMutation>();
     mutations.add(rm);

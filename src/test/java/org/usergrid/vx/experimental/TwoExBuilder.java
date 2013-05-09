@@ -34,37 +34,6 @@ import org.vertx.java.core.json.JsonObject;
 
 public class TwoExBuilder implements ServiceProcessor {
 
-  /*
-	@Override
-	public void process(IntraReq req, IntraRes res, IntraState state, int i,
-			Vertx vertx, IntraService is) {
-		IntraOp op = req.getE().get(i);
-		
-		Map params = (Map) op.getOp().get("params");
-		String uid = (String) params.get("userid");
-		String fname = (String) params.get("fname");
-		String lname = (String) params.get("lname");
-		String city = (String) params.get("city");
-		
-		IntraReq innerReq = new IntraReq();
-		innerReq.add( Operations.setColumnFamilyOp("users") );
-		innerReq.add( Operations.setOp(uid, "fname", fname) );
-		innerReq.add( Operations.setOp(uid, "lname", lname) );
-		innerReq.add( Operations.setColumnFamilyOp("usersbycity") );
-		innerReq.add( Operations.setOp(city, uid, "") );
-		innerReq.add( Operations.setColumnFamilyOp("usersbylast") );
-		innerReq.add( Operations.setOp(lname, uid, "") );
-		
-		IntraRes innerRes = new IntraRes();
-		is.executeReq(innerReq, innerRes, state, vertx);
-		
-		if (innerRes.getException() != null){
-			res.setExceptionAndId(innerRes.getException(), i);
-		} else {
-			res.getOpsRes().put(i, "OK");
-		}
-	}
-  */
   @Override
   public void process(JsonObject request, JsonObject state, JsonObject response, EventBus eb) {
     System.out.println("called");
@@ -75,19 +44,19 @@ public class TwoExBuilder implements ServiceProcessor {
     String lname = (String) params.getString("lname");
     String city = (String) params.getString("city");
 
-    RowMutation rm = new RowMutation("myks", HandlerUtils.byteBufferForObject(uid));
-    QueryPath qp = new QueryPath("users", null, HandlerUtils.byteBufferForObject("fname"));
-    rm.add(qp, HandlerUtils.byteBufferForObject(fname), System.nanoTime());
-    QueryPath qp2 = new QueryPath("users", null, HandlerUtils.byteBufferForObject("lname"));
-    rm.add(qp2, HandlerUtils.byteBufferForObject(lname), System.nanoTime());
+    RowMutation rm = new RowMutation("myks", HandlerUtils.instance.byteBufferForObject(uid));
+    QueryPath qp = new QueryPath("users", null, HandlerUtils.instance.byteBufferForObject("fname"));
+    rm.add(qp, HandlerUtils.instance.byteBufferForObject(fname), System.nanoTime());
+    QueryPath qp2 = new QueryPath("users", null, HandlerUtils.instance.byteBufferForObject("lname"));
+    rm.add(qp2, HandlerUtils.instance.byteBufferForObject(lname), System.nanoTime());
     
  
-    RowMutation rm2 = new RowMutation("myks", HandlerUtils.byteBufferForObject(city));
-    QueryPath qp3 = new QueryPath("usersbycity", null, HandlerUtils.byteBufferForObject(uid));
-    rm2.add(qp3, HandlerUtils.byteBufferForObject(""), System.nanoTime());
+    RowMutation rm2 = new RowMutation("myks", HandlerUtils.instance.byteBufferForObject(city));
+    QueryPath qp3 = new QueryPath("usersbycity", null, HandlerUtils.instance.byteBufferForObject(uid));
+    rm2.add(qp3, HandlerUtils.instance.byteBufferForObject(""), System.nanoTime());
     
-    QueryPath qp4 = new QueryPath("usersbylast", null, HandlerUtils.byteBufferForObject(lname));
-    rm.add(qp4, HandlerUtils.byteBufferForObject(uid), System.nanoTime());
+    QueryPath qp4 = new QueryPath("usersbylast", null, HandlerUtils.instance.byteBufferForObject(lname));
+    rm.add(qp4, HandlerUtils.instance.byteBufferForObject(uid), System.nanoTime());
     List<IMutation> mutations = new ArrayList<IMutation>();
     mutations.add(rm);
     mutations.add(rm2);
