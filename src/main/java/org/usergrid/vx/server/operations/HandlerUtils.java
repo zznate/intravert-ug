@@ -45,14 +45,14 @@ public class HandlerUtils {
    * here. Essentially find all res ref objects and replace them
    */
   public static void resolveRefs(JsonObject operation, JsonObject results) {
-    JsonObject params = operation.getObject("op");
+    JsonObject params = operation.getObject(Operations.OP);
     Set<String> names = params.getFieldNames();
     for (String name : names) {
       Object o = params.getField(name);
       if (o instanceof JsonObject) {
         JsonObject j = (JsonObject) o;
-        if (j.getString("type") != null && j.getString("type").equals("GETREF")) {
-          int refId = j.getObject("op").getInteger("resultref");
+        if (j.getString(Operations.TYPE) != null && j.getString(Operations.TYPE).equals("GETREF")) {
+          int refId = j.getObject(Operations.OP).getInteger("resultref");
           String wanted = j.getObject("op").getString("wanted");
           Object k = results.getArray(refId + "").get(0);
           JsonObject m = (JsonObject) k;
@@ -78,11 +78,11 @@ public class HandlerUtils {
   /*Determine the time for the operation */
   public static long determineTimestamp(JsonObject params, JsonObject state, JsonObject row){
     long timestamp = 0;
-    if (row != null && row.getLong("timestamp") != null){
-      timestamp = row.getLong("timestamp");
-    } else if (params.getLong("timestamp") != null){
-      timestamp = params.getLong("timestamp"); 
-    } else if (state.getBoolean("autotimestamp")!= null && state.getBoolean("autotimestamp") == true){
+    if (row != null && row.getLong(Operations.TIMESTAMP) != null){
+      timestamp = row.getLong(Operations.TIMESTAMP);
+    } else if (params.getLong(Operations.TIMESTAMP) != null){
+      timestamp = params.getLong(Operations.TIMESTAMP); 
+    } else if (state.getBoolean(Operations.AUTOTIMESTAMP)!= null && state.getBoolean(Operations.AUTOTIMESTAMP) == true){
       timestamp = System.nanoTime();
     }
     return timestamp;

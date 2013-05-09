@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.cassandra.db.IMutation;
 import org.apache.cassandra.db.RowMutation;
 import org.apache.cassandra.db.filter.QueryPath;
+import org.usergrid.vx.experimental.Operations;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;
@@ -14,16 +15,15 @@ public class SetHandler extends AbstractIntravertHandler{
 
   @Override
   public void handleUser(Message<JsonObject> event) {
-    Integer id = event.body.getInteger("id");
-    JsonObject params = event.body.getObject("op");
-    JsonObject state = event.body.getObject("state");
+    Integer id = event.body.getInteger(Operations.ID);
+    JsonObject params = event.body.getObject(Operations.OP);
+    JsonObject state = event.body.getObject(Operations.STATE);
     RowMutation rm = new RowMutation(HandlerUtils.determineKs(params, state, null),
-            HandlerUtils.byteBufferForObject(params.getField("rowkey")));
+            HandlerUtils.byteBufferForObject(params.getField(Operations.ROWKEY)));
     QueryPath qp = new QueryPath(HandlerUtils.determineCf(params, state, null), null,
-            HandlerUtils.byteBufferForObject(params.getField("name")));
-
-    Object val = params.getField("value");
-    Integer ttl = params.getInteger("ttl");
+            HandlerUtils.byteBufferForObject(params.getField(Operations.NAME)));
+    Object val = params.getField(Operations.VALUE);
+    Integer ttl = params.getInteger(Operations.TTL);
     if (ttl == null) {
       // TODO add autoTimestamp and nanotime to the state object sent in the event bus message
       rm.add(qp, HandlerUtils.byteBufferForObject(HandlerUtils.resolveObject(val)), System.nanoTime());

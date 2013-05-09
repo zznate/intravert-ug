@@ -64,7 +64,7 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
 
     Map<String, Object> map = event.body.toMap();
     Object opResult = map.get(String.valueOf(opId));
-    String userId = ((JsonObject) operations.get(opId)).getObject("op").getString(Operations.USER_OP_ID)  ;
+    String userId = ((JsonObject) operations.get(opId)).getObject(Operations.OP).getString(Operations.USER_OP_ID)  ;
     if (userId == null){
       userId = String.valueOf(opId);
     }
@@ -100,26 +100,26 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
       if (event.body.getObject(Operations.STATE) != null) {
         state.mergeIn(event.body.getObject(Operations.STATE));
       }
-      operation.putObject(Operations.STATE, state.copy());
+      operation.putObject(Operations.STATE, state.copy()); 
       idGenerator.incrementAndGet();
       TimeoutHandler timeoutHandler = new TimeoutHandler(this);
       timerId = vertx.setTimer(HandlerUtils.getOperationTimeout(operation), timeoutHandler);
       
       HandlerUtils.resolveRefs( operation, results.getObject(Operations.OPS_RES) );
       
-      if (operation.getString("type").equalsIgnoreCase("serviceprocess")) {
+      if (operation.getString(Operations.TYPE).equalsIgnoreCase("serviceprocess")) {
         JsonObject params = operation.getObject("op");
         JsonObject theParams = params.getObject("params");
         operation.putObject("mpparams", theParams);
         operation.putObject("mpres", results.getObject("opsRes"));
         vertx.eventBus().send("sps." + params.getString("name").toLowerCase(), operation, this);
-      } else if (operation.getString("type").equalsIgnoreCase("multiprocess")){
+      } else if (operation.getString(Operations.TYPE).equalsIgnoreCase("multiprocess")){
         JsonObject params = operation.getObject("op");
         JsonObject theParams = params.getObject("params");
         operation.putObject("mpparams", theParams);
         operation.putObject("mpres", results.getObject("opsRes"));        
         vertx.eventBus().send("multiprocessors." + params.getString("name"), operation, this);
-      } else if (operation.getString("type").equalsIgnoreCase("process")){
+      } else if (operation.getString(Operations.TYPE).equalsIgnoreCase("process")){
         JsonObject params = operation.getObject("op");
         Integer input = params.getInteger("input");
         operation.putArray("input", this.results.getObject("opsRes").getArray(input+"") );
