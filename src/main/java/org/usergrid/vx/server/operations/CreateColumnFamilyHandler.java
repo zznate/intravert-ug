@@ -35,12 +35,12 @@ public class CreateColumnFamilyHandler implements Handler<Message<JsonObject>> {
             cfm.addDefaultIndexNames();
         } catch (org.apache.cassandra.exceptions.InvalidRequestException e) {
             response.putString("exception", e.getMessage());
-            response.putNumber("exceptionId", id);
+            response.putString("exceptionId", String.valueOf(id));
             event.reply(response);
             return;
         } catch (ConfigurationException e) {
             response.putString("exception", e.getMessage());
-            response.putNumber("exceptionId", id);
+            response.putString("exceptionId", String.valueOf(id));
             event.reply(response);
             return;
         }
@@ -48,7 +48,7 @@ public class CreateColumnFamilyHandler implements Handler<Message<JsonObject>> {
             MigrationManager.announceNewColumnFamily(cfm);
         } catch (ConfigurationException e) {
             response.putString("exception", e.getMessage());
-            response.putNumber("exceptionId", id);
+            response.putString("exceptionId", String.valueOf(id));
             event.reply(response);
             return;
         }

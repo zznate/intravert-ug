@@ -77,7 +77,7 @@ public class IntraRes implements Serializable {
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
     json.putObject("exception", null);
-    json.putNumber("exceptionId", exceptionId);
+    json.putString("exceptionId", String.valueOf(exceptionId));
     json.putElement("opsRes", new JsonObject((Map) opsRes));
     return json;
   }
