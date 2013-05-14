@@ -359,6 +359,8 @@ public class HandlerUtils {
   public Object resolveObject(Object o) {
     if (o instanceof JsonArray) {
       return ((JsonArray) o).toArray();
+    } else if (o instanceof ArrayList) {
+        return ((ArrayList) o).toArray();
     } else if (o instanceof Object[]) {
       return o;
     } else if (o instanceof Integer) {
