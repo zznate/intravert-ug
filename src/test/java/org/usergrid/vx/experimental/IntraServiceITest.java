@@ -204,41 +204,7 @@ public class IntraServiceITest {
 
   }
 
-  @Test
-  public void compositeTest() throws Exception {
-    IntraReq req = new IntraReq();
-    req.add(Operations.setKeyspaceOp("compks")); // 0
-    req.add(Operations.createKsOp("compks", 1)); // 1
-    req.add(Operations.createCfOp("compcf")); // 2
-    req.add(Operations.setColumnFamilyOp("compcf")); // 3
-    req.add(Operations.setAutotimestampOp(true)); // 4
-    req.add(Operations.assumeOp("compks", "compcf", "value", "CompositeType(UTF8Type,Int32Type)"));// 5
-    req.add(Operations.assumeOp("compks", "compcf", "column", "Int32Type"));// 6
-    req.add(Operations.setOp("rowa", 1, new Object[] { "yo", 0, 2, 0 })); // 7
-    req.add(Operations.getOp("rowa", 1)); // 8
-
-    IntraClient2 ic2 = new IntraClient2("localhost", 8080);
-    IntraRes res = ic2.sendBlocking(req);
-    List<Map> x = (List<Map>) res.getOpsRes().get("8");
-    Assert.assertEquals(1, x.get(0).get("name"));
-
-    // ByteBuffer bytes = (ByteBuffer) x.get(0).get("value");
-    String value = (String) x.get(0).get("value");
-    ByteBuffer bytes = ByteBuffer.wrap(Base64.decode(value));
-
-    List<AbstractType<?>> comparators = new ArrayList<>();
-    comparators.add(UTF8Type.instance);
-    comparators.add(Int32Type.instance);
-    CompositeType comparator = CompositeType.getInstance(comparators);
-
-    List<AbstractCompositeType.CompositeComponent> components = comparator.deconstruct(bytes);
-    AbstractCompositeType.CompositeComponent c1 = components.get(0);
-    AbstractCompositeType.CompositeComponent c2 = components.get(1);
-
-    Assert.assertEquals("yo", c1.comparator.compose(c1.value));
-    Assert.assertEquals(2, c2.comparator.compose(c2.value));
-  }
-
+  
   @Test
   public void CqlTest() throws Exception {
     IntraReq req = new IntraReq();
