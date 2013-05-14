@@ -1,6 +1,7 @@
 package org.usergrid.vx.handler.http;
 
 import org.usergrid.vx.experimental.Operations;
+import org.usergrid.vx.handler.RequestJsonHandler;
 import org.usergrid.vx.server.operations.HandlerUtils;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -107,25 +108,27 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
       
       HandlerUtils.instance.resolveRefs( operation, results.getObject(Operations.OPS_RES) );
       
-      if (operation.getString(Operations.TYPE).equalsIgnoreCase("serviceprocess")) {
+      if (operation.getString(Operations.TYPE).equalsIgnoreCase(Operations.SERVICEPROCESS)) {
         JsonObject params = operation.getObject("op");
         JsonObject theParams = params.getObject("params");
         operation.putObject("mpparams", theParams);
         operation.putObject("mpres", results.getObject("opsRes"));
         vertx.eventBus().send("sps." + params.getString("name").toLowerCase(), operation, this);
-      } else if (operation.getString(Operations.TYPE).equalsIgnoreCase("multiprocess")){
+      } else if (operation.getString(Operations.TYPE).equalsIgnoreCase(Operations.MULTIPROCESS)){
         JsonObject params = operation.getObject("op");
         JsonObject theParams = params.getObject("params");
         operation.putObject("mpparams", theParams);
         operation.putObject("mpres", results.getObject("opsRes"));        
         vertx.eventBus().send("multiprocessors." + params.getString("name"), operation, this);
-      } else if (operation.getString(Operations.TYPE).equalsIgnoreCase("process")){
+      } else if (operation.getString(Operations.TYPE).equalsIgnoreCase(Operations.PROCESS)){
         JsonObject params = operation.getObject("op");
         Integer input = params.getInteger("input");
         operation.putArray("input", this.results.getObject("opsRes").getArray(input+"") );
         vertx.eventBus().send("processors." + params.getString("processorname"), operation, this);
       } else {
-        vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation, this);
+        //vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation, this);
+        vertx.eventBus().send(new StringBuilder(RequestJsonHandler.REQUEST_HANDLER_HEADER)
+        .append( operation.getString(Operations.TYPE).toLowerCase()).toString(),operation, this);
       }
     } else {
       sendResults();
