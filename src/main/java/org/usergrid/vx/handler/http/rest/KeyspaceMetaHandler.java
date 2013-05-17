@@ -1,4 +1,4 @@
-package org.usergrid.vx.handler.rest;
+package org.usergrid.vx.handler.http.rest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

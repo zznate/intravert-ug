@@ -125,7 +125,7 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
         operation.putArray("input", this.results.getObject("opsRes").getArray(input+"") );
         vertx.eventBus().send("processors." + params.getString("processorname"), operation, this);
       } else {
-        vertx.eventBus().send("request." + operation.getString("type").toLowerCase(), operation, this);
+        vertx.eventBus().send("operations." + operation.getString("type").toLowerCase(), operation, this);
       }
     } else {
       sendResults();

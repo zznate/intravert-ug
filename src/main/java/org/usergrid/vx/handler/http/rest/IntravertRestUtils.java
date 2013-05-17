@@ -1,12 +1,8 @@
-package org.usergrid.vx.handler.rest;
+package org.usergrid.vx.handler.http.rest;
 
 import org.apache.cassandra.db.ConsistencyLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.usergrid.vx.experimental.IntraOp;
-import org.usergrid.vx.experimental.IntraReq;
-import org.usergrid.vx.experimental.Operations;
-import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
 /**

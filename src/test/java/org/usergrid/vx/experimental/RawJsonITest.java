@@ -341,7 +341,7 @@ public class RawJsonITest {
             return;
         }
 
-        vertx.eventBus().registerHandler("request.noop", new Handler<Message<JsonObject>>() {
+        vertx.eventBus().registerHandler("operations.noop", new Handler<Message<JsonObject>>() {
             @Override
             public void handle(Message<JsonObject> event) {
                 try {
@@ -377,7 +377,7 @@ public class RawJsonITest {
 
   @Test
   public void overrideDefaultTimeoutForLongRunningOperation() throws Exception {
-    vertx.eventBus().registerHandler("request.noop", new Handler<Message<JsonObject>>() {
+    vertx.eventBus().registerHandler("operations.noop", new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> event) {
         try {
