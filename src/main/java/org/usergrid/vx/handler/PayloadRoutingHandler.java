@@ -15,14 +15,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author zznate
  */
-public class RequestJsonHandler implements Handler<Message<JsonObject>> {
+public class PayloadRoutingHandler implements Handler<Message<JsonObject>> {
 
   public static final String IHJSON_HANDLER_TOPIC = "request.json";
   public static final String REQUEST_HANDLER_HEADER = "operations.";
   
   private final Vertx vertx;
 
-  public RequestJsonHandler(Vertx vertx) {
+  public PayloadRoutingHandler(Vertx vertx) {
     this.vertx = vertx;
   }
 
