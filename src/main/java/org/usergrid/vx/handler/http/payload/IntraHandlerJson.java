@@ -21,7 +21,7 @@ import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.usergrid.vx.experimental.IntraReq;
-import org.usergrid.vx.handler.RequestJsonHandler;
+import org.usergrid.vx.handler.PayloadRoutingHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
@@ -38,7 +38,7 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
  * <ol>
  *   <li>Extracts the request body into a {@link org.usergrid.vx.experimental.IntraReq} object</li>
  *   <li>Sends the IntraReq on the eventBus to the topic
- *     {@link RequestJsonHandler#IHJSON_HANDLER_TOPIC} with an instance
+ *     {@link org.usergrid.vx.handler.PayloadRoutingHandler#IHJSON_HANDLER_TOPIC} with an instance
  *     of {@link IHResponse}</li>
  *   <li>IHResponse with send the response via the end method of HttpServerRequest</li>
  * </ol>
@@ -80,7 +80,7 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
         logger.debug("IntraJsonHandler received payload: \n{}",
                 indentObjectMapper.writeValueAsString(req));
       }
-      vertx.eventBus().send(RequestJsonHandler.IHJSON_HANDLER_TOPIC,
+      vertx.eventBus().send(PayloadRoutingHandler.IHJSON_HANDLER_TOPIC,
               req.toJson(),
               new IHResponse(request));
     } catch (Exception e) {
@@ -101,7 +101,7 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
     public void handle(Message<JsonObject> event) {
       if ( logger.isDebugEnabled()) {
         logger.debug("in IntraHanlderJson's on handler topic {} with event {}",
-                RequestJsonHandler.IHJSON_HANDLER_TOPIC,
+                PayloadRoutingHandler.IHJSON_HANDLER_TOPIC,
                 event.body.toString() );
       }
       request.response.end(event.body.toString());

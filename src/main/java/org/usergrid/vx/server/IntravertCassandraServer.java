@@ -20,8 +20,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.cassandra.service.CassandraDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.usergrid.vx.handler.PayloadRoutingHandler;
 import org.usergrid.vx.handler.http.payload.IntraHandlerJson;
-import org.usergrid.vx.handler.RequestJsonHandler;
 import org.usergrid.vx.handler.http.HelloHandler;
 import org.usergrid.vx.handler.http.NoMatchHandler;
 import org.usergrid.vx.handler.http.rest.KeyspaceMetaHandler;
@@ -85,8 +85,8 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
   }
 
   public static void registerRequestHandler(Vertx x) {
-    x.eventBus().registerHandler(RequestJsonHandler.IHJSON_HANDLER_TOPIC,
-            new RequestJsonHandler(vertx));
+    x.eventBus().registerHandler(PayloadRoutingHandler.IHJSON_HANDLER_TOPIC,
+            new PayloadRoutingHandler(vertx));
   }
    
   public static void registerOperationHandlers(Vertx x) {
