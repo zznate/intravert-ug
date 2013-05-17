@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RequestJsonHandler implements Handler<Message<JsonObject>> {
 
   public static final String IHJSON_HANDLER_TOPIC = "request.json";
-  public static final String REQUEST_HANDLER_HEADER = "request.";
+  public static final String REQUEST_HANDLER_HEADER = "operations.";
   
   private final Vertx vertx;
 

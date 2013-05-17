@@ -13,13 +13,14 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
 */
-package org.usergrid.vx.experimental;
+package org.usergrid.vx.handler.http.payload;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.usergrid.vx.experimental.IntraReq;
 import org.usergrid.vx.handler.RequestJsonHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -35,7 +36,7 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
  * JSON payload.
  * Specifically, this class:
  * <ol>
- *   <li>Extracts the request body into a {@link IntraReq} object</li>
+ *   <li>Extracts the request body into a {@link org.usergrid.vx.experimental.IntraReq} object</li>
  *   <li>Sends the IntraReq on the eventBus to the topic
  *     {@link RequestJsonHandler#IHJSON_HANDLER_TOPIC} with an instance
  *     of {@link IHResponse}</li>
@@ -43,7 +44,7 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
  * </ol>
  *
  * In debug mode, this class will dump the payload received in the form of what was
- * paesed into {@link IntraReq}
+ * paesed into {@link org.usergrid.vx.experimental.IntraReq}
  */
 
 public class IntraHandlerJson implements Handler<HttpServerRequest>{

@@ -1,9 +1,8 @@
-package org.usergrid.vx.handler.rest;
+package org.usergrid.vx.handler.http.rest;
 
 import org.apache.cassandra.db.ConsistencyLevel;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.vertx.java.core.http.HttpServerRequest;
 

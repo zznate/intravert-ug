@@ -16,27 +16,19 @@
 package org.usergrid.vx.server;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.cassandra.service.CassandraDaemon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.usergrid.vx.experimental.IntraHandlerJson;
+import org.usergrid.vx.handler.http.payload.IntraHandlerJson;
 import org.usergrid.vx.handler.RequestJsonHandler;
 import org.usergrid.vx.handler.http.HelloHandler;
 import org.usergrid.vx.handler.http.NoMatchHandler;
-import org.usergrid.vx.handler.http.OperationsRequestHandler;
-import org.usergrid.vx.handler.http.TimeoutHandler;
-import org.usergrid.vx.handler.rest.KeyspaceMetaHandler;
-import org.usergrid.vx.handler.rest.IntraHandlerRest;
-import org.usergrid.vx.handler.rest.SystemMetaHandler;
+import org.usergrid.vx.handler.http.rest.KeyspaceMetaHandler;
+import org.usergrid.vx.handler.http.rest.SystemMetaHandler;
 import org.usergrid.vx.server.operations.*;
-import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.RouteMatcher;
-import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonObject;
 
 public class IntravertCassandraServer implements CassandraDaemon.Server {
   private static final int PORT = 8080;
@@ -98,27 +90,27 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
   }
    
   public static void registerOperationHandlers(Vertx x) {
-    x.eventBus().registerHandler("request.autotimestamp", new AutotimestampHandler() );
-    x.eventBus().registerHandler("request.batchset", new BatchHandler() );
-    x.eventBus().registerHandler("request.componentselect", new ComponentSelectHandler() );
-    x.eventBus().registerHandler("request.createkeyspace", new CreateKeyspaceHandler());
-    x.eventBus().registerHandler("request.setkeyspace", new SetKeyspaceHandler());
-    x.eventBus().registerHandler("request.createcolumnfamily", new CreateColumnFamilyHandler());
-    x.eventBus().registerHandler("request.listkeyspaces", new ListKeyspacesHandler());
-    x.eventBus().registerHandler("request.listcolumnfamily", new ListColumnFamilyHandler());
-    x.eventBus().registerHandler("request.set", new SetHandler());
-    x.eventBus().registerHandler("request.setcolumnfamily", new SetColumnFamilyHandler());
-    x.eventBus().registerHandler("request.assume", new AssumeHandler());
-    x.eventBus().registerHandler("request.get", new GetHandler(x.eventBus()));
-    x.eventBus().registerHandler("request.slice", new SliceHandler(x.eventBus()));
-    x.eventBus().registerHandler("request.cqlquery", new CqlQueryHandler());
-    x.eventBus().registerHandler("request.counter", new CounterHandler());
-    x.eventBus().registerHandler("request.consistency", new ConsistencyHandler());
-    x.eventBus().registerHandler("request.createfilter", new CreateFilterHandler(x.eventBus()));
-    x.eventBus().registerHandler("request.createprocessor", new CreateProcessorHandler(x.eventBus()));
-    x.eventBus().registerHandler("request.filtermode", new FilterModeHandler());
-    x.eventBus().registerHandler("request.createmultiprocess", new CreateMultiProcessHandler(x.eventBus()));
-    x.eventBus().registerHandler("request.createserviceprocess", new CreateServiceProcessHandler(x.eventBus())); 
+    x.eventBus().registerHandler("operations.autotimestamp", new AutotimestampHandler() );
+    x.eventBus().registerHandler("operations.batchset", new BatchHandler() );
+    x.eventBus().registerHandler("operations.componentselect", new ComponentSelectHandler() );
+    x.eventBus().registerHandler("operations.createkeyspace", new CreateKeyspaceHandler());
+    x.eventBus().registerHandler("operations.setkeyspace", new SetKeyspaceHandler());
+    x.eventBus().registerHandler("operations.createcolumnfamily", new CreateColumnFamilyHandler());
+    x.eventBus().registerHandler("operations.listkeyspaces", new ListKeyspacesHandler());
+    x.eventBus().registerHandler("operations.listcolumnfamily", new ListColumnFamilyHandler());
+    x.eventBus().registerHandler("operations.set", new SetHandler());
+    x.eventBus().registerHandler("operations.setcolumnfamily", new SetColumnFamilyHandler());
+    x.eventBus().registerHandler("operations.assume", new AssumeHandler());
+    x.eventBus().registerHandler("operations.get", new GetHandler(x.eventBus()));
+    x.eventBus().registerHandler("operations.slice", new SliceHandler(x.eventBus()));
+    x.eventBus().registerHandler("operations.cqlquery", new CqlQueryHandler());
+    x.eventBus().registerHandler("operations.counter", new CounterHandler());
+    x.eventBus().registerHandler("operations.consistency", new ConsistencyHandler());
+    x.eventBus().registerHandler("operations.createfilter", new CreateFilterHandler(x.eventBus()));
+    x.eventBus().registerHandler("operations.createprocessor", new CreateProcessorHandler(x.eventBus()));
+    x.eventBus().registerHandler("operations.filtermode", new FilterModeHandler());
+    x.eventBus().registerHandler("operations.createmultiprocess", new CreateMultiProcessHandler(x.eventBus()));
+    x.eventBus().registerHandler("operations.createserviceprocess", new CreateServiceProcessHandler(x.eventBus()));
   }
 
 }
