@@ -21,6 +21,7 @@ import org.codehaus.jackson.map.SerializationConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.usergrid.vx.experimental.IntraReq;
+import org.usergrid.vx.handler.IntraHandler;
 import org.usergrid.vx.handler.PayloadRoutingHandler;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.Vertx;
@@ -47,7 +48,7 @@ import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
  * paesed into {@link org.usergrid.vx.experimental.IntraReq}
  */
 
-public class IntraHandlerJson implements Handler<HttpServerRequest>{
+public class IntraHandlerJson implements IntraHandler {
   private static Logger logger = LoggerFactory.getLogger(IntraHandlerJson.class);
 
   private static ObjectMapper mapper = new ObjectMapper();
@@ -72,7 +73,7 @@ public class IntraHandlerJson implements Handler<HttpServerRequest>{
     });
 	}
 
-  private void handleRequestAsync(final HttpServerRequest request, Buffer buffer) {
+  public void handleRequestAsync(final HttpServerRequest request, Buffer buffer) {
     IntraReq req = null;
     try {
       req = mapper.readValue(buffer.getBytes(), IntraReq.class);
