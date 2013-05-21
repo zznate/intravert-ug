@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /* class that holds properties for the request lifecycle */
+/*
 @Deprecated
 public class IntraState {
 	
@@ -27,3 +28,4 @@ public class IntraState {
 	Filter currentFilter;
 	
 }
+*/

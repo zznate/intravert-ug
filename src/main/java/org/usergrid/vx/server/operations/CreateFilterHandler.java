@@ -1,6 +1,5 @@
 package org.usergrid.vx.server.operations;
 
-import org.usergrid.vx.experimental.IntraState;
 import org.usergrid.vx.experimental.filter.FactoryProvider;
 import org.usergrid.vx.experimental.filter.Filter;
 import org.usergrid.vx.experimental.filter.FilterFactory;
@@ -31,7 +30,7 @@ public class CreateFilterHandler implements Handler<Message<JsonObject>> {
       FilterFactory filterFactory = factoryProvider.getFilterFactory(lang);
       Filter filter = filterFactory.createFilter(scriptSource);
       eb.registerHandler("filters." + name, new FilterHandler(filter));
-      IntraState.filters.put(name, filterFactory.createFilter(scriptSource));
+      HandlerUtils.instance.putFilter(name, filterFactory.createFilter(scriptSource));
 
       event.reply(new JsonObject().putString(id.toString(), "OK"));
     } catch (IllegalArgumentException e) {

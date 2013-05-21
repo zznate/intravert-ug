@@ -6,26 +6,18 @@ import org.apache.cassandra.exceptions.OverloadedException;
 import org.apache.cassandra.exceptions.UnavailableException;
 import org.apache.cassandra.exceptions.WriteTimeoutException;
 import org.apache.cassandra.service.StorageProxy;
-import org.apache.cassandra.thrift.CfDef;
 import org.apache.cassandra.utils.ByteBufferUtil;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.usergrid.vx.client.IntraClient2;
 import org.usergrid.vx.experimental.CompositeTool;
 import org.usergrid.vx.experimental.IntraOp;
-import org.usergrid.vx.experimental.IntraReq;
-import org.usergrid.vx.experimental.IntraRes;
-import org.usergrid.vx.experimental.IntraState;
-import org.usergrid.vx.experimental.NonAtomicReference;
 import org.usergrid.vx.experimental.Operations;
 import org.usergrid.vx.experimental.TypeHelper;
+import org.usergrid.vx.experimental.filter.Filter;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.EventBus;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
-import org.vertx.java.core.json.JsonElement;
 import org.vertx.java.core.json.JsonObject;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,22 +25,39 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 
 /**
  * @author zznate
  */
 public class HandlerUtils {
 
-  //todo will this be reloadable?
+  // todo will this be reloadable?
   public static HandlerUtils instance;
+  public static Map<String,Filter> filters = new HashMap<String,Filter>();
   static {
     instance = new HandlerUtils();
   }
-  
-  public HandlerUtils(){
-    
+
+  public HandlerUtils() {
+
   }
+
+  public Filter getFilter(String name){
+    return filters.get(name);
+  }
+  
+  public void putFilter(String name, Filter f){
+    filters.put(name, f);
+  }
+  
+  public void activateFilter(JsonObject state, String filterName){
+    state.putString("currentFilter", filterName);
+  }
+  
+  public void deactivateFilter(JsonObject state){
+    state.removeField("currentFilter");
+  }
+  
   /*
    * because handlers can not see the responses of other steps easily anymore we move this logic
    * here. Essentially find all res ref objects and replace them
@@ -77,27 +86,26 @@ public class HandlerUtils {
     }
   }
 
-  /*determine the consistency level from the state */
-  public ConsistencyLevel determineConsistencyLevel(JsonObject state){
-    return (state.getString("consistency") == null) ? 
-            ConsistencyLevel.ONE 
-            : ConsistencyLevel.valueOf(state.getString("consistency"));
+  /* determine the consistency level from the state */
+  public ConsistencyLevel determineConsistencyLevel(JsonObject state) {
+    return (state.getString("consistency") == null) ? ConsistencyLevel.ONE : ConsistencyLevel
+            .valueOf(state.getString("consistency"));
   }
-  
-  /*Determine the time for the operation */
-  public long determineTimestamp(JsonObject params, JsonObject state, JsonObject row){
+
+  /* Determine the time for the operation */
+  public long determineTimestamp(JsonObject params, JsonObject state, JsonObject row) {
     long timestamp = 0;
-    if (row != null && row.getLong(Operations.TIMESTAMP) != null){
+    if (row != null && row.getLong(Operations.TIMESTAMP) != null) {
       timestamp = row.getLong(Operations.TIMESTAMP);
-    } else if (params.getLong(Operations.TIMESTAMP) != null){
-      timestamp = params.getLong(Operations.TIMESTAMP); 
-    } else if (state.getBoolean(Operations.AUTOTIMESTAMP)!= null && state.getBoolean(Operations.AUTOTIMESTAMP) == true){
+    } else if (params.getLong(Operations.TIMESTAMP) != null) {
+      timestamp = params.getLong(Operations.TIMESTAMP);
+    } else if (state.getBoolean(Operations.AUTOTIMESTAMP) != null
+            && state.getBoolean(Operations.AUTOTIMESTAMP) == true) {
       timestamp = System.nanoTime();
     }
     return timestamp;
   }
-  
-  
+
   /*
    * Determine columnfamily first look in the row for a string named keyspace, then look in the op,
    * then look in the state. The row is only currently provided in batchset
@@ -156,11 +164,12 @@ public class HandlerUtils {
           if (ic instanceof CounterColumn) {
             m.put("value", ((CounterColumn) ic).total());
           } else {
-            JsonObject valueMetadata = findColumnMetaData(columnFamily, state, ic.name().duplicate());
-            if (valueMetadata == null){
+            JsonObject valueMetadata = findColumnMetaData(columnFamily, state, ic.name()
+                    .duplicate());
+            if (valueMetadata == null) {
               valueMetadata = findMetaData(columnFamily, state, "value");
             }
-            if (valueMetadata == null){
+            if (valueMetadata == null) {
               valueMetadata = findRangedMetaData(columnFamily, state, ic.name().duplicate());
             }
             if (valueMetadata == null) {
@@ -202,6 +211,7 @@ public class HandlerUtils {
       return meta.getObject(key.toString());
     }
   }
+
   public JsonObject findRangedMetaData(ColumnFamily cf, JsonObject state, ByteBuffer name) {
     StringBuilder key = new StringBuilder();
     key.append(cf.metadata().ksName);
@@ -211,28 +221,29 @@ public class HandlerUtils {
     key.append(ByteBufferUtil.bytesToHex(name));
     String skey = key.toString();
     JsonObject meta = state.getObject("metaRanged");
-    if (meta==null){
+    if (meta == null) {
       return null;
-      //TODO why is this.
+      // TODO why is this.
     }
     Set<String> names = meta.getFieldNames();
-    for (String s: names){
-      //System.out.println("compare "+skey+ " to "+s);
-      if (skey.compareTo(s)>-1){
-        //System.out.println(skey+ " greater then "+s);
+    for (String s : names) {
+      // System.out.println("compare "+skey+ " to "+s);
+      if (skey.compareTo(s) > -1) {
+        // System.out.println(skey+ " greater then "+s);
         JsonObject value = meta.getObject(s);
-        String end = cf.metadata().ksName+' '+cf.metadata().cfName+' '+value.getString("end");
-        //System.out.println("compare "+skey+ " to "+end);
-        if (skey.compareToIgnoreCase(end)<0){
-          //System.out.println("matched!");
+        String end = cf.metadata().ksName + ' ' + cf.metadata().cfName + ' '
+                + value.getString("end");
+        // System.out.println("compare "+skey+ " to "+end);
+        if (skey.compareToIgnoreCase(end) < 0) {
+          // System.out.println("matched!");
           return value;
         }
       }
     }
-    //System.out.println();
+    // System.out.println();
     return null;
   }
-  
+
   public JsonObject findColumnMetaData(ColumnFamily cf, JsonObject state, ByteBuffer name) {
     StringBuilder key = new StringBuilder();
     key.append(cf.metadata().ksName);
@@ -241,13 +252,13 @@ public class HandlerUtils {
     key.append(' ');
     key.append(ByteBufferUtil.bytesToHex(name));
     JsonObject meta = state.getObject("metaColumn");
-    if (meta!=null) {
+    if (meta != null) {
       return meta.getObject(key.toString());
     } else {
       return null;
     }
   }
-  
+
   public void readCf(ColumnFamily columnFamily, JsonObject state, EventBus eb,
           Handler<Message<JsonArray>> filterReplyHandler) {
     JsonArray components = state.getArray("components");
@@ -259,7 +270,7 @@ public class HandlerUtils {
 
         if (components.contains("name")) {
           JsonObject columnMetadata = findMetaData(columnFamily, state, "column");
-         
+
           if (columnMetadata == null) {
             m.put("name", ByteBufferUtil.getArray(column.name()));
           } else {
@@ -271,11 +282,12 @@ public class HandlerUtils {
           if (column instanceof CounterColumn) {
             m.put("value", ((CounterColumn) column).total());
           } else {
-            JsonObject valueMetaData = findColumnMetaData(columnFamily, state, column.name().duplicate());
-            if (valueMetaData == null){
+            JsonObject valueMetaData = findColumnMetaData(columnFamily, state, column.name()
+                    .duplicate());
+            if (valueMetaData == null) {
               valueMetaData = findMetaData(columnFamily, state, "value");
-            } 
-            if (valueMetaData == null){
+            }
+            if (valueMetaData == null) {
               valueMetaData = findRangedMetaData(columnFamily, state, column.name().duplicate());
             }
             if (valueMetaData == null) {
@@ -325,7 +337,7 @@ public class HandlerUtils {
   public JsonObject buildError(Integer id, String errorMessage) {
     return new JsonObject().putString("exception", errorMessage).putNumber("exceptionId", id);
   }
-  
+
   public ByteBuffer byteBufferForObject(Object o) {
     if (o instanceof Object[]) {
       Object[] comp = (Object[]) o;
@@ -354,8 +366,7 @@ public class HandlerUtils {
     } else
       throw new RuntimeException("can not serializer " + o);
   }
-  
-  
+
   public Object resolveObject(Object o) {
     if (o instanceof JsonArray) {
       return ((JsonArray) o).toArray();
@@ -375,15 +386,14 @@ public class HandlerUtils {
         Integer resultRef = (Integer) op.get("resultref");
         String wanted = (String) op.get("wanted");
         /*
-        List referencedResult = (List) res.getOpsRes().get(resultRef);
-        Map result = (Map) referencedResult.get(0);
-        return result.get(wanted);
-        */
+         * List referencedResult = (List) res.getOpsRes().get(resultRef); Map result = (Map)
+         * referencedResult.get(0); return result.get(wanted);
+         */
         return null;
       } else if (isBind(typeAttr)) {
         Integer mark = (Integer) map.get("mark");
         return null;
-        //return state.bindParams.get(mark);
+        // return state.bindParams.get(mark);
       } else {
         throw new IllegalArgumentException("Do not know what todo with " + o);
       }
