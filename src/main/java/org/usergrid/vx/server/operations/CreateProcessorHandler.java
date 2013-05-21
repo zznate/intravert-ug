@@ -3,7 +3,6 @@ package org.usergrid.vx.server.operations;
 import groovy.lang.GroovyClassLoader;
 
 import org.usergrid.vx.experimental.IntraOp;
-import org.usergrid.vx.experimental.IntraState;
 import org.usergrid.vx.experimental.processor.FactoryProvider;
 import org.usergrid.vx.experimental.processor.Processor;
 import org.usergrid.vx.experimental.processor.ProcessorFactory;
