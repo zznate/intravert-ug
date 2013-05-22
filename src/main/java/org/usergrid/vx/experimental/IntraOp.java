@@ -84,7 +84,8 @@ public class IntraOp implements Serializable{
 		EXECUTEPREPARED ,  
 		CREATESCANFILTER,
     NOOP ,
-    SETKEYSPACE
+    SETKEYSPACE,
+    RESULTMODE
   };
 
 }

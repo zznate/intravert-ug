@@ -31,8 +31,8 @@ import java.util.Set;
 @SuppressWarnings("rawtypes")
 public class Operations {
 
-  private static final String KEYSPACE = "keyspace";
-  private static final String COLUMN_FAMILY = "columnfamily";
+  public static final String KEYSPACE = "keyspace";
+  public static final String COLUMN_FAMILY = "columnfamily";
   public static final String ROWKEY = "rowkey";
   public static final String NAME = "name";
   public static final String VALUE = "value";
@@ -50,7 +50,7 @@ public class Operations {
   private static final String PROCESSORNAME = "processorname";
   private static final String PARAMS = "params";
   private static final String INPUT = "input";
-  private static final String ON = "on";
+  public static final String ON = "on";
   private static final String QUERY = "query";
   private static final String VERSION = "version";
   private static final String TRANSPOSE = "transpose";
@@ -286,6 +286,13 @@ public class Operations {
 	
 	public static IntraOp serviceProcess(String name, Map params){
 		return new IntraOp(IntraOp.Type.SERVICEPROCESS).set(NAME, name).set(PARAMS, params);
+	}
+	
+	public static IntraOp resultMode(String ks, String cf, boolean on){
+	  return new IntraOp(IntraOp.Type.RESULTMODE)
+	    .set(Operations.KEYSPACE, ks)
+	    .set(Operations.COLUMN_FAMILY, cf)
+	    .set(Operations.ON, on);
 	}
 	
 	public static IntraOp componentSelect(Set<String> components){

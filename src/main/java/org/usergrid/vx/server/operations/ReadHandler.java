@@ -10,11 +10,8 @@ import org.vertx.java.core.json.JsonObject;
 public class ReadHandler {
 
   private JsonObject params;
-
   private JsonObject state;
-
   private Message<JsonObject> event;
-
   private EventBus eb;
 
   public ReadHandler(Message<JsonObject> event, EventBus eb) {
@@ -27,15 +24,19 @@ public class ReadHandler {
   public void handleRead(ColumnFamily cf) {
     final Integer id = event.body.getInteger("id");
     JsonArray array;
-
     if (cf == null) {
       event.reply(new JsonObject().putArray(id.toString(), new JsonArray()));
     } else {
       String filter = state.getString("currentFilter");
       if (filter == null) {
         array = HandlerUtils.instance.readCf(cf, state, params);
+        JsonObject resultMode = HandlerUtils.instance.getResultMode(state);
         JsonObject response = new JsonObject();
-        response.putArray(id.toString(), array);
+        if (resultMode == null){
+          response.putArray(id.toString(), array);
+        } else {
+          //send to batch handler?
+        }
         event.reply(response);
       } else {
         HandlerUtils.instance.readCf(cf, state, eb, new Handler<Message<JsonArray>>() {

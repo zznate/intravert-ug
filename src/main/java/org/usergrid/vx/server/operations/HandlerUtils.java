@@ -34,6 +34,9 @@ public class HandlerUtils {
   // todo will this be reloadable?
   public static HandlerUtils instance;
   public static Map<String,Filter> filters = new HashMap<String,Filter>();
+  
+  private static final String resultMode = "resultMode";
+  private static final String consistency = "consitency";
   static {
     instance = new HandlerUtils();
   }
@@ -54,8 +57,32 @@ public class HandlerUtils {
     state.putString("currentFilter", filterName);
   }
   
+  public JsonObject getResultMode(JsonObject state){
+    return state.getObject(resultMode);
+  }
   public void deactivateFilter(JsonObject state){
     state.removeField("currentFilter");
+  }
+  
+  public void activateResultMode(JsonObject state, String keyspace, String columnFamily) {
+    state.putObject(resultMode, new JsonObject().putString(Operations.KEYSPACE, keyspace)
+            .putString(Operations.COLUMN_FAMILY, columnFamily));
+  }
+  
+  public void deactivateResultMode(JsonObject state){
+    state.removeField(resultMode);
+  }
+  
+  public void setConsistencyLevel(JsonObject state, String level){
+    state.putString(consistency, level );
+  }
+  
+  public ConsistencyLevel getConsistencyLevel(JsonObject state){
+    String cls = state.getString(consistency);
+    if (cls != null){
+      return ConsistencyLevel.valueOf(cls);
+    }
+    return ConsistencyLevel.ONE;
   }
   
   /*
@@ -266,11 +293,9 @@ public class HandlerUtils {
 
     for (IColumn column : columnFamily) {
       if (column.isLive()) {
-        HashMap m = new HashMap();
-
+        HashMap<String,Object> m = new HashMap<>(4);
         if (components.contains("name")) {
           JsonObject columnMetadata = findMetaData(columnFamily, state, "column");
-
           if (columnMetadata == null) {
             m.put("name", ByteBufferUtil.getArray(column.name()));
           } else {
@@ -312,10 +337,8 @@ public class HandlerUtils {
     eb.send("filters." + filter, array, filterReplyHandler);
   }
 
-  public static void write(List<IMutation> mutations, Message<JsonObject> event, Integer id) {
+  public void write(List<IMutation> mutations, Message<JsonObject> event, Integer id, JsonObject state) {
     try {
-      // We don't want to hard code the consistency level but letting it slide for
-      // since it is also hard coded in IntraState
       StorageProxy.mutate(mutations, ConsistencyLevel.ONE);
 
       event.reply(new JsonObject().putString(id.toString(), "OK"));
