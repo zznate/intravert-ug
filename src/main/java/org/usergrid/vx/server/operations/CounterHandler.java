@@ -30,6 +30,6 @@ public class CounterHandler extends AbstractIntravertHandler {
             Long.parseLong(params.toMap().get("value").toString()));
     List<IMutation> mutations = new ArrayList<IMutation>(1);
     mutations.add(new CounterMutation(rm, HandlerUtils.instance.determineConsistencyLevel(state)));
-    HandlerUtils.write(mutations, event, id);
+    HandlerUtils.instance.write(mutations, event, id, state);
   }
 }

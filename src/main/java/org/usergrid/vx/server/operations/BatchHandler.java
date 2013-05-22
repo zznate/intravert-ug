@@ -37,7 +37,7 @@ public class BatchHandler implements Handler<Message<JsonObject>> {
       }
       mutations.add(rm);
     }
-    HandlerUtils.write(mutations, event, id);
+    HandlerUtils.instance.write(mutations, event, id, state);
   }
 
 }

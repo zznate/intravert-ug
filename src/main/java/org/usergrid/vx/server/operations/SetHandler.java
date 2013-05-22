@@ -32,6 +32,6 @@ public class SetHandler extends AbstractIntravertHandler{
     }
     List<IMutation> mutations = new ArrayList<IMutation>();
     mutations.add(rm);
-    HandlerUtils.write(mutations, event, id);
+    HandlerUtils.instance.write(mutations, event, id, state);
   }
 }
