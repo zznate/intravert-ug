@@ -165,64 +165,11 @@ public class HandlerUtils {
     return ks;
   }
 
-  public JsonArray readCf(ColumnFamily columnFamily, JsonObject state, JsonObject params) {
-    JsonArray components = state.getArray("components");
-    JsonArray array = new JsonArray();
-    Iterator<IColumn> it = columnFamily.iterator();
-    while (it.hasNext()) {
-      IColumn ic = it.next();
-      if (ic.isLive()) {
-        HashMap m = new HashMap();
-        if (components.contains("name")) {
-          JsonObject columnMetadata = findMetaData(columnFamily, state, "column");
-          if (columnMetadata == null) {
-            m.put("name", TypeHelper.getBytes(ic.name()));
-          } else {
-            String clazz = columnMetadata.getString("clazz");
-            Object name = TypeHelper.getTyped(clazz, ic.name());
-            if (name instanceof ByteBuffer) {
-              m.put("name", TypeHelper.getBytes(ic.name()));
-            } else {
-              m.put("name", TypeHelper.getTyped(clazz, ic.name()));
-            }
-          }
-        }
-        if (components.contains("value")) {
-          if (ic instanceof CounterColumn) {
-            m.put("value", ((CounterColumn) ic).total());
-          } else {
-            JsonObject valueMetadata = findColumnMetaData(columnFamily, state, ic.name()
-                    .duplicate());
-            if (valueMetadata == null) {
-              valueMetadata = findMetaData(columnFamily, state, "value");
-            }
-            if (valueMetadata == null) {
-              valueMetadata = findRangedMetaData(columnFamily, state, ic.name().duplicate());
-            }
-            if (valueMetadata == null) {
-              m.put("value", TypeHelper.getBytes(ic.value()));
-            } else {
-              String clazz = valueMetadata.getString("clazz");
-              Object value = TypeHelper.getTyped(clazz, ic.value());
-              if (value instanceof ByteBuffer) {
-                m.put("value", TypeHelper.getBytes(ic.value()));
-              } else {
-                m.put("value", value);
-              }
-            }
-          }
-        }
-        if (components.contains("timestamp")) {
-          m.put("timestamp", ic.timestamp());
-        }
-        if (components.contains("markeddelete")) {
-          m.put("markeddelete", ic.getMarkedForDeleteAt());
-        }
-        array.addObject(new JsonObject(m));
-      }
-    }
-    return array;
+  
+  public JsonArray readCf(ColumnFamily columnFamily, JsonObject state) {
+    return internalCfRead(columnFamily, state);
   }
+  
 
   public JsonObject findMetaData(ColumnFamily cf, JsonObject state, String type) {
     JsonObject meta = state.getObject("meta");
@@ -286,12 +233,12 @@ public class HandlerUtils {
     }
   }
 
-  public void readCf(ColumnFamily columnFamily, JsonObject state, EventBus eb,
-          Handler<Message<JsonArray>> filterReplyHandler) {
+  public JsonArray internalCfRead(ColumnFamily columnFamily, JsonObject state){
     JsonArray components = state.getArray("components");
     JsonArray array = new JsonArray();
-
-    for (IColumn column : columnFamily) {
+    Iterator<IColumn> it = columnFamily.iterator();
+    while (it.hasNext()) {
+      IColumn column = it.next();
       if (column.isLive()) {
         HashMap<String,Object> m = new HashMap<>(4);
         if (components.contains("name")) {
@@ -301,6 +248,12 @@ public class HandlerUtils {
           } else {
             String clazz = columnMetadata.getString("clazz");
             m.put("name", TypeHelper.getTyped(clazz, column.name()));
+            Object name = TypeHelper.getTyped(clazz, column.name());
+            if (name instanceof ByteBuffer) {
+              m.put("name", TypeHelper.getBytes(column.name()));
+            } else {
+              m.put("name", TypeHelper.getTyped(clazz, column.name()));
+            }
           }
         }
         if (components.contains("value")) {
@@ -319,7 +272,12 @@ public class HandlerUtils {
               m.put("value", ByteBufferUtil.getArray(column.value()));
             } else {
               String clazz = valueMetaData.getString("clazz");
-              m.put("value", TypeHelper.getTyped(clazz, column.value()));
+              Object value = TypeHelper.getTyped(clazz, column.value());
+              if (value instanceof ByteBuffer) {
+                m.put("value", TypeHelper.getBytes(column.value()));
+              } else {
+                m.put("value", value);
+              }
             }
           }
         }
@@ -332,7 +290,12 @@ public class HandlerUtils {
         array.addObject(new JsonObject(m));
       }
     }
-
+    return array;
+  }
+  
+  public void readCf(ColumnFamily columnFamily, JsonObject state, EventBus eb,
+          Handler<Message<JsonArray>> filterReplyHandler) {
+    JsonArray array = internalCfRead(columnFamily, state);
     String filter = state.getString("currentFilter");
     eb.send("filters." + filter, array, filterReplyHandler);
   }
