@@ -13,6 +13,8 @@ public class ResultModeHandler extends AbstractIntravertHandler {
    */
   @Override
   public void handleUser(Message<JsonObject> event) {
+    System.out.println("result mode"+event.body);
+    Integer id = event.body.getInteger("id");
     JsonObject params = event.body.getObject(Operations.OP);
     JsonObject state = event.body.getObject(Operations.STATE);
     boolean on = params.getBoolean(Operations.ON);
@@ -21,6 +23,8 @@ public class ResultModeHandler extends AbstractIntravertHandler {
     } else {
       HandlerUtils.instance.deactivateResultMode(state);
     }
+    event.reply(new JsonObject().putString(id.toString(), Operations.OK)
+            .putObject(Operations.STATE, state));
   }
 
 }

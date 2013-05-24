@@ -4,19 +4,20 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.usergrid.vx.client.IntraClient2;
 
+@Ignore
 @RunWith(CassandraRunner.class)
 @RequiresKeyspace(ksName = "rmks")
 @RequiresColumnFamily(ksName = "rmks", cfName = "rmcf")
 public class ResultModeITest {
 
-  @Ignore
+  
   @Test
   @RequiresColumnFamily(ksName = "rmks", cfName = "rmcf")
-  
   public void filterTest() throws Exception {
     
     IntraReq preq = new IntraReq();

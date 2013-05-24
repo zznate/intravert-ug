@@ -72,6 +72,7 @@ public class Operations {
   public static final String TTL = "ttl";
   public static final String TIMESTAMP = "timestamp";
   public static final String AUTOTIMESTAMP = "autotimestamp";
+  public static final String OK = "OK";
   
   private Operations() {}
 
