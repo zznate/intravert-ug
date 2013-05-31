@@ -18,9 +18,9 @@ public class CreateKeyspaceHandler extends AbstractIntravertHandler {
 
     @Override
     public void handleUser(Message<JsonObject> event) {
-        JsonObject params = event.body.getObject("op");
-        Integer id = event.body.getInteger("id");
-        JsonObject state = event.body.getObject("state");
+        JsonObject params = event.body().getObject("op");
+        Integer id = event.body().getInteger("id");
+        JsonObject state = event.body().getObject("state");
         String keyspace = params.getString("name");
         int replication = params.getInteger("replication");
 

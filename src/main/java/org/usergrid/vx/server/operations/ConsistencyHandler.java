@@ -10,9 +10,9 @@ public class ConsistencyHandler extends AbstractIntravertHandler {
 
 	@Override
 	public void handleUser(Message<JsonObject> event) {
-		Integer id = event.body.getInteger("id");
-		JsonObject params = event.body.getObject(Operations.OP);
-		JsonObject state = event.body.getObject(Operations.STATE);
+		Integer id = event.body().getInteger("id");
+		JsonObject params = event.body().getObject(Operations.OP);
+		JsonObject state = event.body().getObject(Operations.STATE);
 		HandlerUtils.instance.setConsistencyLevel(state, params.getString("level"));	
 		event.reply(new JsonObject().putString(id.toString(), "OK").putObject(
 				Operations.STATE, state));

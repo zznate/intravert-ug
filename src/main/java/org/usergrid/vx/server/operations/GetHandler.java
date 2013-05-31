@@ -27,9 +27,9 @@ public class GetHandler implements Handler<Message<JsonObject>> {
 
   @Override
   public void handle(final Message<JsonObject> event) {
-    final Integer id = event.body.getInteger("id");
-    JsonObject params = event.body.getObject("op");
-    JsonObject state = event.body.getObject("state");
+    final Integer id = event.body().getInteger("id");
+    JsonObject params = event.body().getObject("op");
+    JsonObject state = event.body().getObject("state");
 
     Map<String, Object> paramsMap = params.toMap();
     Object rowKeyParam = paramsMap.get("rowkey");

@@ -12,9 +12,9 @@ public class CreateColumnFamilyHandler implements Handler<Message<JsonObject>> {
 
     @Override
     public void handle(Message<JsonObject> event) {
-        JsonObject params = event.body.getObject("op");
-        Integer id = event.body.getInteger("id");
-        JsonObject state = event.body.getObject("state");
+        JsonObject params = event.body().getObject("op");
+        Integer id = event.body().getInteger("id");
+        JsonObject state = event.body().getObject("state");
         JsonObject response = new JsonObject();
         String cf = params.getString("name");
         CfDef def = new CfDef();

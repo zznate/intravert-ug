@@ -27,8 +27,8 @@ public class NoMatchHandler implements Handler<HttpServerRequest>{
 
   @Override
   public void handle(HttpServerRequest request) {
-    logger.error("no matching endpoint for "+ request.uri);
-    request.response.end("No Matching Endpoint.");
+    logger.error("no matching endpoint for "+ request.uri());
+    request.response().end("No Matching Endpoint.");
   }
 
 }

@@ -25,13 +25,13 @@ public abstract class IntraHandlerRest extends IntraHandlerBase {
   @Override
   public void handleRequestAsync(final HttpServerRequest request, Buffer buffer) {
     IntraReq req = new IntraReq();
-    if (request.method.equals("GET")) {
+    if (request.method().equals("GET")) {
       handleGet(request, buffer, req);
-    } else if (request.method.equals("POST")) {
+    } else if (request.method().equals("POST")) {
       handlePost(request, buffer, req);
-    } else if (request.method.equals("DELETE")) {
+    } else if (request.method().equals("DELETE")) {
       handleDelete(request, buffer, req);
-    } else if (request.method.equals("PUT")) {
+    } else if (request.method().equals("PUT")) {
       handlePut(request, buffer, req);
     }    
     delegateAndReply(request, req);
@@ -41,7 +41,7 @@ public abstract class IntraHandlerRest extends IntraHandlerBase {
     vertx.eventBus().send("request.json", req.toJson(), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> event) {
-        request.response.end(event.body.toString());
+        request.response().end(event.body().toString());
       }
     });
   }

@@ -39,7 +39,7 @@ public class IntravertRestUtils {
    * @return The level specified by the header or ONE according to the conditions defined above.
    */
   public static ConsistencyLevel fromHeader(HttpServerRequest request) {
-    if (request.headers().containsKey(CONSISTENCY_LEVEL_HEADER)) {
+    if (request.headers().contains(CONSISTENCY_LEVEL_HEADER)) {
       try {
         return ConsistencyLevel.valueOf(request.headers().get(CONSISTENCY_LEVEL_HEADER));
       } catch (IllegalArgumentException iae) {

@@ -29,7 +29,7 @@ public class PayloadRoutingHandler implements Handler<Message<JsonObject>> {
   @Override
   public void handle(Message<JsonObject> event) {
     AtomicInteger idGenerator = new AtomicInteger(0);
-    JsonArray operations = event.body.getArray(Operations.E);
+    JsonArray operations = event.body().getArray(Operations.E);
     JsonObject operation = (JsonObject) operations.get(idGenerator.get());
     operation.putNumber(Operations.ID, idGenerator.get());
     operation.putObject(Operations.STATE, new JsonObject().putArray(Operations.COMPONENTS,

@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.usergrid.vx.client.IntraClient2;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.SimpleHandler;
+
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.eventbus.Message;
@@ -38,6 +38,7 @@ import org.vertx.java.core.http.HttpClientRequest;
 import org.vertx.java.core.http.HttpClientResponse;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
+import org.vertx.java.platform.PlatformLocator;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -50,19 +51,28 @@ import static java.util.Arrays.asList;
 @RunWith(CassandraRunner.class)
 @RequiresKeyspace(ksName = "myks")
 @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
+
 public class RawJsonITest {
 
+    public static final String CONTENT_LENGTH="content-length";
     private static Logger logger = LoggerFactory.getLogger(IntraClient2.class);
     private static Vertx vertx;
     private HttpClient httpClient;
 
     @Before
     public void setup() {
-        vertx = Vertx.newVertx();
+        vertx = PlatformLocator.factory.createPlatformManager().vertx();
         this.httpClient = vertx.createHttpClient().setHost("localhost")
             .setPort(8080).setMaxPoolSize(1).setKeepAlive(true);
     }
 
+    private void assertJSONEquals(String msg, String expected, String actual) throws Exception {
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode expectedJson = mapper.readTree(expected);
+      JsonNode actualJson = mapper.readTree(actual);
+
+      Assert.assertEquals(msg, expectedJson, actualJson);
+  }
     //@Test
     public void createKeyspaceViaCQL() throws Exception {
         String json = loadJSON("create_keyspace_cql.json");
@@ -125,15 +135,15 @@ public class RawJsonITest {
         final HttpClientRequest setReq = httpClient.request("POST", "/intravert/intrareq-json", new Handler<HttpClientResponse>() {
             @Override
             public void handle(HttpClientResponse resp) {
-                resp.endHandler(new SimpleHandler() {
+                resp.endHandler(new Handler<Void>() {
                     @Override
-                    protected void handle() {
+                    public void handle(Void v) {
                     }
                 });
             }
         });
 
-        setReq.putHeader("content-length", insertColumnsJSON.length());
+        setReq.putHeader(CONTENT_LENGTH, String.valueOf(insertColumnsJSON.length()));
         setReq.write(insertColumnsJSON);
         setReq.end();
 
@@ -150,15 +160,18 @@ public class RawJsonITest {
                         }
                     });
 
-                    resp.endHandler(new SimpleHandler() {
-                        @Override
-                        protected void handle() {
-                            doneSignal.countDown();
-                        }
+                    resp.endHandler(new Handler<Void>() {
+
+                      @Override
+                      public void handle(Void arg0) {
+                          doneSignal.countDown();  
+                      }
+                     
+                      
                     });
                 }
             });
-        getReq.putHeader("content-length", getrefJSON.length());
+        getReq.putHeader(CONTENT_LENGTH, getrefJSON.length()+"");
         getReq.write(getrefJSON);
         getReq.end();
         doneSignal.await();
@@ -168,7 +181,7 @@ public class RawJsonITest {
 
         assertJSONEquals("Failed to set column using GETREF", expectedResponse, actualResponse);
     }
-
+ 
     @Test
     public void filterColumnSlice() throws Exception {
         String insertBeersJSON = loadJSON("insert_beers.json");
@@ -176,15 +189,15 @@ public class RawJsonITest {
         final HttpClientRequest setReq = httpClient.request("POST", "/intravert/intrareq-json", new Handler<HttpClientResponse>() {
             @Override
             public void handle(HttpClientResponse resp) {
-                resp.endHandler(new SimpleHandler() {
+                resp.endHandler(new Handler<Void>() {
                     @Override
-                    protected void handle() {
+                    public void handle(Void v) {
                     }
                 });
             }
         });
 
-        setReq.putHeader("content-length", insertBeersJSON.length());
+        setReq.putHeader("content-length", insertBeersJSON.length()+"");
         setReq.write(insertBeersJSON);
         setReq.end();
 
@@ -201,15 +214,15 @@ public class RawJsonITest {
                         }
                     });
 
-                    resp.endHandler(new SimpleHandler() {
+                    resp.endHandler(new Handler<Void>() {
                         @Override
-                        protected void handle() {
+                        public void handle(Void d) {
                             doneSignal.countDown();
                         }
                     });
                 }
             });
-        getReq.putHeader("content-length", getBeersJSON.length());
+        getReq.putHeader("content-length", String.valueOf(getBeersJSON.length()));
         getReq.write(getBeersJSON);
         getReq.end();
         doneSignal.await();
@@ -227,15 +240,15 @@ public class RawJsonITest {
         final HttpClientRequest setReq = httpClient.request("POST", "/intravert/intrareq-json", new Handler<HttpClientResponse>() {
             @Override
             public void handle(HttpClientResponse resp) {
-                resp.endHandler(new SimpleHandler() {
+                resp.endHandler(new Handler<Void>() {
                     @Override
-                    protected void handle() {
+                    public void handle(Void v) {
                     }
                 });
             }
         });
 
-        setReq.putHeader("content-length", insertBeersJSON.length());
+        setReq.putHeader("content-length", insertBeersJSON.length()+"");
         setReq.write(insertBeersJSON);
         setReq.end();
 
@@ -252,15 +265,15 @@ public class RawJsonITest {
                         }
                     });
 
-                    resp.endHandler(new SimpleHandler() {
+                    resp.endHandler(new Handler<Void>() {
                         @Override
-                        protected void handle() {
+                        public void handle(Void v) {
                             doneSignal.countDown();
                         }
                     });
                 }
             });
-        getReq.putHeader("content-length", getBeersJSON.length());
+        getReq.putHeader("content-length", getBeersJSON.length()+"");
         getReq.write(getBeersJSON);
         getReq.end();
         doneSignal.await();
@@ -350,7 +363,7 @@ public class RawJsonITest {
                     e.printStackTrace();
                 }
 
-                Integer id = event.body.getInteger("id");
+                Integer id = event.body().getInteger("id");
                 event.reply(new JsonObject((Map) ImmutableMap.of(id.toString(), "OK")));
             }
         });
@@ -386,7 +399,7 @@ public class RawJsonITest {
           e.printStackTrace();
         }
 
-        Integer id = event.body.getInteger("id");
+        Integer id = event.body().getInteger("id");
         event.reply(new JsonObject((Map) ImmutableMap.of(id.toString(), "OK")));
       }
     });
@@ -447,14 +460,14 @@ public class RawJsonITest {
         }
     }
 
-    /**
-     * Submits an HTTP request with <code>json</code> as the request body. This method will
-     * block until the request has been fully processed and the response is received.
-     *
-     * @param json The request body
-     * @return The results of the operations specified by the json argument
-     * @throws InterruptedException
-     */
+    //
+     // Submits an HTTP request with <code>json</code> as the request body. This method will
+     // block until the request has been fully processed and the response is received.
+     //
+     // @param json The request body
+     // @return The results of the operations specified by the json argument
+     // @throws InterruptedException
+     //
     private String submitRequest(String json) throws InterruptedException {
         final Buffer data = new Buffer();
         final CountDownLatch doneSignal = new CountDownLatch(1);
@@ -468,16 +481,16 @@ public class RawJsonITest {
                     }
                 });
 
-                resp.endHandler(new SimpleHandler() {
+                resp.endHandler(new Handler<Void>() {
                     @Override
-                    protected void handle() {
+                    public void handle(Void d) {
                         doneSignal.countDown();
                     }
                 });
             }
         });
 
-        setReq.putHeader("content-length", json.length());
+        setReq.putHeader("content-length", json.length()+"");
         setReq.write(json);
         setReq.end();
         doneSignal.await();
@@ -485,11 +498,6 @@ public class RawJsonITest {
         return data.toString();
     }
 
-    private void assertJSONEquals(String msg, String expected, String actual) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode expectedJson = mapper.readTree(expected);
-        JsonNode actualJson = mapper.readTree(actual);
-
-        Assert.assertEquals(msg, expectedJson, actualJson);
-    }
+  
 }
+

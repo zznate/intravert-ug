@@ -28,8 +28,8 @@ public class CreateProcessorHandler implements Handler<Message<JsonObject>>{
 
   @Override
   public void handle(Message<JsonObject> event) {
-    Integer id = event.body.getInteger("id");
-    JsonObject params = event.body.getObject("op");
+    Integer id = event.body().getInteger("id");
+    JsonObject params = event.body().getObject("op");
     String name = params.getString("name");
     String lang = params.getString("spec");
     String scriptSource = params.getString("value");

@@ -18,7 +18,7 @@ public class ListKeyspacesHandler implements Handler<Message<JsonObject>> {
   public void handle(Message<JsonObject> event) {
     log.debug("in ListKeyspaceHandler#handle");
 
-    Integer id = event.body.getInteger("id");
+    Integer id = event.body().getInteger("id");
 
     JsonObject response = new JsonObject().putArray(id.toString(), new JsonArray((List)Schema.instance.getNonSystemTables()));
 

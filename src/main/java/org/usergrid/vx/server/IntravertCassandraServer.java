@@ -29,6 +29,7 @@ import org.usergrid.vx.handler.http.rest.SystemMetaHandler;
 import org.usergrid.vx.server.operations.*;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.http.RouteMatcher;
+import org.vertx.java.platform.PlatformLocator;
 
 public class IntravertCassandraServer implements CassandraDaemon.Server {
   private static final int PORT = 8080;
@@ -47,7 +48,8 @@ public class IntravertCassandraServer implements CassandraDaemon.Server {
   @Override
   public void start() {
     logger.info("Starting IntravertCassandraServer with base path {}", basePath);
-    vertx = Vertx.newVertx();
+    PlatformLocator pl = new PlatformLocator();
+    vertx = pl.factory.createPlatformManager().vertx();
     rm = new RouteMatcher();
     // TODO Should we use a single instance of HelloHandler here?
     rm.put(String.format("%s/hello", basePath), new HelloHandler());

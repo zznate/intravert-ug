@@ -8,10 +8,10 @@ public class SetColumnFamilyHandler implements Handler<Message<JsonObject>> {
 
     @Override
     public void handle(Message<JsonObject> event) {
-        Integer id = event.body.getInteger("id");
-        JsonObject params = event.body.getObject("op");
+        Integer id = event.body().getInteger("id");
+        JsonObject params = event.body().getObject("op");
 
-        JsonObject state = event.body.getObject("state");
+        JsonObject state = event.body().getObject("state");
         state.putString("currentColumnFamily", params.getString("columnfamily"));
 
         event.reply(new JsonObject()

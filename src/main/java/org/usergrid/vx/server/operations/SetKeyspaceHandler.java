@@ -8,9 +8,9 @@ public class SetKeyspaceHandler implements Handler<Message<JsonObject>> {
 
     @Override
     public void handle(Message<JsonObject> event) {
-        Integer id = event.body.getInteger("id");
-        JsonObject params = event.body.getObject("op");
-        JsonObject state = event.body.getObject("state");
+        Integer id = event.body().getInteger("id");
+        JsonObject params = event.body().getObject("op");
+        JsonObject state = event.body().getObject("state");
         state.putString("currentKeyspace", HandlerUtils.instance.determineKs(params, state, null));
 
         event.reply(new JsonObject()

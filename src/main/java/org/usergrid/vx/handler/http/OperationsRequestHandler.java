@@ -52,8 +52,8 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
 
     Integer currentId = idGenerator.get();
     Integer opId = currentId - 1;
-    String exceptionId = event.body.getString(Operations.EXCEPTION_ID);
-    String exception = event.body.getString(Operations.EXCEPTION);
+    String exceptionId = event.body().getString(Operations.EXCEPTION_ID);
+    String exception = event.body().getString(Operations.EXCEPTION);
     
     if (exception != null || exceptionId != null) {      
       results.putString(Operations.EXCEPTION, exception);
@@ -62,7 +62,7 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
       return;
     }
 
-    Map<String, Object> map = event.body.toMap();
+    Map<String, Object> map = event.body().toMap();
     Object opResult = map.get(String.valueOf(opId));
     String userId = ((JsonObject) operations.get(opId)).getObject(Operations.OP).getString(Operations.USER_OP_ID)  ;
     if (userId == null){
@@ -97,8 +97,8 @@ public class OperationsRequestHandler implements Handler<Message<JsonObject>> {
     if (idGenerator.get() < operations.size()) {
       JsonObject operation = (JsonObject) operations.get(idGenerator.get());
       operation.putNumber(Operations.ID, idGenerator.get());
-      if (event.body.getObject(Operations.STATE) != null) {
-        state.mergeIn(event.body.getObject(Operations.STATE));
+      if (event.body().getObject(Operations.STATE) != null) {
+        state.mergeIn(event.body().getObject(Operations.STATE));
       }
       operation.putObject(Operations.STATE, state.copy()); 
       idGenerator.incrementAndGet();

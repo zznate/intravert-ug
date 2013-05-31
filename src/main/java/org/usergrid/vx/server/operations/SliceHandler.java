@@ -27,9 +27,9 @@ public class SliceHandler extends AbstractIntravertHandler {
 
   @Override
   public void handleUser(final Message<JsonObject> event) {
-    final Integer id = event.body.getInteger("id");
-    JsonObject params = event.body.getObject("op");
-    JsonObject state = event.body.getObject("state");
+    final Integer id = event.body().getInteger("id");
+    JsonObject params = event.body().getObject("op");
+    JsonObject state = event.body().getObject("state");
     Map<String, Object> paramsMap = params.toMap();
     Object rowKeyParam = paramsMap.get("rowkey");
     Object startParam = paramsMap.get("start");

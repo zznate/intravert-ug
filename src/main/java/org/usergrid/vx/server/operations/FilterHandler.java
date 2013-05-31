@@ -21,7 +21,7 @@ public class FilterHandler implements Handler<Message<JsonArray>> {
   public void handle(Message<JsonArray> event) {
     JsonArray filteredArray = new JsonArray();
     Context context = Context.enter();
-    for (Object obj : event.body) {
+    for (Object obj : event.body()) {
       JsonObject jsonObject = (JsonObject) obj;
       Map filtered = filter.filter(jsonObject.toMap());
       if (filtered != null) {

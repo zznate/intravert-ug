@@ -15,9 +15,9 @@ public class SetHandler extends AbstractIntravertHandler{
 
   @Override
   public void handleUser(Message<JsonObject> event) {
-    Integer id = event.body.getInteger(Operations.ID);
-    JsonObject params = event.body.getObject(Operations.OP);
-    JsonObject state = event.body.getObject(Operations.STATE);
+    Integer id = event.body().getInteger(Operations.ID);
+    JsonObject params = event.body().getObject(Operations.OP);
+    JsonObject state = event.body().getObject(Operations.STATE);
     RowMutation rm = new RowMutation(HandlerUtils.instance.determineKs(params, state, null),
             HandlerUtils.instance.byteBufferForObject(params.getField(Operations.ROWKEY)));
     QueryPath qp = new QueryPath(HandlerUtils.instance.determineCf(params, state, null), null,

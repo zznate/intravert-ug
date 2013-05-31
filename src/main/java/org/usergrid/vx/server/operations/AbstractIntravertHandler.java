@@ -10,7 +10,7 @@ public abstract class AbstractIntravertHandler implements Handler<Message<JsonOb
   public void handle(Message<JsonObject> event) {
     Integer id = null;
     try {
-      id = event.body.getInteger("id");
+      id = event.body().getInteger("id");
       handleUser(event);
     } catch (Exception ex){
       String message = ex.getMessage() ==null ? "Exception "+id : ex.getMessage() ;

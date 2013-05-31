@@ -19,16 +19,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.SimpleHandler;
+
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpClientRequest;
 import org.vertx.java.core.http.HttpClientResponse;
+import org.vertx.java.platform.PlatformLocator;
+
 
 public class NoMatchClient implements Handler<HttpClientResponse> {
   @SuppressWarnings("unused")
-  private static Logger logger = LoggerFactory.getLogger(HelloClient.class);
+  private static Logger logger = LoggerFactory.getLogger(NoMatchClient.class);
   private static Vertx vertx;
   private HttpClient httpClient;
 
@@ -38,17 +40,18 @@ public class NoMatchClient implements Handler<HttpClientResponse> {
   }
 
   public NoMatchClient(){
-    vertx = Vertx.newVertx();
+    vertx = new PlatformLocator().factory.createPlatformManager().vertx();
     this.httpClient = vertx.createHttpClient().setHost("localhost").setPort(8080).setMaxPoolSize(1).setKeepAlive(true);
   }
 
   public void post(){
     HttpClientRequest req = httpClient.request("POST", "/intravert/wrtwrtrwt", this);
     String value ="";
-    req.putHeader("content-length", value.length());
+    req.putHeader("content-length", String.valueOf(value.length()));
     req.write(value);
-    req.exceptionHandler(new Handler<Exception>(){
-      public void handle(Exception arg0) {
+    
+    req.exceptionHandler(new Handler<Throwable>(){
+      public void handle(Throwable arg0) {
         System.out.println("Something went wrong in client "+arg0);
       }
     });
@@ -62,8 +65,8 @@ public class NoMatchClient implements Handler<HttpClientResponse> {
 
   @Override
   public void handle(HttpClientResponse response) {
-    response.endHandler(new SimpleHandler() {
-      public void handle() {
+    response.endHandler(new Handler<Void>() {
+      public void handle(Void v) {
         System.out.println("This is the end. My only friend, the end.");
       }
     });

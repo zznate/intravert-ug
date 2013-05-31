@@ -23,9 +23,9 @@ public class AssumeHandler extends AbstractIntravertHandler {
 
   @Override
   public void handleUser(Message<JsonObject> event) {
-    Integer id = event.body.getInteger("id");
-    JsonObject params = event.body.getObject("op");
-    JsonObject state = event.body.getObject("state");
+    Integer id = event.body().getInteger("id");
+    JsonObject params = event.body().getObject("op");
+    JsonObject state = event.body().getObject("state");
     JsonObject meta = state.getObject("meta");
     JsonObject metaColumn = state.getObject("metaColumn");
     JsonObject metaRanged = state.getObject("metaRanged");
