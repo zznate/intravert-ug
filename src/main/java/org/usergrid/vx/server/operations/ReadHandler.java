@@ -20,13 +20,13 @@ public class ReadHandler {
 
   public ReadHandler(Message<JsonObject> event, EventBus eb) {
     this.event = event;
-    params = event.body.getObject("op");
-    state = event.body.getObject("state");
+    params = event.body().getObject("op");
+    state = event.body().getObject("state");
     this.eb = eb;
   }
 
   public void handleRead(ColumnFamily cf) {
-    final Integer id = event.body.getInteger("id");
+    final Integer id = event.body().getInteger("id");
     JsonArray array;
     final JsonObject resultMode = HandlerUtils.instance.getResultMode(state);
     if (cf == null) {
@@ -51,16 +51,16 @@ public class ReadHandler {
           public void handle(final Message<JsonArray> filterEvent) {
             
             if (resultMode == null){
-              event.reply(new JsonObject().putArray(id.toString(), filterEvent.body));
+              event.reply(new JsonObject().putArray(id.toString(), filterEvent.body()));
             } else {
               JsonObject obj = new JsonObject();
-              obj.putObject(Operations.OP, new JsonObject().putArray("rows", filterEvent.body) );
+              obj.putObject(Operations.OP, new JsonObject().putArray("rows", filterEvent.body()) );
               obj.putObject(Operations.STATE, state);
               obj.putNumber(Operations.ID, 999);
               eb.send("operations.batchset", obj, new Handler<Message<JsonObject>>(){
                 @Override
                 public void handle(Message<JsonObject> arg0) {
-                  event.reply(new JsonObject().putArray(id.toString(), filterEvent.body));
+                  event.reply(new JsonObject().putArray(id.toString(), filterEvent.body()));
                 }
               });
             }

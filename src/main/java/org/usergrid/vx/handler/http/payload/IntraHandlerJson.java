@@ -30,7 +30,7 @@ import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.http.HttpServerRequest;
 import org.vertx.java.core.json.JsonObject;
 
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 
 /**
  * The handler is the main entry point for processing the Intravert
@@ -85,8 +85,8 @@ public class IntraHandlerJson implements IntraHandler {
               req.toJson(),
               new IHResponse(request));
     } catch (Exception e) {
-      request.response.statusCode = BAD_REQUEST.getCode();
-      request.response.end(ExceptionUtils.getFullStackTrace(e));
+      request.response().setStatusCode(404);
+      request.response().end(ExceptionUtils.getFullStackTrace(e));
     }
   }
 
@@ -103,9 +103,9 @@ public class IntraHandlerJson implements IntraHandler {
       if ( logger.isDebugEnabled()) {
         logger.debug("in IntraHanlderJson's on handler topic {} with event {}",
                 PayloadRoutingHandler.IHJSON_HANDLER_TOPIC,
-                event.body.toString() );
+                event.body().toString() );
       }
-      request.response.end(event.body.toString());
+      request.response().end(event.body().toString());
     }
   }
 

@@ -21,12 +21,12 @@ public class ServiceProcessorHandler implements Handler<Message<JsonObject>> {
   @Override
   public void handle(Message<JsonObject> event) {
     Integer id = null;
-    JsonObject state = event.body.getObject("state");
+    JsonObject state = event.body().getObject("state");
     String res = "OK";
     try {
-      id = event.body.getInteger("id");
+      id = event.body().getInteger("id");
       JsonObject response = new JsonObject();
-      sp.process(event.body, event.body.getObject("state"), response , eb);
+      sp.process(event.body(), event.body().getObject("state"), response , eb);
       
       event.reply(
               new JsonObject().putString(id.toString(), response.getString("status"))

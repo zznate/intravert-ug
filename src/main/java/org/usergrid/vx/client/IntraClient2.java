@@ -7,12 +7,12 @@ import org.slf4j.LoggerFactory;
 import org.usergrid.vx.experimental.IntraReq;
 import org.usergrid.vx.experimental.IntraRes;
 import org.vertx.java.core.Handler;
-import org.vertx.java.core.SimpleHandler;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpClient;
 import org.vertx.java.core.http.HttpClientRequest;
 import org.vertx.java.core.http.HttpClientResponse;
+import org.vertx.java.platform.PlatformLocator;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -34,7 +34,7 @@ public class IntraClient2 {
 	private Transport transport;
 	
 	public IntraClient2(String host,int port){
-		vertx = Vertx.newVertx();
+		vertx = PlatformLocator.factory.createPlatformManager().vertx();
 		httpClient = vertx.createHttpClient().setHost(host)
 				.setPort(port).setMaxPoolSize(10).setKeepAlive(true);
 		setTransport(Transport.JSON);
@@ -84,17 +84,17 @@ public class IntraClient2 {
 							}
 						});
 
-						resp.endHandler(new SimpleHandler() {
-							@Override
-							protected void handle() {
-								doneSignal.countDown();
-							}
+						resp.endHandler(new Handler<Void>() {
+              @Override
+              public void handle(Void arg0) {
+                doneSignal.countDown();        
+              }
 						});
 
 					}
 				});
 		
-		req.putHeader(CONTENT_LENGTH, outRequest.length());
+		req.putHeader(CONTENT_LENGTH, outRequest.length()+"");
 		req.end(outRequest);
 		doneSignal.await();
     return mapper.readValue(buffer.getBytes(), IntraRes.class);

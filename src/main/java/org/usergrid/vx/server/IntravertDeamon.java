@@ -16,14 +16,15 @@
 package org.usergrid.vx.server;
 
 import org.apache.cassandra.service.CassandraDaemon;
-import org.apache.cassandra.thrift.ThriftServer;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+import io.netty.util.internal.logging.InternalLoggerFactory;
+import io.netty.util.internal.logging.Slf4JLoggerFactory;
+
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 public class IntravertDeamon extends CassandraDaemon {
 
@@ -36,6 +37,7 @@ public class IntravertDeamon extends CassandraDaemon {
   private static String basePath = DEF_BASE_PATH;
 
 	public static void main(String[] args) {
+	  //TODO is this what we want for prod??
 		System.setProperty("cassandra-foreground", "true");
 		System.setProperty("log4j.defaultInitOverride", "true");
 		System.setProperty("log4j.configuration", "log4j.properties");

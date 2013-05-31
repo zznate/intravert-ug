@@ -40,7 +40,7 @@ import org.vertx.java.core.Vertx;
 @RequiresColumnFamily(ksName = "myks", cfName = "mycf")
 public class PerfTestingITest {
 	
-	  Vertx x = Vertx.newVertx();
+
 
 	@Test
 	@RequiresColumnFamily(ksName = "myks", cfName = "mycf")

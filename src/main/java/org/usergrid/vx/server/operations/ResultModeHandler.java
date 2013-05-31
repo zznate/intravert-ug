@@ -13,10 +13,10 @@ public class ResultModeHandler extends AbstractIntravertHandler {
    */
   @Override
   public void handleUser(Message<JsonObject> event) {
-    System.out.println("result mode"+event.body);
-    Integer id = event.body.getInteger("id");
-    JsonObject params = event.body.getObject(Operations.OP);
-    JsonObject state = event.body.getObject(Operations.STATE);
+    System.out.println("result mode"+event.body());
+    Integer id = event.body().getInteger("id");
+    JsonObject params = event.body().getObject(Operations.OP);
+    JsonObject state = event.body().getObject(Operations.STATE);
     boolean on = params.getBoolean(Operations.ON);
     if (on) {
       HandlerUtils.instance.activateResultMode(state, params.getString(Operations.KEYSPACE), params.getString(Operations.COLUMN_FAMILY));

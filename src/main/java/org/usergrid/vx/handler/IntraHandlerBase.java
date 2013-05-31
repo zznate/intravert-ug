@@ -6,7 +6,8 @@ import org.vertx.java.core.Vertx;
 import org.vertx.java.core.buffer.Buffer;
 import org.vertx.java.core.http.HttpServerRequest;
 
-import static org.jboss.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
+
 
 /**
  * Base class which uses {@link #handle(org.vertx.java.core.http.HttpServerRequest)}
@@ -34,8 +35,8 @@ public abstract class IntraHandlerBase implements IntraHandler {
       });
 
     } catch (Exception e) {
-      request.response.statusCode = BAD_REQUEST.getCode();
-      request.response.end(ExceptionUtils.getFullStackTrace(e));
+      request.response().setStatusCode( 404 );
+      request.response().end(ExceptionUtils.getFullStackTrace(e));
     }
   }
 

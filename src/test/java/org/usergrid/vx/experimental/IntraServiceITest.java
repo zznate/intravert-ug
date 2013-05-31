@@ -46,7 +46,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.usergrid.vx.client.IntraClient2;
 import org.vertx.java.core.Vertx;
-import org.vertx.java.core.http.impl.ws.Base64;
+
+import com.hazelcast.util.Base64;
+
 
 @RunWith(CassandraRunner.class)
 @RequiresKeyspace(ksName = "myks")
@@ -56,7 +58,7 @@ public class IntraServiceITest {
 
   private Logger logger = LoggerFactory.getLogger(IntraServiceITest.class);
 
-  Vertx x = Vertx.newVertx();
+  
 
   @DataLoader(dataset = "mydata.txt")
   @Test
@@ -228,7 +230,7 @@ public class IntraServiceITest {
     Assert.assertEquals(2, x.get(0).get("value"));
     x = (List<Map>) res.getOpsRes().get("9");
     String value = (String) x.get(2).get("value");
-    ByteBuffer bytes = ByteBuffer.wrap(Base64.decode(value));
+    ByteBuffer bytes = ByteBuffer.wrap(Base64.decode(value.getBytes()));
     // Assert.assertEquals( 2, ((ByteBuffer)x.get(2).get("value")).getInt() );
     Assert.assertEquals(new Integer(2), Int32Type.instance.compose(bytes));
   }

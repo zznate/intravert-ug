@@ -19,9 +19,9 @@ public class MultiProcessorHandler implements Handler<Message<JsonObject>> {
   
   @Override
   public void handle(Message<JsonObject> event) {
-    Integer id = event.body.getInteger("id");
-    Map params = event.body.getObject("mpparams").toMap();
-    Map mpres = event.body.getObject("mpres").toMap();
+    Integer id = event.body().getInteger("id");
+    Map params = event.body().getObject("mpparams").toMap();
+    Map mpres = event.body().getObject("mpres").toMap();
     List<Map> results = p.multiProcess(mpres, params);
     JsonArray ja = new JsonArray();
     for (Map result: results){

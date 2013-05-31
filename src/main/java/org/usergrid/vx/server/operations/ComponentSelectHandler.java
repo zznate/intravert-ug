@@ -13,9 +13,9 @@ public class ComponentSelectHandler implements Handler<Message<JsonObject>>{
   
   @Override
   public void handle(Message<JsonObject> event) {
-    Integer id = event.body.getInteger("id");
-    JsonObject params = event.body.getObject("op");
-    JsonObject state = event.body.getObject("state");
+    Integer id = event.body().getInteger("id");
+    JsonObject params = event.body().getObject("op");
+    JsonObject state = event.body().getObject("state");
     state.putArray("components", params.getArray("components"));
     event.reply(new JsonObject()
         .putString(id.toString(), "OK")

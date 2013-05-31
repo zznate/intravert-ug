@@ -21,10 +21,10 @@ public class ListColumnFamilyHandler  implements Handler<Message<JsonObject>> {
   public void handle(Message<JsonObject> event) {
     log.debug("in ListColumnFamilyHandler#handle");
 
-    Integer id = event.body.getInteger("id");
+    Integer id = event.body().getInteger("id");
 
-    JsonObject params = event.body.getObject("op");
-    JsonObject state = event.body.getObject("state");
+    JsonObject params = event.body().getObject("op");
+    JsonObject state = event.body().getObject("state");
 
     String keyspace = HandlerUtils.instance.determineKs(params, state, null);
     if (StringUtils.isBlank(keyspace)) {

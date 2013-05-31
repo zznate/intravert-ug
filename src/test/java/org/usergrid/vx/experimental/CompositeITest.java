@@ -15,7 +15,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.usergrid.vx.client.IntraClient2;
-import org.vertx.java.core.http.impl.ws.Base64;
+
+import com.hazelcast.util.Base64;
+
 
 @RunWith(CassandraRunner.class)
 @RequiresKeyspace(ksName = "compks")
@@ -41,7 +43,7 @@ public class CompositeITest {
 
     // ByteBuffer bytes = (ByteBuffer) x.get(0).get("value");
     String value = (String) x.get(0).get("value");
-    ByteBuffer bytes = ByteBuffer.wrap(Base64.decode(value));
+    ByteBuffer bytes = ByteBuffer.wrap(Base64.decode(value.getBytes()));
 
     List<AbstractType<?>> comparators = new ArrayList<>();
     comparators.add(UTF8Type.instance);
@@ -74,7 +76,7 @@ public class CompositeITest {
 
     // ByteBuffer bytes = (ByteBuffer) x.get(0).get("value");
     String value = (String) x.get(0).get("value");
-    ByteBuffer bytes = ByteBuffer.wrap(Base64.decode(value));
+    ByteBuffer bytes = ByteBuffer.wrap(Base64.decode(value.getBytes()));
 
     List<AbstractType<?>> comparators = new ArrayList<>();
     comparators.add(UTF8Type.instance);

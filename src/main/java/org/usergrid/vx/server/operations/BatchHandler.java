@@ -15,10 +15,10 @@ public class BatchHandler extends AbstractIntravertHandler {
 
   @Override
   public void handleUser(Message<JsonObject> event) {
-    System.out.println("I gots da batch "+event.body);
-    Integer id = event.body.getInteger("id");
-    JsonObject params = event.body.getObject("op");
-    JsonObject state = event.body.getObject("state");
+    System.out.println("I gots da batch "+event.body());
+    Integer id = event.body().getInteger("id");
+    JsonObject params = event.body().getObject("op");
+    JsonObject state = event.body().getObject("state");
     JsonArray array = params.getArray("rows");
     List<IMutation> mutations = new ArrayList<IMutation>();
     for (int i =0;i<array.size();i++){

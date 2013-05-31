@@ -18,9 +18,10 @@ public class CounterHandler extends AbstractIntravertHandler {
 
   @Override
   public void handleUser(Message<JsonObject> event) {
-    Integer id = event.body.getInteger("id");
-    JsonObject params = event.body.getObject("op");
-    JsonObject state = event.body.getObject("state");
+    
+    Integer id = event.body().getInteger("id");
+    JsonObject params = event.body().getObject("op");
+    JsonObject state = event.body().getObject("state");
     RowMutation rm = new RowMutation(HandlerUtils.instance.determineKs(params, state, null),
             HandlerUtils.instance.byteBufferForObject(params.getString("rowkey")));
     rm.addCounter(new QueryPath(
