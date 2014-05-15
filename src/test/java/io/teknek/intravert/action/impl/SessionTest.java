@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import junit.framework.Assert;
+import io.teknek.intravert.action.ActionFactory;
 import io.teknek.intravert.model.Constants;
 import io.teknek.intravert.model.Operation;
 import io.teknek.intravert.model.Request;
@@ -13,24 +14,48 @@ import io.teknek.intravert.service.IntravertService;
 
 import org.junit.Test;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
 public class SessionTest {
 
   @Test
   public void aTest(){
     IntravertService service = new DefaultIntravertService();
-    Request request = new Request();
-    request.getOperations().add(persist());
-    Response response = service.doRequest(request);
-    Assert.assertNull(response.getExceptionMessage());
-    Assert.assertNull(response.getExceptionId());
-    List<Map> results = (List<Map>) response.getResults().get("1");
-    Assert.assertEquals(0L, results.get(0).get(Constants.SESSION_ID));
+    String keyspaceName = "bla";
+    {
+      Request request = new Request();
+      request.getOperations().add(new Operation().withId("1").withType(ActionFactory.CREATE_SESSION));
+      request.getOperations()
+              .add(new Operation()
+                      .withId("2")
+                      .withType(ActionFactory.SET_KEYSPACE)
+                      .withArguments(
+                              new ImmutableMap.Builder<String, Object>().put("name", keyspaceName).build()));
+      Response response = service.doRequest(request);
+      assertResponseDidNotFail(response);
+      List<Map> results = (List<Map>) response.getResults().get("1");
+      Assert.assertEquals(0L, results.get(0).get(Constants.SESSION_ID));
+    }
+    {
+      Request other = new Request();
+      other.getOperations().add(
+              new Operation()
+                      .withId("1")
+                      .withType(ActionFactory.LOAD_SESSION)
+                      .withArguments(
+                              new ImmutableMap.Builder<String, Object>().put(Constants.SESSION_ID,
+                                      0L).build()));
+      other.getOperations().add(new Operation().withId("2").withType(ActionFactory.GET_KEYSPACE));
+      Response second = service.doRequest(other);
+      assertResponseDidNotFail(second);
+      List<Map> results = (List<Map>) second.getResults().get("2");
+      Assert.assertEquals(keyspaceName, results.get(0).get("keyspace"));
+    }
   }
   
-  private Operation persist(){
-    Operation o = new Operation();
-    o.setId("1");
-    o.setType("createsession");
-    return o;
+  public void assertResponseDidNotFail(Response response){
+    Assert.assertNull(response.getExceptionMessage());
+    Assert.assertNull(response.getExceptionId());
   }
 }

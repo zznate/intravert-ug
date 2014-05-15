@@ -1,6 +1,7 @@
 package io.teknek.intravert.model;
 
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class Operation {
@@ -9,7 +10,7 @@ public class Operation {
   private Map<String,Object> arguments;
   
   public Operation(){
-    
+    arguments = new HashMap<String,Object>();
   }
 
   public String getType() {
@@ -36,4 +37,23 @@ public class Operation {
     this.id = id;
   }
   
+  public Operation withId(String id){
+    setId(id);
+    return this;
+  }
+  
+  public Operation withType(String type){
+    setType(type);
+    return this;
+  }
+  
+  public Operation withArguments(Map<String,Object> arguments){
+    setArguments(arguments);
+    return this;
+  }
+  
+  public Map<String,Object> withArgument(String name, Object value){
+    arguments.put(name, value);
+    return arguments;
+  }
 }
