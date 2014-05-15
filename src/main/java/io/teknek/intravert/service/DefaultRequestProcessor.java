@@ -14,13 +14,13 @@ public class DefaultRequestProcessor implements RequestProcessor {
   public void process(Request request, Response response, RequestContext requestContext,
           ApplicationContext application) {
     for (int i = 0; i < request.getOperations().size(); i++) {
-      Operation o = null;
+      Operation operation = null;
       try {
-        o = request.getOperations().get(i);
-        Action action = actionFatory.findAction(o.getType());
-        action.doAction(o, response, requestContext, application);
+        operation = request.getOperations().get(i);
+        Action action = actionFatory.findAction(operation.getType());
+        action.doAction(operation, response, requestContext, application);
       } catch (RuntimeException ex) {
-        response.setExceptionId(o.getId());
+        response.setExceptionId(operation.getId());
         response.setExceptionMessage(ex.getMessage());
         ex.printStackTrace();
         break;

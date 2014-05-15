@@ -7,6 +7,7 @@ public class Response {
   private String exceptionMessage;
   private String exceptionId;
   private Map<String,Object> results;
+  private Map<String,Object> metaData;
   
   public Response(){
     results = new HashMap<String,Object>();
@@ -34,6 +35,14 @@ public class Response {
 
   public void setResults(Map<String, Object> results) {
     this.results = results;
+  }
+
+  public Map<String, Object> getMetaData() {
+    return metaData;
+  }
+
+  public void setMetaData(Map<String, Object> metaData) {
+    this.metaData = metaData;
   }
   
 }

@@ -13,7 +13,6 @@ import io.teknek.intravert.service.RequestContext;
 
 public class SetKeyspaceAction implements Action {
 
-  
   @Override
   public void doAction(Operation o, Response response, RequestContext request,
           ApplicationContext application) {
