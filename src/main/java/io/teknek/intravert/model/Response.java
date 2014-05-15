@@ -1,5 +1,6 @@
 package io.teknek.intravert.model;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class Response {
@@ -8,7 +9,7 @@ public class Response {
   private Map<String,Object> results;
   
   public Response(){
-    
+    results = new HashMap<String,Object>();
   }
 
   public String getExceptionMessage() {
