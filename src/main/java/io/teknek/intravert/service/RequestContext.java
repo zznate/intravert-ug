@@ -28,7 +28,7 @@ public class RequestContext {
     };
     CACHE = CacheBuilder.newBuilder()
             .maximumSize(10000)
-            .expireAfterAccess(60, TimeUnit.SECONDS)
+            //.expireAfterAccess(60, TimeUnit.SECONDS)
             .build(loader);
   }
   
