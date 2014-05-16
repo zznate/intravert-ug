@@ -68,8 +68,9 @@ public class IntravertCassandraServer implements Server {
         io.teknek.intravert.model.Request requestFromBody = MAPPER.readValue(baseRequest.getInputStream(), 
                 io.teknek.intravert.model.Request.class);
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("text/json;charset=utf-8");
+        response.setContentType("application/json;charset=utf-8");
         MAPPER.writeValue(response.getOutputStream(), copy.doRequest(requestFromBody));
+        response.getOutputStream().close();
         baseRequest.setHandled(true);
       }
     };

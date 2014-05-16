@@ -9,6 +9,7 @@ public abstract class BaseIntravertTest {
   
   @BeforeClass
   public static void before(){
+    System.setProperty("cassandra-foreground", "true");
     intravert.activate();
   }
   
