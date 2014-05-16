@@ -18,9 +18,10 @@ import org.mortbay.jetty.handler.AbstractHandler;
 
 public class IntravertCassandraServer implements Server {
 
+  public static final int port = 7654;
+  
   private static final AtomicBoolean RUNNING = new AtomicBoolean(false);
   private org.mortbay.jetty.Server server;
-  public static final int port = 7654;
   private IntravertService intraService;
   private static ObjectMapper MAPPER = new ObjectMapper();
 
@@ -60,13 +61,14 @@ public class IntravertCassandraServer implements Server {
         Request baseRequest = request instanceof Request ? (Request) request : HttpConnection
                 .getCurrentConnection().getRequest();
         String url = baseRequest.getRequestURI();
-        io.teknek.intravert.model.Request requestFromBody = MAPPER.readValue(baseRequest.getInputStream(), io.teknek.intravert.model.Request.class);
-        response.setStatus(HttpServletResponse.SC_OK);        
-        baseRequest.setHandled(true);
+        io.teknek.intravert.model.Request requestFromBody = MAPPER.readValue(baseRequest.getInputStream(), 
+                io.teknek.intravert.model.Request.class);
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("text/json;charset=utf-8");
         MAPPER.writeValue(response.getOutputStream(), copy.doRequest(requestFromBody));
+        baseRequest.setHandled(true);
       }
     };
     return handler;
-
   }
 }
