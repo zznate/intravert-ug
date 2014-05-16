@@ -25,6 +25,10 @@ public class IntravertCassandraServer implements Server {
   private IntravertService intraService;
   private static ObjectMapper MAPPER = new ObjectMapper();
 
+  public IntravertService getService(){
+    return intraService;
+  }
+  
   @Override
   public boolean isRunning() {
     return RUNNING.get();

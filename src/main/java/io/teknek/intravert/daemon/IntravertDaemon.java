@@ -7,7 +7,7 @@ import org.apache.cassandra.service.CassandraDaemon;
 public class IntravertDaemon extends CassandraDaemon  {
 
   private static final IntravertDaemon instance = new IntravertDaemon();
-  private Server intravertServer;
+  public IntravertCassandraServer intravertServer;
   
   @Override
   public void init(String[] arguments) throws IOException {
