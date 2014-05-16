@@ -11,6 +11,7 @@ public class Response {
   
   public Response(){
     results = new HashMap<String,Object>();
+    metaData = new HashMap<String,Object>();
   }
 
   public String getExceptionMessage() {
