@@ -11,11 +11,11 @@ import io.teknek.intravert.model.Request;
 import io.teknek.intravert.model.Response;
 import io.teknek.intravert.service.DefaultIntravertService;
 import io.teknek.intravert.service.IntravertService;
+import io.teknek.intravert.test.TestUtils;
 
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 
 public class SessionTest {
 
@@ -33,9 +33,9 @@ public class SessionTest {
                       .withArguments(
                               new ImmutableMap.Builder<String, Object>().put("name", keyspaceName).build()));
       Response response = service.doRequest(request);
-      assertResponseDidNotFail(response);
+      TestUtils.assertResponseDidNotFail(response);
       List<Map> results = (List<Map>) response.getResults().get("1");
-      Assert.assertEquals(0L, results.get(0).get(Constants.SESSION_ID));
+      Assert.assertNotNull(results.get(0).get(Constants.SESSION_ID));
     }
     {
       Request other = new Request();
@@ -48,14 +48,10 @@ public class SessionTest {
                                       0L).build()));
       other.getOperations().add(new Operation().withId("2").withType(ActionFactory.GET_KEYSPACE));
       Response second = service.doRequest(other);
-      assertResponseDidNotFail(second);
+      TestUtils.assertResponseDidNotFail(second);
       List<Map> results = (List<Map>) second.getResults().get("2");
       Assert.assertEquals(keyspaceName, results.get(0).get("keyspace"));
     }
   }
   
-  public void assertResponseDidNotFail(Response response){
-    Assert.assertNull(response.getExceptionMessage());
-    Assert.assertNull(response.getExceptionId());
-  }
 }

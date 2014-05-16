@@ -4,12 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.google.common.cache.ForwardingCache;
+import com.google.common.cache.LoadingCache;
+
 public class RequestContext {
 
   private static final AtomicLong SESSION_ID = new AtomicLong(0);
   private static Map<Long,Session> SAVED = new HashMap<Long,Session>();
-  
+  //private static LoadingCache<Long,Session> CACHE; 
   private Session session;
+  
   
   public RequestContext(){
     
