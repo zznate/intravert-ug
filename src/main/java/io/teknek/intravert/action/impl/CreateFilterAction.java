@@ -15,13 +15,16 @@ public class CreateFilterAction implements Action {
   public void doAction(Operation operation, Response response, RequestContext request,
           ApplicationContext application) {
     String name = (String) operation.getArguments().get("name");
+    String scope = (String) operation.getArguments().get("scope");
     NitDesc n = new NitDesc();
     n.setSpec(NitDesc.NitSpec.valueOf((String) operation.getArguments().get("spec")));
     n.setTheClass((String) operation.getArguments().get("theClass"));
     n.setScript((String) operation.getArguments().get("script"));
     try {
       Filter f = io.teknek.nit.NitFactory.construct(n);
+      
       request.getSession().putFilter(name, f);
+      
     } catch (NitException e) {
       throw new RuntimeException(e);
     }
