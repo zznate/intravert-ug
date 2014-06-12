@@ -40,9 +40,3 @@ public class CreateFilterTest extends BaseIntravertTest {
     Assert.assertEquals(new ImmutableMap.Builder<String, Object>().put("result", "ok").build(), results.get(0));
   }
 }
-/*
-Assert.assertEquals(
-
-       "{\"exceptionMessage\":null,\"exceptionId\":null,\"results\":{\"2\":[{\"result\":\"ok\"}],\"1\":[{\"session_id\":0}]},\"metaData\":{}}"
-       , cl.postAsString("http://127.0.0.1:7654", new ObjectMapper().writeValueAsString(request)));
-       */
