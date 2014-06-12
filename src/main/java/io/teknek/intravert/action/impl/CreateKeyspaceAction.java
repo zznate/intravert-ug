@@ -24,11 +24,13 @@ public class CreateKeyspaceAction implements Action {
           ApplicationContext application) {
     String keyspace = (String) operation.getArguments().get("name");
     int replication = (Integer) operation.getArguments().get("replication");
-    
-    
+    createKeyspace(keyspace, replication);
+  }
+
+  public static void createKeyspace(String name, int replication){
     Collection<CFMetaData> cfDefs = new ArrayList<CFMetaData>(0);
     KsDef def = new KsDef();
-    def.setName(keyspace);
+    def.setName(name);
     def.setStrategy_class("SimpleStrategy");
     Map<String, String> strat = new HashMap<String, String>();
     strat.put("replication_factor", Integer.toString(replication));
@@ -42,5 +44,4 @@ public class CreateKeyspaceAction implements Action {
         throw new RuntimeException(e);
     }
   }
-
 }

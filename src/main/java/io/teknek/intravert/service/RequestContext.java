@@ -1,16 +1,10 @@
 package io.teknek.intravert.service;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.mortbay.io.BufferCache.CachedBuffer;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
-import com.google.common.cache.ForwardingCache;
 import com.google.common.cache.LoadingCache;
 
 public class RequestContext {
