@@ -3,6 +3,7 @@ package io.teknek.intravert.action;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.teknek.intravert.action.impl.CreateFilterAction;
 import io.teknek.intravert.action.impl.GetKeyspaceAction;
 import io.teknek.intravert.action.impl.SaveSessionAction;
 import io.teknek.intravert.action.impl.LoadSessionAction;
@@ -14,6 +15,7 @@ public class ActionFactory {
   public static final String LOAD_SESSION = "loadsession";
   public static final String SET_KEYSPACE = "setkeyspace";
   public static final String GET_KEYSPACE = "getkeyspace";
+  public static final String CREATE_FILTER = "createfilter";
   private Map<String,Action> actions;
   
   public ActionFactory(){
@@ -22,6 +24,7 @@ public class ActionFactory {
     actions.put(LOAD_SESSION, new LoadSessionAction());
     actions.put(SET_KEYSPACE, new SetKeyspaceAction());
     actions.put(GET_KEYSPACE, new GetKeyspaceAction());
+    actions.put(CREATE_FILTER, new CreateFilterAction());
   }
   
   public Action findAction(String operation){
