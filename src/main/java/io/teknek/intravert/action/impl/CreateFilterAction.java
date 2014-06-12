@@ -10,6 +10,8 @@ import org.apache.cassandra.config.CFMetaData;
 import org.apache.cassandra.config.Schema;
 import org.apache.cassandra.db.ConsistencyLevel;
 import org.apache.cassandra.db.IMutation;
+import org.apache.cassandra.db.RowMutation;
+import org.apache.cassandra.db.filter.QueryPath;
 import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.cassandra.exceptions.InvalidRequestException;
 import org.apache.cassandra.exceptions.OverloadedException;
@@ -18,8 +20,8 @@ import org.apache.cassandra.exceptions.WriteTimeoutException;
 import org.apache.cassandra.service.MigrationManager;
 import org.apache.cassandra.service.StorageProxy;
 import org.apache.cassandra.thrift.CfDef;
+import org.apache.cassandra.utils.ByteBufferUtil;
 
-import groovy.lang.Closure;
 import io.teknek.intravert.action.Action;
 import io.teknek.intravert.action.filter.Filter;
 import io.teknek.intravert.action.filter.FilterFactory;
@@ -33,6 +35,9 @@ import io.teknek.nit.NitException;
 
 public class CreateFilterAction implements Action {
 
+  public static final String IV_KEYSPACE = "intravert";
+  public static final String FILTER_CF = "filter";
+  
   @Override
   public void doAction(Operation operation, Response response, RequestContext request,
           ApplicationContext application) {
@@ -47,7 +52,7 @@ public class CreateFilterAction implements Action {
       if ("session".equalsIgnoreCase(scope)){
         request.getSession().putFilter(name, f);
       } else if ("application".equalsIgnoreCase(scope)){
-        addFilterToCluster(f, n);
+        addFilterToCluster(f, n, name);
         application.putFilter(name, f);
       }
     } catch (NitException | WriteTimeoutException | InvalidRequestException | ConfigurationException | UnavailableException | OverloadedException e) {
@@ -61,22 +66,41 @@ public class CreateFilterAction implements Action {
   
   public void maybeCreateColumnFamily() throws InvalidRequestException, ConfigurationException {
     List<String> keyspaces = Schema.instance.getNonSystemTables();
-    if (!keyspaces.contains("intravert")){
-      CreateKeyspaceAction.createKeyspace("intravert", 1);
+    if (!keyspaces.contains(IV_KEYSPACE)){
+      CreateKeyspaceAction.createKeyspace(IV_KEYSPACE, 1);
       CFMetaData cfm = null;
       CfDef def = new CfDef();
-      def.setKeyspace("intravert");
-      def.setName("filter");
+      def.setKeyspace(IV_KEYSPACE);
+      def.setName(FILTER_CF);
       cfm = CFMetaData.fromThrift(def);
       cfm.addDefaultIndexNames();
       MigrationManager.announceNewColumnFamily(cfm);
     }
   }
   
-  public void addFilterToCluster(Filter f, NitDesc n) throws InvalidRequestException, ConfigurationException, WriteTimeoutException, UnavailableException, OverloadedException{
-    maybeCreateColumnFamily();
+  public void addFilterToCluster(Filter f, NitDesc n, String name) throws InvalidRequestException, ConfigurationException, WriteTimeoutException, UnavailableException, OverloadedException{
+    maybeCreateColumnFamily();    
     List<IMutation> changes = new ArrayList<>();
+    {
+      RowMutation rm = new RowMutation(IV_KEYSPACE, ByteBufferUtil.bytes(name));
+      QueryPath qp = new QueryPath(FILTER_CF, null, ByteBufferUtil.bytes("spec"));
+      rm.add(qp, ByteBufferUtil.bytes(n.getSpec().toString()), System.nanoTime());
+      changes.add(rm);
+    }
+    {
+      RowMutation rm = new RowMutation(IV_KEYSPACE, ByteBufferUtil.bytes(name));
+      QueryPath qp = new QueryPath(FILTER_CF, null, ByteBufferUtil.bytes("theClass"));
+      String cs = n.getTheClass() == null ? "" : n.getTheClass();
+      rm.add(qp, ByteBufferUtil.bytes(cs), System.nanoTime());
+      changes.add(rm);
+    }
+    {
+      RowMutation rm = new RowMutation(IV_KEYSPACE, ByteBufferUtil.bytes(name));
+      QueryPath qp = new QueryPath(FILTER_CF, null, ByteBufferUtil.bytes("script"));
+      String cs = n.getScript() == null ? "" : n.getScript();
+      rm.add(qp, ByteBufferUtil.bytes(cs), System.nanoTime());
+      changes.add(rm);
+    }    
     StorageProxy.mutate(changes, ConsistencyLevel.QUORUM);
-    
   }
 }
