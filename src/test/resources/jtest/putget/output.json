@@ -13,6 +13,10 @@
     } ],
     "3" : [ {
       "result" : "ok"
+    } ],
+    "4" : [ {
+      "value" : "edward",
+      "name" : "firstname"
     } ]
   },
   "metaData" : { }

@@ -31,5 +31,15 @@
       "keyspace" : "example",
       "columnFamily" : "upsert"
     }
-  } ]
+  },{ 
+  	"type" : "slice",
+  	"id" : "4",
+  	 "arguments" : {
+      "rowkey" : "ecapriolo",
+      "start" : "firstname",
+      "end" : "firstname",
+      "keyspace" : "example",
+      "columnFamily" : "upsert"
+    }
+  }]
 }
