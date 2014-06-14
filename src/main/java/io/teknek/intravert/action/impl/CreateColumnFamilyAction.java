@@ -1,12 +1,5 @@
 package io.teknek.intravert.action.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.cassandra.config.CFMetaData;
 import org.apache.cassandra.config.KSMetaData;
 import org.apache.cassandra.config.Schema;
@@ -14,10 +7,7 @@ import org.apache.cassandra.exceptions.ConfigurationException;
 import org.apache.cassandra.exceptions.InvalidRequestException;
 import org.apache.cassandra.service.MigrationManager;
 import org.apache.cassandra.thrift.CfDef;
-import org.apache.cassandra.thrift.KsDef;
-
 import io.teknek.intravert.action.Action;
-import io.teknek.intravert.model.Constants;
 import io.teknek.intravert.model.Operation;
 import io.teknek.intravert.model.Response;
 import io.teknek.intravert.service.ApplicationContext;
@@ -35,7 +25,8 @@ public class CreateColumnFamilyAction implements Action {
     if (!Schema.instance.getNonSystemTables().contains(keyspace)){
       throw new RuntimeException("keyspace "+ keyspace + " does not exist");
     }
-    if (false){
+    KSMetaData ks = Schema.instance.getKSMetaData(keyspace);
+    if (ks.cfMetaData().containsKey(columnFamily)){
       if (ignoreIfNotExists){
         response.getResults().put(operation.getId(), ResponseUtil.getDefaultHappy());
         return;
