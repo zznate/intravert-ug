@@ -1,8 +1,10 @@
 # Intravert
-An experimental client and transport for [Apache Cassandra](http://cassandra.apache.org) based on the [vert.x](http://vertx.io) framework. This README is still in progress.
+An http based transport and extension language for [Apache Cassandra](http://cassandra.apache.org). 
+
+Note: Some documentation is out of sorts as we rebuild intravert. Refer to unit tests as source of truth.
 
 ## Overview
-Intravert is built on top of Cassandra. It **is not** a fork. Rather, it is a plugin which augments (or replaces - up to you) the default CQL and Thrift transports. 
+Intravert is built on top of Cassandra. It **is not** a fork rather it augments cassandra by providing simple access to Cassandra via http. It also provides capability to do computation server side in a way similar to co-processors, scanners, and triggers, all features which Cassanra lacks.
 
 ## Game Changer Features
 Intravert is more then an RPC library, query language, or transport for Cassandra. IntraVert gives access to new powerful ways of working with Cassandra.
@@ -17,13 +19,7 @@ Intravert is more then an RPC library, query language, or transport for Cassandr
 
 ## Motivations
 
-From an application standpoint, if you can't do sparse, wide rows, you break compatibility with 90% of Cassandra applications. So that rules out almost everything; if you can't provide the same data model, you're creating fragmentation, not pluggability.
-
-Intravert was conceived of and designed by long time users of Cassandra who have written numerous real-world applications built on the existing Thrift API. 
-
-This API had it's warts for sure, but it was felt among us that the direction of the Cassandra project with regards to the introduction of CQL sidestepped some of the core reasons we chose Cassandra in the first place. 
-
-Therefore, Intravert is a new approach designed to leverage what we've learned down in the trenches writing and deploying applications which use Cassandra. Intravert is not intended as a fork, thumb in the eye, or any other detrimental action to the Cassandra community or commercial vendors around such. It is simply a purpose built tool to facilitate GettingShitDone™ with real world applications.
+From an application standpoint, if you can't do sparse, wide rows, you break compatibility with 90% of Cassandra applications. So that rules out almost everything; if you can't provide the same data model, you're creating fragmentation, not pluggability. Intravert aims to make the Cassandra data model simply accessable.
 
 Spend some time looking through the documentation, test cases, and examples to see if this approach makes sense for your architecture. 
 
