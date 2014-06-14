@@ -13,7 +13,7 @@ Intravert is more then an RPC library, query language, or transport for Cassandr
 
 * [GETREF](https://github.com/zznate/intravert-ug/wiki/GETREF) feature can be used to execute procedure and join like logic in a single RPC request.
 
-* A simple sync/async [API and Transport](https://github.com/zznate/intravert-ug/wiki/JSON) that runs over HTTP allows clients to chose from JSON, JSON compressed by smile, and even big fat sexy XML. 
+* A simple [API and Transport](https://github.com/zznate/intravert-ug/wiki/JSON) that runs over HTTP allows clients to chose from JSON.
 
 * No more dealing with byte[] or ByteBuffers. Intravert lets users work with simple familiar objects like String or Integer. See [Types and Composites](https://github.com/zznate/intravert-ug/wiki/Composites).
 
