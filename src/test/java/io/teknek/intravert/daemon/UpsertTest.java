@@ -48,7 +48,9 @@ public class UpsertTest extends BaseIntravertTest {
     .withId("3").withType(ActionFactory.UPSERT).withArguments(
             new ImmutableMap.Builder<String, Object>().put("rowkey", "ecapriolo")
             .put("column","firstname")
-            .put("value","edward").build()));
+            .put("value","edward")
+            .put("keyspace","example")
+            .put("columnFamily", "upsert").build()));
     Client cl = new Client();
     Response response = cl.post("http://127.0.0.1:7654", request);
     List<Map> results = (List<Map>) response.getResults().get("1");
