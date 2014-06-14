@@ -1,17 +1,18 @@
 package io.teknek.intravert.model;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Response {
   private String exceptionMessage;
   private String exceptionId;
-  private Map<String,Object> results;
-  private Map<String,Object> metaData;
+  private LinkedHashMap<String,Object> results;
+  private LinkedHashMap<String,Object> metaData;
   
   public Response(){
-    results = new HashMap<String,Object>();
-    metaData = new HashMap<String,Object>();
+    results = new LinkedHashMap<String,Object>();
+    metaData = new LinkedHashMap<String,Object>();
   }
 
   public String getExceptionMessage() {
@@ -34,7 +35,7 @@ public class Response {
     return results;
   }
 
-  public void setResults(Map<String, Object> results) {
+  public void setResults(LinkedHashMap<String, Object> results) {
     this.results = results;
   }
 
@@ -42,7 +43,7 @@ public class Response {
     return metaData;
   }
 
-  public void setMetaData(Map<String, Object> metaData) {
+  public void setMetaData(LinkedHashMap<String, Object> metaData) {
     this.metaData = metaData;
   }
   
