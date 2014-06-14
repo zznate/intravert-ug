@@ -10,6 +10,7 @@ import io.teknek.intravert.model.Operation;
 import io.teknek.intravert.model.Response;
 import io.teknek.intravert.service.ApplicationContext;
 import io.teknek.intravert.service.RequestContext;
+import io.teknek.intravert.util.ResponseUtil;
 
 public class SetKeyspaceAction implements Action {
 
@@ -18,9 +19,7 @@ public class SetKeyspaceAction implements Action {
           ApplicationContext application) {
     String name = (String) o.getArguments().get("name");
     request.getSession().setCurrentKeyspace(name);
-    Map m = new HashMap();
-    m.put(Constants.RESULT, Constants.OK);
-    response.getResults().put(o.getId(), Arrays.asList(m));
+    response.getResults().put(o.getId(), ResponseUtil.getDefaultHappy());
   }
 
 }
