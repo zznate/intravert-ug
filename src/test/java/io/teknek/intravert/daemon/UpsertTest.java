@@ -20,6 +20,8 @@ import org.apache.cassandra.config.KSMetaData;
 import org.apache.cassandra.config.Schema;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig.Feature;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
@@ -52,6 +54,9 @@ public class UpsertTest extends BaseIntravertTest {
             .put("keyspace","example")
             .put("columnFamily", "upsert").build()));
     Client cl = new Client();
+    ObjectMapper om = new ObjectMapper();
+    om.configure(Feature.INDENT_OUTPUT,true);
+    System.out.println(om.writeValueAsString(request));
     Response response = cl.post("http://127.0.0.1:7654", request);
     List<Map> results = (List<Map>) response.getResults().get("1");
     Assert.assertEquals(new ImmutableMap.Builder<String, Object>().put("result", "ok").build(), results.get(0));

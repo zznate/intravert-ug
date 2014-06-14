@@ -1,17 +1,11 @@
 package io.teknek.intravert.action.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import org.apache.cassandra.db.ConsistencyLevel;
 import org.apache.cassandra.db.IMutation;
 import org.apache.cassandra.db.RowMutation;
 import org.apache.cassandra.db.filter.QueryPath;
-import org.apache.cassandra.exceptions.ConfigurationException;
-import org.apache.cassandra.exceptions.InvalidRequestException;
 import org.apache.cassandra.exceptions.OverloadedException;
 import org.apache.cassandra.exceptions.UnavailableException;
 import org.apache.cassandra.exceptions.WriteTimeoutException;
@@ -19,9 +13,6 @@ import org.apache.cassandra.service.StorageProxy;
 import org.apache.cassandra.utils.ByteBufferUtil;
 
 import io.teknek.intravert.action.Action;
-import io.teknek.intravert.action.filter.Filter;
-import io.teknek.intravert.action.filter.FilterFactory;
-import io.teknek.intravert.model.Constants;
 import io.teknek.intravert.model.Operation;
 import io.teknek.intravert.model.Response;
 import io.teknek.intravert.service.ApplicationContext;

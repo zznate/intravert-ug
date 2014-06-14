@@ -1,0 +1,35 @@
+{
+  "operations" : [ {
+    "type" : "createkeyspace",
+    "id" : "0",
+    "arguments" : {
+      "name" : "example",
+      "replication" : 1,
+      "ignoreIfNotExists" : true
+    }
+  }, {
+    "type" : "createcolumnfamily",
+    "id" : "1",
+    "arguments" : {
+      "keyspace" : "example",
+      "columnFamily" : "upsert",
+      "ignoreIfNotExists" : true
+    }
+  }, {
+    "type" : "setkeyspace",
+    "id" : "2",
+    "arguments" : {
+      "name" : "example"
+    }
+  }, {
+    "type" : "upsert",
+    "id" : "3",
+    "arguments" : {
+      "rowkey" : "ecapriolo",
+      "column" : "firstname",
+      "value" : "edward",
+      "keyspace" : "example",
+      "columnFamily" : "upsert"
+    }
+  } ]
+}
