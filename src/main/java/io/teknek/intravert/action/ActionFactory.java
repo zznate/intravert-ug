@@ -10,6 +10,7 @@ import io.teknek.intravert.action.impl.GetKeyspaceAction;
 import io.teknek.intravert.action.impl.SaveSessionAction;
 import io.teknek.intravert.action.impl.LoadSessionAction;
 import io.teknek.intravert.action.impl.SetKeyspaceAction;
+import io.teknek.intravert.action.impl.SliceAction;
 import io.teknek.intravert.action.impl.UpsertAction;
 
 public class ActionFactory {
@@ -22,6 +23,7 @@ public class ActionFactory {
   public static final String UPSERT = "upsert";
   public static final String CREATE_KEYSPACE = "createkeyspace";
   public static final String CREATE_COLUMN_FAMILY ="createcolumnfamily";
+  public static final String SLICE ="slice";
   private Map<String,Action> actions;
   
   public ActionFactory(){
@@ -34,6 +36,7 @@ public class ActionFactory {
     actions.put(UPSERT, new UpsertAction());
     actions.put(CREATE_KEYSPACE, new CreateKeyspaceAction());
     actions.put(CREATE_COLUMN_FAMILY, new CreateColumnFamilyAction());
+    actions.put(SLICE, new SliceAction());
   }
   
   public Action findAction(String operation){
