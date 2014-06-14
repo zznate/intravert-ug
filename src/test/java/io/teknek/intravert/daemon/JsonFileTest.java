@@ -44,7 +44,7 @@ public class JsonFileTest extends BaseIntravertTest {
   }
   
   @Test
-  public void test() throws JsonParseException, JsonMappingException, IOException{
+  public void putGetTest() throws JsonParseException, JsonMappingException, IOException{
     innerTest("putget");
   }
 }
